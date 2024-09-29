@@ -25,7 +25,6 @@ func GetQuestionWithLogger(db *database.QuestionDB, logger *common.Logger) gin.H
 			return
 		}
 
-
 		var questions []common.Question
 		questions, err = db.GetAllQuestionsWithQuery(logger, bson.D{bson.E{Key: "id", Value: id}})
 

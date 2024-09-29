@@ -1,4 +1,3 @@
-// this is the main file to run the server
 package main
 
 import (
