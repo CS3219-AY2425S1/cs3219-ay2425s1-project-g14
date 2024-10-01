@@ -13,5 +13,5 @@ body,
 p,
 h1,
 h2 {
-  @apply text-gray-100;
+  @apply text-text-2;
 }

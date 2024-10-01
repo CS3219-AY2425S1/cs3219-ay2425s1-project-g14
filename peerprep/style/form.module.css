@@ -1,0 +1,73 @@
+.title {
+  font-size: x-large;
+}
+
+.wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 10px;
+  height: 100%;
+  width: 100%;
+}
+
+.form_container {
+  background-color: rgb(36, 36, 36);
+  color: white;
+  font-family: Helvetica, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 15px 10px;
+  border-radius: 10px;
+  width: 90%;
+}
+
+.input_container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.label {
+  text-wrap: nowrap;
+}
+
+.deletableText {
+  font-family: monospace, Consolas, Courier;
+  color: white;
+  text-shadow: none;
+}
+
+.disabledText {
+  font-family: monospace, Consolas, Courier;
+  color: grey;
+  text-shadow: none;
+}
+
+.deletableText:hover {
+  font-family: monospace, Consolas, Courier;
+  color: red;
+  text-shadow: 1px;
+}
+
+.text_input {
+  background-color: rgb(30, 31, 31);
+  border: 1px solid white;
+  width: 80%;
+  border-radius: 10%;
+}
+
+.radio_container {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.radio_gap_override {
+  gap: 2px;
+}

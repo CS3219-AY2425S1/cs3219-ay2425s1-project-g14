@@ -1,5 +1,5 @@
-import React from 'react'
-import styles from '@/style/layout.module.css';
+import React from "react";
+import styles from "@/style/layout.module.css";
 
 function TitleBar() {
   return (
@@ -14,7 +14,7 @@ function TitleBar() {
       <h1 className={styles.title}>PeerPrep</h1>
       <div className={styles.circle}>PH</div>
     </div>
-  )
+  );
 }
 
 export default TitleBar;

@@ -1,55 +1,80 @@
+"use client";
+import { deleteQuestion } from "@/api/gateway";
 import React from "react";
-import { Question, difficulties } from "../shared/Question";
+import { Question, Difficulty } from "@/api/structs";
 import PeerprepButton from "../shared/PeerprepButton";
+import { useRouter } from "next/navigation";
+import styles from "@/style/questionCard.module.css";
+import QuestionList from "./QuestionList";
 
 type QuestionCardProps = {
   question: Question;
 };
 
 const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
-  const getDifficultyClass = (difficulty: string) => {
+  const router = useRouter();
+  const handleDelete = async () => {
+    if (
+      confirm(
+        `Are you sure you want to delete ${question.title}? (ID: ${question.id}) `
+      )
+    ) {
+      const status = await deleteQuestion(question);
+      if (status.error) {
+        console.log("Failed to delete question.");
+        console.log(`Code ${status.status}:  ${status.error}`);
+        return;
+      }
+      console.log(`Successfully deleted the question.`);
+    } else {
+      console.log("Deletion cancelled.");
+    }
+  };
+
+  const getDifficultyColor = (difficulty: Difficulty) => {
     switch (difficulty) {
-      case "easy":
-        return "text-green-500"; // Green for easy
-      case "medium":
-        return "text-yellow-500"; // Yellow for medium
-      case "hard":
-        return "text-red-500"; // Red for hard
+      case Difficulty.Easy:
+        return "text-difficulty-easy"; // Green for easy
+      case Difficulty.Medium:
+        return "text-difficulty-med"; // Yellow for medium
+      case Difficulty.Hard:
+        return "text-difficulty-hard"; // Red for hard
       default:
-        return "text-gray-100"; // Default color
+        return "text-secondary-text"; // Default color
     }
   };
 
   return (
-    <div className="flex items-center w-full h-24 p-4 bg-gray-700 shadow-md rounded-lg mb-4">
-      <div className="flex-none w-1/3 overflow-hidden">
-        <h2 className="text-lg font-bold text-nowrap">{question.title}</h2>
-        <p className="text-sm">
+    <div className={styles.container}>
+      <div className="flex-none w-full sm:w-1/3">
+        <h2 className={styles.title}>{question.title}</h2>
+        <p className={styles.bodytext}>
           Difficulty:{" "}
           <span
-            className={`capitalize ${getDifficultyClass(
-              difficulties[question.difficulty]
+            className={`capitalize font-bold ${getDifficultyColor(
+              question.difficulty
             )}`}
           >
-            {difficulties[question.difficulty]}
+            {Difficulty[question.difficulty]}
           </span>
         </p>
-        <p className="text-sm">
-          Categories: <span>{question.categories.join(", ")}</span>
+        <p className={styles.bodytext}>
+          Categories:{" "}
+          <span>
+            {question.categories ? question.categories.join(", ") : "None"}
+          </span>
         </p>
       </div>
 
-      <div className="flex-none w-1/2 max-h-16 overflow-hidden">
-        <p className="text-sm text-wrap truncate text-right">
-          {question.description}
-        </p>
+      <div className="flex-none w-full sm:w-1/2 max-h-16">
+        <p className={styles.bodytext}>{question.description}</p>
       </div>
 
-      <div className="ml-10 mr-10">
-        {/* display question page */}
-        <PeerprepButton onClick={() => console.log("Expand button clicked!")}>
-          View Question
+      <div className={styles.buttonContainer}>
+        <PeerprepButton onClick={() => router.push(`questions/${question.id}`)}>
+          View
         </PeerprepButton>
+        <PeerprepButton onClick={handleDelete}>Delete</PeerprepButton>
       </div>
     </div>
   );

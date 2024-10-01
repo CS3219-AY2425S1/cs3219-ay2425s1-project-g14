@@ -1,7 +1,8 @@
 "use client";
+import { getAllQuestions } from "@/api/gateway";
 import React, { useEffect, useState } from "react";
 import QuestionCard from "./QuestionCard";
-import { Question, difficulties } from "../shared/Question";
+import { Question, StatusBody, Difficulty, isError } from "@/api/structs";
 import PeerprepDropdown from "../shared/PeerprepDropdown";
 import PeerprepSearchBar from "../shared/PeerprepSearchBar";
 
@@ -9,34 +10,29 @@ const QuestionList: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [difficultyFilter, setDifficultyFilter] = useState<string>(
-    difficulties[0]
+    Difficulty[0]
   );
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  // will prolly have to search by name later
   const [searchFilter, setSearchFilter] = useState<string>("");
   const [categories, setCategories] = useState<string[]>(["all"]);
 
   useEffect(() => {
-    // uhhhhh this should be changed to fetch on filter/search change
-    // make use of gateway.ts later
     const fetchQuestions = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_QUESTION_SERVICE}/questions`
-        );
-        const data: Question[] = await response.json();
-        setQuestions(data);
-
-        // get all present categories in all qns
-        const uniqueCategories = Array.from(
-          new Set(data.flatMap((question) => question.categories))
-        );
-        setCategories(["all", ...uniqueCategories]);
-      } catch (error) {
-        console.error("Error fetching questions:", error);
-      } finally {
-        setLoading(false);
+      const data = await getAllQuestions();
+      // uh
+      if (isError(data)) {
+        // should also reflect the error
+        return;
       }
+
+      setLoading(false);
+      setQuestions(data);
+
+      // get all present categories in all qns
+      const uniqueCategories = Array.from(
+        new Set(data.flatMap((question) => question.categories))
+      );
+      setCategories(["all", ...uniqueCategories]);
     };
 
     fetchQuestions();
@@ -44,14 +40,14 @@ const QuestionList: React.FC = () => {
 
   const filteredQuestions = questions.filter((question) => {
     const matchesDifficulty =
-      difficultyFilter === difficulties[0] ||
-      difficulties[question.difficulty] === difficultyFilter;
+      difficultyFilter === Difficulty[0] ||
+      Difficulty[question.difficulty] === difficultyFilter;
     const matchesCategory =
       categoryFilter === categories[0] ||
-      question.categories.includes(categoryFilter);
+      (question.categories ?? []).includes(categoryFilter);
     const matchesSearch =
       searchFilter === "" ||
-      question.title.toLowerCase().includes(searchFilter.toLowerCase());
+      (question.title ?? "").toLowerCase().includes(searchFilter.toLowerCase());
 
     return matchesDifficulty && matchesCategory && matchesSearch;
   });
@@ -70,7 +66,7 @@ const QuestionList: React.FC = () => {
           label="Difficulty"
           value={difficultyFilter}
           onChange={(e) => setDifficultyFilter(e.target.value)}
-          options={difficulties}
+          options={Object.keys(Difficulty).filter((key) => isNaN(Number(key)))}
         />
         <PeerprepDropdown
           label="Category"

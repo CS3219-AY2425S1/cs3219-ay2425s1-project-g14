@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import styles from "@/style/elements.module.css";
 
 type PeerprepButtonProps = {
   onClick: () => void;
@@ -13,10 +14,7 @@ const PeerprepButton: React.FC<PeerprepButtonProps> = ({
   className,
 }) => {
   return (
-    <button
-      onClick={onClick}
-      className={`px-4 py-2 text-white bg-gray-600 rounded hover:bg-gray-500 focus:outline-none focus:ring focus:ring-gray-400${className}`}
-    >
+    <button onClick={onClick} className={`${styles.button} ${className}`}>
       {children}
     </button>
   );

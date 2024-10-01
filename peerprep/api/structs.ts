@@ -1,13 +1,15 @@
 export enum Difficulty {
+  All = 0,
   Easy = 1,
   Medium,
-  Hard
+  Hard,
 }
 
 export interface QuestionBody {
   difficulty: Difficulty;
   title: string;
   description: string;
+  categories: string[];
 }
 
 export interface TestCase {
@@ -27,6 +29,8 @@ export interface StatusBody {
   error?: string;
 }
 
-export function isError(obj: Question | StatusBody): obj is StatusBody {
-  return (obj as StatusBody).error !== undefined;
+export function isError(
+  obj: Question[] | Question | StatusBody
+): obj is StatusBody {
+  return (obj as StatusBody).status !== undefined;
 }

@@ -27,3 +27,15 @@
   width: 40px;
   height: 40px;
 }
+
+.chip {
+  font-size: small;
+  font-family: Helvetica, Arial, sans-serif;
+  font-weight: bolder;
+  padding: 1px;
+  border-radius: 25%;
+  /* Default Chip CSS*/
+  background-color: white;
+  border: 1px solid darkslategray;
+  color: black;
+}

@@ -1,5 +1,6 @@
 // PeerprepSearchBar.tsx
 import React from "react";
+import styles from "@/style/elements.module.css";
 
 interface PeerprepSearchBarProps {
   value: string;
@@ -19,7 +20,7 @@ const PeerprepSearchBar: React.FC<PeerprepSearchBarProps> = ({
         placeholder={label}
         value={value}
         onChange={onChange}
-        className="border border-gray-300 rounded-md p-2 w-full text-black"
+        className={styles.input}
       />
     </div>
   );
