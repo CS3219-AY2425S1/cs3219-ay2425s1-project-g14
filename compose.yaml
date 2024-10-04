@@ -1,0 +1,31 @@
+services:
+  peerprep:
+    build: peerprep
+    env_file:
+      - peerprep/.env
+    ports:
+      - "3000:3000"
+
+    develop:
+      watch:
+        - action: sync
+          path: peerprep
+          target: /frontend
+
+
+  backend:
+    build: backend
+    env_file:
+      - backend/questionDB.env
+    ports:
+      - "9090:9090"
+    develop:
+      watch:
+        - action: rebuild
+          path: backend
+          target: backend/app
+
+#  mongo:
+#    image: "mongo:latest"
+#    ports:
+#      - "27017:27017"
