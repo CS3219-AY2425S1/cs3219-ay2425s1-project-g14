@@ -1,11 +1,10 @@
 "use client";
-import { deleteQuestion } from "@/api/gateway";
 import React from "react";
 import { Question, Difficulty } from "@/api/structs";
 import PeerprepButton from "../shared/PeerprepButton";
 import { useRouter } from "next/navigation";
 import styles from "@/style/questionCard.module.css";
-import QuestionList from "./QuestionList";
+import { deleteQuestion } from "@/app/api/internal/questions/helper";
 
 type QuestionCardProps = {
   question: Question;
@@ -19,7 +18,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
         `Are you sure you want to delete ${question.title}? (ID: ${question.id}) `
       )
     ) {
-      const status = await deleteQuestion(question);
+      const status = await deleteQuestion(question.id);
       if (status.error) {
         console.log("Failed to delete question.");
         console.log(`Code ${status.status}:  ${status.error}`);

@@ -13,7 +13,7 @@ type Props = {
   onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
 };
 
-function TextInput({
+function PasswordInput({
   name,
   label,
   value,
@@ -29,7 +29,7 @@ function TextInput({
       <p className={style.label}>{label}</p>
       <input
         required={required}
-        type="text"
+        type="password"
         name={name}
         id={id}
         value={value}
@@ -42,4 +42,4 @@ function TextInput({
   );
 }
 
-export default TextInput;
+export default PasswordInput;

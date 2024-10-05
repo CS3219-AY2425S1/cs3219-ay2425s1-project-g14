@@ -1,12 +1,12 @@
 "use client";
 import { useState, ChangeEvent, MouseEvent, FormEvent } from "react";
 import { QuestionBody, Difficulty, QuestionFullBody } from "@/api/structs";
-import { addQuestion } from "@/api/gateway";
 import style from "@/style/form.module.css";
 import FormTextInput from "@/components/shared/form/FormTextInput";
 import RadioButtonGroup from "@/components/shared/form/RadioButtonGroup";
 import FormTextAreaInput from "@/components/shared/form/FormTextAreaInput";
 import { useRouter } from "next/navigation";
+import { addQuestion } from "@/app/api/internal/questions/helper";
 
 type Props = {};
 

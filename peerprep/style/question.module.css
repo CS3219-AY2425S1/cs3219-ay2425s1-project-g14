@@ -88,6 +88,12 @@
   width: 30%;
 }
 
+.editor {
+  flex-grow: 1; /* Allow editor to take available space */
+  min-height: 300px;
+  position: relative;
+}
+
 .editor_container {
   width: 48%;
   height: 100%;

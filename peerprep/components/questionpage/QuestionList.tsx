@@ -1,5 +1,4 @@
 "use client";
-import { getAllQuestions } from "@/api/gateway";
 import React, { useEffect, useState } from "react";
 import QuestionCard from "./QuestionCard";
 import { Question, StatusBody, Difficulty, isError } from "@/api/structs";
@@ -18,12 +17,15 @@ const QuestionList: React.FC = () => {
 
   useEffect(() => {
     const fetchQuestions = async () => {
-      const data = await getAllQuestions();
+      const payload = await fetch(
+        `${process.env.NEXT_PUBLIC_NGINX}/api/internal/questions`
+      ).then((res) => res.json());
       // uh
-      if (isError(data)) {
+      if (isError(payload)) {
         // should also reflect the error
         return;
       }
+      const data: Question[] = payload;
 
       setLoading(false);
       setQuestions(data);
