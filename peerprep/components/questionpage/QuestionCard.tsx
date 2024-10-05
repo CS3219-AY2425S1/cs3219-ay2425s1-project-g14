@@ -67,7 +67,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
       </div>
 
       <div className="flex-none w-full sm:w-1/2 max-h-16">
-        <p className={styles.bodytext}>{question.description}</p>
+        <p className={styles.description}>{question.description}</p>
       </div>
 
       <div className={styles.buttonContainer}>
