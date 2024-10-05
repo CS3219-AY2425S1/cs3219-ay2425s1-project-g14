@@ -28,6 +28,8 @@ const questions: { [key: string]: Question } = {
   },
 };
 
+const apiHome = `${process.env.NEXT_PUBLIC_BASE_URL}/${process.env.NEXT_PUBLIC_QUESTION_SERVICE}`;
+
 export async function fetchQuestion(
   questionId: string
 ): Promise<Question | StatusBody> {
@@ -38,9 +40,7 @@ export async function fetchQuestion(
       : questions[questionId];
   }
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_QUESTION_SERVICE}/questions/solve/${questionId}`
-    );
+    const response = await fetch(`${apiHome}/questions/solve/${questionId}`);
     if (!response.ok) {
       return {
         error: await response.text(),
@@ -109,9 +109,7 @@ export async function deleteQuestion(question: Question): Promise<StatusBody> {
 
 export async function getAllQuestions(): Promise<Question[] | StatusBody> {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_QUESTION_SERVICE}/questions`
-    );
+    const response = await fetch(`${apiHome}/questions`);
     if (!response.ok) {
       return {
         error: await response.text(),

@@ -1,11 +1,9 @@
-"use client";
 import { deleteQuestion } from "@/api/gateway";
 import React from "react";
 import { Question, Difficulty } from "@/api/structs";
 import PeerprepButton from "../shared/PeerprepButton";
 import { useRouter } from "next/navigation";
 import styles from "@/style/questionCard.module.css";
-import QuestionList from "./QuestionList";
 
 type QuestionCardProps = {
   question: Question;
@@ -71,7 +69,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
       </div>
 
       <div className={styles.buttonContainer}>
-        <PeerprepButton onClick={() => router.push(`questions/${question.id}`)}>
+        <PeerprepButton
+          onClick={() => router.push(`/questions/${question.id}`)}
+        >
           View
         </PeerprepButton>
         <PeerprepButton onClick={handleDelete}>Delete</PeerprepButton>
