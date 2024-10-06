@@ -4,7 +4,7 @@ WORKDIR /user-service
 # TODO: don't include the .env file in the COPY
 # TODO: multistage build
 COPY package*.json ./
-RUN npm install
 COPY . .
+RUN npm install
 EXPOSE 3001
-CMD ["node", "index.js"]
+CMD ["npm", "run", "start"]

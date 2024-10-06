@@ -15,9 +15,8 @@ services:
           target: /frontend
 
   user-service:
-    build: user-service
-    volumes:
-      - /app/node_modules
+    build:
+      context: ./user-service
     env_file:
       - user-service/.env
     extra_hosts:
