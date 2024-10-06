@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+    @apply overflow-hidden;
+    background-color: #121212;
+    height: 100%;
+}
+
+body,
+p,
+h1,
+h2 {
+    @apply text-text-2;
+}
