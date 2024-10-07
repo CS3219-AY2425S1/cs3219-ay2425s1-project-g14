@@ -2,10 +2,10 @@ x-common-environment:
   environment:
     - ENV=${ENV:-dev}
 
+# NOTE: Ports do not need to be exposed if not needed to expose outside the network
+
 services:
   peerprep-dev:
-    #    profiles:
-    #      - [ dev ]
     depends_on:
       - user-service-dev
       - backend-dev
@@ -20,8 +20,6 @@ services:
       - ./peerprep:/frontend
     ports:
       - "${PEERPREP_PORT:-3000}:3000"
-    #    extra_hosts:
-    #      - "host.docker.internal:host-gateway"
     networks:
       - backend
       - user-service
@@ -42,18 +40,20 @@ services:
     build:
       context: user-service
       target: dev
+    depends_on:
+      - mongo-dev
     env_file:
       - user-service/.env
     environment:
-      - ENV=${ENV:-PROD}
+      - ENV=${ENV:-DEV}
     volumes:
       - ./user-service:/user-service
     ports:
       - "${USER_SERVICE_PORT:-3001}:3001"
     networks:
       - user-service
-    #    extra_hosts:
-    #      - "host.docker.internal:host-gateway"
+      - user-mongo
+    ##### No curl on distroless node
     #    healthcheck:
     #      test: [ "CMD", "curl", "-f", "http://localhost:3001/" ]
     restart: on-failure
@@ -83,7 +83,6 @@ services:
       - backend/.env
     environment:
       - ENV=${ENV:-dev}
-
     volumes:
       - logs:/log
       - ./backend:/src
@@ -101,26 +100,36 @@ services:
           target: backend/app
 
 
-#    backend-prod:
-#      extends:
-#        service: backend-prod
-#      profiles:
-#        - [ prod ]
-#      environment:
-#        - ENV=prod
-#      build:
-#        target: final
+  #    backend-prod:
+  #      extends:
+  #        service: backend-prod
+  #      profiles:
+  #        - [ prod ]
+  #      environment:
+  #        - ENV=prod
+  #      build:
+  #        target: final
 
-#  mongo:
-#    image: "mongo:latest"
-#    ports:
-#      - "27017:27017"
+  mongo-dev:
+    image: "mongo:latest"
+    restart: on-failure
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "27017:27017"
+      - "${usermongoport:-27017}:27017"
+    networks:
+      - user-mongo
+
 
 networks:
   backend:
     driver: bridge
   user-service:
     driver: bridge
+  user-mongo:
+    driver: bridge
 
 volumes:
   logs:
+  mongo-data:
