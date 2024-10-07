@@ -12,11 +12,12 @@ import (
 )
 
 func InitialiseDB() (*mongo.Client, error) {
-	// Load environment variables
-	err := godotenv.Load(".env")
 
-	if err != nil {
-		log.Fatal("Error loading environment variables: " + err.Error())
+	if os.Getenv("ENV") == "" {
+		err := godotenv.Load(".env")
+		if err != nil {
+			log.Fatal("Error loading environment variables: " + err.Error())
+		}
 	}
 
 	mongoURI := os.Getenv("MONGODB_URI")

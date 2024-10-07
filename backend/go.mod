@@ -2,8 +2,6 @@ module peerprep
 
 go 1.23
 
-require github.com/joho/godotenv v1.5.1 // indirect  -allows to load environment variables from a .env file instead of hardcoding them in the code
-
 require (
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
@@ -46,6 +44,7 @@ require (
 
 require (
 	github.com/gin-contrib/cors v1.7.2
+	github.com/joho/godotenv v1.5.1
 	github.com/microcosm-cc/bluemonday v1.0.27
 )
 

@@ -1,0 +1,20 @@
+# https://docs.docker.com/reference/compose-file/merge/#replace-value
+# run using `docker compose up -f compose.yaml -f production.yml`
+
+x-common-environment:
+  environment:
+    - ENV=${ENV:-PROD}
+
+services:
+  peerprep-dev:
+    build:
+      target: prod
+
+  user-service-dev:
+    depends_on: !reset [ ]
+    build:
+      target: prod
+
+  backend-dev:
+    build:
+      target: prod

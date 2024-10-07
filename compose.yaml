@@ -1,49 +1,135 @@
+x-common-environment:
+  environment:
+    - ENV=${ENV:-dev}
+
+# NOTE: Ports do not need to be exposed if not needed to expose outside the network
+
 services:
-  peerprep:
-    build: peerprep
+  peerprep-dev:
+    depends_on:
+      - user-service-dev
+      - backend-dev
+    build:
+      context: peerprep
+      target: dev
     env_file:
       - peerprep/.env
+    environment:
+      - ENV=${ENV:-dev}
+    volumes:
+      - ./peerprep:/frontend
     ports:
-      - "3000:3000"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-
+      - "${PEERPREP_PORT:-3000}:3000"
+    networks:
+      - backend
+      - user-service
+      ####### Dockerfile Node is distroless, no curl
+      #    healthcheck:
+      #      test: [ "CMD", "curl", "-f", "http://localhost:3000/" ]
+    restart: on-failure
     develop:
       watch:
         - action: sync
           path: peerprep
           target: /frontend
 
-  user-service:
-    build: user-service
-    volumes:
-      - /user-service/node_modules
+
+  user-service-dev:
+    #    profiles:
+    #      - [ dev ]
+    build:
+      context: user-service
+      target: dev
+    depends_on:
+      - mongo-dev
     env_file:
       - user-service/.env
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    environment:
+      - ENV=${ENV:-DEV}
+    volumes:
+      - ./user-service:/user-service
     ports:
-      - "3001:3001"
+      - "${USER_SERVICE_PORT:-3001}:3001"
+    networks:
+      - user-service
+      - user-mongo
+    ##### No curl on distroless node
+    #    healthcheck:
+    #      test: [ "CMD", "curl", "-f", "http://localhost:3001/" ]
+    restart: on-failure
     develop:
       watch:
-        - action: rebuild
+        - action: sync
           path: user-service
           target: /user-service
 
+  #  user-service-prod:
+  #    extends:
+  #      service: user-service-dev
+  #    profiles:
+  #      - [ prod ]
+  #    environment:
+  #      - ENV=prod
+  #    build:
+  #      target: final
 
-  backend:
-    build: backend
+  backend-dev:
+    #    profiles:
+    #      - [ dev ]
+    build:
+      context: backend
+      target: dev
     env_file:
       - backend/.env
+    environment:
+      - ENV=${ENV:-dev}
+    volumes:
+      - logs:/log
+      - ./backend:/src
     ports:
-      - "9090:9090"
+      - "${BACKEND_PORT:-9090}:9090"
+    networks:
+      - backend
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9090/health" ]
+    restart: on-failure
     develop:
       watch:
         - action: rebuild
           path: backend
           target: backend/app
 
-#  mongo:
-#    image: "mongo:latest"
-#    ports:
-#      - "27017:27017"
+
+  #    backend-prod:
+  #      extends:
+  #        service: backend-prod
+  #      profiles:
+  #        - [ prod ]
+  #      environment:
+  #        - ENV=prod
+  #      build:
+  #        target: final
+
+  mongo-dev:
+    image: "mongo:latest"
+    restart: on-failure
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "27017:27017"
+      - "${usermongoport:-27017}:27017"
+    networks:
+      - user-mongo
+
+
+networks:
+  backend:
+    driver: bridge
+  user-service:
+    driver: bridge
+  user-mongo:
+    driver: bridge
+
+volumes:
+  logs:
+  mongo-data:
