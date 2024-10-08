@@ -1,4 +1,4 @@
-// defines the JSON format of quesitons.
+// defines the JSON format of questions.
 package common
 
 type Question struct {
