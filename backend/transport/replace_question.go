@@ -7,9 +7,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
 	"peerprep/common"
 	"peerprep/database"
+
+	"github.com/gin-gonic/gin"
 )
 
 // for PUT requests, to replace an entire question with a new question, or create a new question if the id does not yet exist
@@ -25,7 +26,7 @@ func ReplaceQuestionWithLogger(db *database.QuestionDB, logger *common.Logger) g
 
 		var new_question common.Question
 		err = ctx.BindJSON(&new_question)
-		
+
 		if err != nil {
 			logger.Log.Error("error", "Failed to bind JSON", err)
 			ctx.JSON(http.StatusBadGateway, gin.H{"Error replacing question": err.Error()})
@@ -33,7 +34,9 @@ func ReplaceQuestionWithLogger(db *database.QuestionDB, logger *common.Logger) g
 		}
 
 		if id_param >= db.FindNextQuestionId() {
-			logger.Log.Info("Attempting to update a question with an ID greater than next ID, creating a new question")
+			logger.Log.Info(
+				"Attempting to update a question with an ID greater than next ID, creating a new question",
+			)
 			status, err := db.AddQuestion(logger, &new_question)
 
 			if err != nil {
@@ -47,8 +50,8 @@ func ReplaceQuestionWithLogger(db *database.QuestionDB, logger *common.Logger) g
 		}
 
 		logger.Log.Info("Replacing question with ID: ", id_param)
-		new_question.ID = id_param
-		
+		new_question.Id = id_param
+
 		// used	to ensure that replacing a question will not cause a conflict with another question
 		// e.g new question shares same title as question A, but is used to replace question B. This will result in 2 question A's in the database.
 		if db.QuestionExistsExceptId(&new_question) {
@@ -58,7 +61,7 @@ func ReplaceQuestionWithLogger(db *database.QuestionDB, logger *common.Logger) g
 		}
 
 		status, err := db.UpsertQuestion(logger, &new_question)
-		
+
 		if err != nil {
 			ctx.JSON(status, err.Error())
 			return

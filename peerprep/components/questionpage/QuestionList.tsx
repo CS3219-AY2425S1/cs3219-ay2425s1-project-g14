@@ -1,5 +1,4 @@
 "use client";
-import { getAllQuestions } from "@/api/gateway";
 import React, { useEffect, useState } from "react";
 import QuestionCard from "./QuestionCard";
 import { Question, StatusBody, Difficulty, isError } from "@/api/structs";
@@ -10,29 +9,32 @@ const QuestionList: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [difficultyFilter, setDifficultyFilter] = useState<string>(
-    Difficulty[0]
+    Difficulty.All
   );
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [topicFilter, setTopicFilter] = useState<string>("all");
   const [searchFilter, setSearchFilter] = useState<string>("");
-  const [categories, setCategories] = useState<string[]>(["all"]);
+  const [topics, setTopics] = useState<string[]>(["all"]);
 
   useEffect(() => {
     const fetchQuestions = async () => {
-      const data = await getAllQuestions();
+      const payload = await fetch(
+        `${process.env.NEXT_PUBLIC_NGINX}/api/internal/questions`
+      ).then((res) => res.json());
       // uh
-      if (isError(data)) {
+      if (isError(payload)) {
         // should also reflect the error
         return;
       }
+      const data: Question[] = payload;
 
       setLoading(false);
       setQuestions(data);
 
-      // get all present categories in all qns
-      const uniqueCategories = Array.from(
-        new Set(data.flatMap((question) => question.categories))
+      // get all present topics in all qns
+      const uniqueTopics = Array.from(
+        new Set(data.flatMap((question) => question.topicTags))
       );
-      setCategories(["all", ...uniqueCategories]);
+      setTopics(["all", ...uniqueTopics]);
     };
 
     fetchQuestions();
@@ -40,16 +42,16 @@ const QuestionList: React.FC = () => {
 
   const filteredQuestions = questions.filter((question) => {
     const matchesDifficulty =
-      difficultyFilter === Difficulty[0] ||
+      difficultyFilter === Difficulty.All ||
       Difficulty[question.difficulty] === difficultyFilter;
-    const matchesCategory =
-      categoryFilter === categories[0] ||
-      (question.categories ?? []).includes(categoryFilter);
+    const matchesTopic =
+      topicFilter === topics[0] ||
+      (question.topicTags ?? []).includes(topicFilter);
     const matchesSearch =
       searchFilter === "" ||
       (question.title ?? "").toLowerCase().includes(searchFilter.toLowerCase());
 
-    return matchesDifficulty && matchesCategory && matchesSearch;
+    return matchesDifficulty && matchesTopic && matchesSearch;
   });
 
   const sortedQuestions = filteredQuestions.sort((a, b) => a.id - b.id);
@@ -69,10 +71,10 @@ const QuestionList: React.FC = () => {
           options={Object.keys(Difficulty).filter((key) => isNaN(Number(key)))}
         />
         <PeerprepDropdown
-          label="Category"
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          options={categories}
+          label="Topics"
+          value={topicFilter}
+          onChange={(e) => setTopicFilter(e.target.value)}
+          options={topics}
         />
       </div>
 

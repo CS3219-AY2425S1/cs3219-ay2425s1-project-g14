@@ -1,0 +1,49 @@
+services:
+  peerprep:
+    build: peerprep
+    env_file:
+      - peerprep/.env
+    ports:
+      - "3000:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    develop:
+      watch:
+        - action: sync
+          path: peerprep
+          target: /frontend
+
+  user-service:
+    build: user-service
+    volumes:
+      - /user-service/node_modules
+    env_file:
+      - user-service/.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "3001:3001"
+    develop:
+      watch:
+        - action: rebuild
+          path: user-service
+          target: /user-service
+
+
+  backend:
+    build: backend
+    env_file:
+      - backend/.env
+    ports:
+      - "9090:9090"
+    develop:
+      watch:
+        - action: rebuild
+          path: backend
+          target: backend/app
+
+#  mongo:
+#    image: "mongo:latest"
+#    ports:
+#      - "27017:27017"

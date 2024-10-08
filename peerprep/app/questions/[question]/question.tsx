@@ -1,10 +1,13 @@
 "use client";
-import { deleteQuestion } from "@/api/gateway";
-import { Question, Difficulty } from "@/api/structs";
+import React from "react";
+import { Difficulty, Question } from "@/api/structs";
 import Chip from "@/components/shared/Chip";
 import PeerprepButton from "@/components/shared/PeerprepButton";
 import styles from "@/style/question.module.css";
 import { useRouter } from "next/navigation";
+import { deleteQuestion } from "@/app/api/internal/questions/helper";
+import CollabEditor from "@/components/questionpage/CollabEditor";
+import DOMPurify from "dompurify";
 
 interface Props {
   question: Question;
@@ -26,27 +29,17 @@ function DifficultyChip({ diff }: DifficultyChipProps) {
 
 function QuestionBlock({ question }: Props) {
   const router = useRouter();
-  const keys = question.test_cases ? Object.keys(question.test_cases) : [];
-
-  const createRow = (key: string) => (
-    <tr key={key}>
-      <td className={`${styles.table} ${styles.cell}`}>{key}</td>
-      <td className={`${styles.table} ${styles.cell}`}>
-        {question.test_cases[key]}
-      </td>
-    </tr>
-  );
 
   const handleDelete = async () => {
     if (
       confirm(
-        `Are you sure you want to delete ${question.title}? (ID: ${question.id}) `
+        `Are you sure you want to delete ${question.title}? (ID: ${question.id}) `,
       )
     ) {
-      const status = await deleteQuestion(question);
+      const status = await deleteQuestion(question.id);
       if (status.error) {
         alert(
-          `Failed to delete question. Code ${status.status}:  ${status.error}`
+          `Failed to delete question. Code ${status.status}:  ${status.error}`,
         );
         return;
       }
@@ -75,38 +68,29 @@ function QuestionBlock({ question }: Props) {
           </PeerprepButton>
         </div>
         <div className={styles.label_wrapper}>
-          <p>Categories: </p>
-          {question.categories.length == 0 ? (
-            <p>No categories listed.</p>
+          <p>Topics: </p>
+          {question.topicTags.length == 0 ? (
+            <p>No topics listed.</p>
           ) : (
-            question.categories.map((elem, idx) => <p key={idx}>{elem}</p>)
+            question.topicTags.map((elem, idx) => (
+              <p key={idx} className={styles.label_shadow}>
+                {elem}
+              </p>
+            ))
           )}
         </div>
-        <p>{question.description}</p>
-        <br />
-        {question.test_cases && (
-          <table className={styles.table}>
-            <tbody>
-              <tr>
-                <th
-                  className={`${styles.table} ${styles.header} ${styles.input}`}
-                >
-                  Input
-                </th>
-                <th
-                  className={`${styles.table} ${styles.header} ${styles.output}`}
-                >
-                  Expected Output
-                </th>
-              </tr>
-              {keys.map(createRow)}
-            </tbody>
-          </table>
-        )}
+        {
+          <div
+            className={styles.editorHTML}
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(question.content),
+            }}
+          />
+        }
       </div>
-      <form className={styles.editor_container}>
-        <textarea className={styles.code_editor} />
-      </form>
+      <div className={styles.editor_container}>
+        <CollabEditor question={question} />
+      </div>
     </>
   );
 }

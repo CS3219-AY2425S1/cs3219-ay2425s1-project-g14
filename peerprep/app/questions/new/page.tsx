@@ -1,12 +1,12 @@
 "use client";
-import { useState, ChangeEvent, MouseEvent, FormEvent } from "react";
-import { QuestionBody, Difficulty, QuestionFullBody } from "@/api/structs";
-import { addQuestion } from "@/api/gateway";
+import { ChangeEvent, FormEvent, MouseEvent, useState } from "react";
+import { Difficulty, QuestionBody, QuestionFullBody } from "@/api/structs";
 import style from "@/style/form.module.css";
 import FormTextInput from "@/components/shared/form/FormTextInput";
 import RadioButtonGroup from "@/components/shared/form/RadioButtonGroup";
 import FormTextAreaInput from "@/components/shared/form/FormTextAreaInput";
 import { useRouter } from "next/navigation";
+import { addQuestion } from "@/app/api/internal/questions/helper";
 
 type Props = {};
 
@@ -21,8 +21,8 @@ function NewQuestion({}: Props) {
   const [formData, setFormData] = useState<QuestionBody>({
     title: "",
     difficulty: Difficulty.Easy,
-    description: "",
-    categories: [],
+    content: "",
+    topicTags: [],
   });
   // Choice 1: Test cases handled separately to allow modification of multiple fields
   const [testCases, setTestCases] = useState<Mapping[]>([]);
@@ -31,35 +31,32 @@ function NewQuestion({}: Props) {
     key: "",
     value: "",
   });
-  // Choice 2: Categories handled in a separate state, inject into formData on confirm
-  const [category, setCategory] = useState<string>("");
+  // Choice 2: Topics handled in a separate state, inject into formData on confirm
+  const [topic, setTopic] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
-  const handleCategoriesInput = (e: ChangeEvent<HTMLInputElement>) =>
-    setCategory(e.target.value);
-  const handleCategoryAdd = (e: MouseEvent<HTMLElement>) => {
-    if (category.length == 0) return;
+  const handleTopicsInput = (e: ChangeEvent<HTMLInputElement>) =>
+    setTopic(e.target.value);
+  const handleTopicAdd = (e: MouseEvent<HTMLElement>) => {
+    if (topic.length == 0) return;
     setFormData({
       ...formData,
-      categories: [...formData.categories, category],
+      topicTags: [...formData.topicTags, topic],
     });
-    setCategory("");
+    setTopic("");
   };
-  const handleCategoryDel = (
-    e: MouseEvent<HTMLParagraphElement>,
-    idx: number
-  ) => {
+  const handleTopicDel = (e: MouseEvent<HTMLParagraphElement>, idx: number) => {
     if (loading) return;
-    const values = [...formData.categories];
+    const values = [...formData.topicTags];
     values.splice(idx, 1);
     setFormData({
       ...formData,
-      categories: values,
+      topicTags: values,
     });
   };
 
   const handleFormTextInput = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) =>
     setFormData({
       ...formData,
@@ -90,11 +87,6 @@ function NewQuestion({}: Props) {
     setLoading(true);
     const question: QuestionFullBody = {
       ...formData,
-      test_cases: testCases
-        .map((elem: Mapping) => ({
-          [elem.key]: elem.value,
-        }))
-        .reduce((res, item) => ({ ...res, ...item }), {}),
     };
     const status = await addQuestion(question);
     if (status.error) {
@@ -130,34 +122,34 @@ function NewQuestion({}: Props) {
         <FormTextAreaInput
           required
           disabled={loading}
-          label="Description: "
-          name="description"
-          value={formData.description}
+          label="Content: "
+          name="content"
+          value={formData.content}
           onChange={handleFormTextInput}
         />
         <FormTextInput
           disabled={loading}
-          label="Categories: "
-          name="categories"
-          value={category}
-          onChange={handleCategoriesInput}
+          label="Topics: "
+          name="topics"
+          value={topic}
+          onChange={handleTopicsInput}
         >
           <input
             type="button"
-            onClick={handleCategoryAdd}
+            onClick={handleTopicAdd}
             value="Add"
             disabled={loading}
           />
         </FormTextInput>
         <div className={style.radio_container}>
-          {formData.categories.length == 0 ? (
-            <p className={style.disabledText}>No Categories added.</p>
+          {formData.topicTags.length == 0 ? (
+            <p className={style.disabledText}>No Topics added.</p>
           ) : (
-            formData.categories.map((elem, idx) => (
+            formData.topicTags.map((elem, idx) => (
               <p
                 key={idx}
                 className={style.deletableText}
-                onClick={(e) => handleCategoryDel(e, idx)}
+                onClick={(e) => handleTopicDel(e, idx)}
               >
                 {elem}
               </p>

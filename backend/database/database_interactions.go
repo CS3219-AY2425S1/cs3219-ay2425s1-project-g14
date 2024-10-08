@@ -4,15 +4,19 @@ package database
 import (
 	"context"
 	"errors"
-	"net/http"
 	"fmt"
+	"net/http"
+
+	"peerprep/common"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"peerprep/common"
 )
 
-func (db *QuestionDB) GetAllQuestionsWithQuery(logger *common.Logger, filter bson.D) ([]common.Question, error) {
+func (db *QuestionDB) GetAllQuestionsWithQuery(
+	logger *common.Logger,
+	filter bson.D,
+) ([]common.Question, error) {
 	questionCursor, err := db.questions.Find(context.Background(), filter)
 
 	if err != nil {
@@ -36,28 +40,23 @@ func (db *QuestionDB) AddQuestion(logger *common.Logger, question *common.Questi
 		return http.StatusConflict, errors.New("question already exists")
 	}
 
-	question.ID = db.FindNextQuestionId()
-
-	if question.ID == -1 {
-		logger.Log.Error("Could not find next question ID")
-		return http.StatusBadGateway, errors.New("could not find the next question ID")
-	}
-
 	if _, err := db.questions.InsertOne(context.Background(), question); err != nil {
 		logger.Log.Error("Error adding question", err.Error())
 		return http.StatusBadGateway, err
 	}
 
-	db.IncrementNextQuestionId(question.ID + 1, logger)
 	return http.StatusOK, nil
 }
 
-func (db *QuestionDB) UpsertQuestion(logger *common.Logger, question *common.Question) (int, error) {
+func (db *QuestionDB) UpsertQuestion(
+	logger *common.Logger,
+	question *common.Question,
+) (int, error) {
 
-	filter := bson.D{bson.E{Key: "id", Value: question.ID}}
+	filter := bson.D{bson.E{Key: "id", Value: question.Id}}
 	setter := bson.M{"$set": question}
 	upsert := options.Update().SetUpsert(true)
-	
+
 	_, err := db.questions.UpdateOne(context.Background(), filter, setter, upsert)
 
 	if err != nil {
@@ -69,7 +68,10 @@ func (db *QuestionDB) UpsertQuestion(logger *common.Logger, question *common.Que
 }
 
 func (db *QuestionDB) DeleteQuestion(logger *common.Logger, id int) (int, error) {
-	deleteStatus, err := db.questions.DeleteOne(context.Background(), bson.D{bson.E{Key: "id", Value: id}})
+	deleteStatus, err := db.questions.DeleteOne(
+		context.Background(),
+		bson.D{bson.E{Key: "id", Value: id}},
+	)
 
 	if err != nil {
 		logger.Log.Error("Error deleting question", err.Error())

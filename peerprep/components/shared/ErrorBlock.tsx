@@ -9,7 +9,9 @@ interface Props {
 function ErrorBlock({ err }: Props) {
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>{err.status}: We've seen better days.</h1>
+      <h1 className={styles.title}>
+        {err.status}: We&apos;ve seen better days.
+      </h1>
       <p className={styles.details}>Reason: {err.error}</p>
     </div>
   );

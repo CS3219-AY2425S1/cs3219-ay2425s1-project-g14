@@ -1,5 +1,6 @@
 import React from "react";
 import styles from "@/style/layout.module.css";
+import Link from "next/link";
 
 function TitleBar() {
   return (
@@ -11,7 +12,9 @@ function TitleBar() {
     // so theoretically retrieval doesn't actually happen more than once or twice
     // in a lifetime
     <div className={styles.bar}>
-      <h1 className={styles.title}>PeerPrep</h1>
+      <Link href="/" className={"text-3xl font-bold text-black"}>
+        PeerPrep
+      </Link>
       <div className={styles.circle}>PH</div>
     </div>
   );

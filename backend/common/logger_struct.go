@@ -4,7 +4,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//contains the logger
+// contains the logger
 type Logger struct {
 	Log *logrus.Logger
 }

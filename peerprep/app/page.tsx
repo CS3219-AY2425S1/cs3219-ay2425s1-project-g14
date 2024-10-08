@@ -1,5 +1,6 @@
-import Link from "next/link";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return <Link href="/questions">Questions</Link>;
+  redirect(`/questions`);
+  // return <Link href="/questions">Questions</Link>;
 }

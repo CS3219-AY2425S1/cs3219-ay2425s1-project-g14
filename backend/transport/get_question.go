@@ -13,12 +13,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-
 func GetQuestionWithLogger(db *database.QuestionDB, logger *common.Logger) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// get the numeric ID from the URL
 		id, err := strconv.Atoi(ctx.Param("id"))
-		
+
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"Error retrieving question": "Invalid ID"})
 			logger.Log.Warn("Invalid ID: ", ctx.Param("id"))
@@ -26,7 +25,10 @@ func GetQuestionWithLogger(db *database.QuestionDB, logger *common.Logger) gin.H
 		}
 
 		var questions []common.Question
-		questions, err = db.GetAllQuestionsWithQuery(logger, bson.D{bson.E{Key: "id", Value: id}})
+		questions, err = db.GetAllQuestionsWithQuery(
+			logger,
+			bson.D{bson.E{Key: "id", Value: id}},
+		)
 
 		if err != nil {
 			ctx.JSON(http.StatusBadGateway, err.Error())

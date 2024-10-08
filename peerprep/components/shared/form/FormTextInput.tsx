@@ -4,13 +4,13 @@ import style from "@/style/form.module.css";
 type Props = {
   name: string;
   label: string;
-  value: string;
+  value?: string;
   children?: ReactNode;
   className?: string;
   required?: boolean;
   disabled?: boolean;
   id?: string;
-  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
 };
 
 function TextInput({

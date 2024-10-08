@@ -13,7 +13,7 @@ import (
 
 func InitialiseDB() (*mongo.Client, error) {
 	// Load environment variables
-	err := godotenv.Load("questionDB.env")
+	err := godotenv.Load(".env")
 
 	if err != nil {
 		log.Fatal("Error loading environment variables: " + err.Error())
