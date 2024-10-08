@@ -6,10 +6,21 @@
 package consumer
 
 import (
-	rabbit "github.com/streadway/amqp"
+	"encoding/json"
 	db "matching-service/mappings"
+	"matching-service/models"
+
+	rabbit "github.com/streadway/amqp"
 )
 
-func Process(rabbit.Delivery, *db.Mappings) {
-		
+func Process(msg rabbit.Delivery, mappings *db.Mappings) error {
+	var request models.Requests
+
+	if err := json.Unmarshal(msg.Body, &request); err != nil {
+		return err
+	}
+
+
+	mappings.HandleRequest(request)
+	return nil
 }
