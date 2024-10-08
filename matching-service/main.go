@@ -5,6 +5,7 @@ import (
 	"os"
 
 	models "matching-service/models"
+	"matching-service/mappings"
 	"matching-service/consumer"
 	"github.com/joho/godotenv"
 	rabbit "github.com/streadway/amqp"
@@ -89,7 +90,7 @@ func main() {
 	
 	logger := initialiseLogger() 
 
-	consumer.BeginConsuming(mq, logger)
-	
+	storage := mappings.CreateMappings()
+	consumer.BeginConsuming(mq, logger, storage)
 
 }

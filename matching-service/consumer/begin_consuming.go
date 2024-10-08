@@ -2,8 +2,34 @@ package consumer
 
 import (
 	"matching-service/models"
+	db "matching-service/mappings"
 )
 
-func BeginConsuming(*models.MessageQueue, *models.Logger) {
+func BeginConsuming(mq *models.MessageQueue, logger *models.Logger, mappings *db.Mappings) {
+	logger.Log.Info("Begin processing requests")
 
+	msgs, err := mq.Channel.Consume(
+		mq.Queue.Name, // queue
+		"",            // consumer
+		true,          // auto-ack
+		false,         // exclusive
+		false,         // no-local
+		false,         // no-wait
+		nil,           // args
+	)
+
+	if err != nil {
+		logger.Log.Error("Error when consuming requests:" + err.Error())
+	}
+
+	forever := make(chan bool)
+
+	go func() {
+		for req := range msgs {
+			Process(req, mappings)
+			
+			
+		}
+	}()
+	<-forever //blocks forever
 }
