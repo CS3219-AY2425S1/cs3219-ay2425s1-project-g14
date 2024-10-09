@@ -21,6 +21,14 @@ func Process(msg rabbit.Delivery, mappings *db.Mappings) error {
 	}
 
 
-	mappings.HandleRequest(request)
+	room, err := mappings.HandleRequest(request)
+
+	if err != nil {
+		return err
+	}
+
+	//deliver the response to the backend
+	//TODO: to implement this
+	if room != nil {}
 	return nil
 }
