@@ -6,4 +6,6 @@ type Request struct {
 	TopicTags []string `json:"topicTags"`
 
 	Difficulty string `json:"difficulty"`
+
+	RequestTime string `json:"requestTime"`
 }
