@@ -22,7 +22,7 @@ func CreateMappings() *Mappings {
 		Difficulty: make(map[string]string),
 	}
 }
-
+//TODO: implement logic to implement TTL for values
 //logic to find matching categories and generates a room id for the 2 users 
 func (db *Mappings) HandleRequest(request models.Requests) (*models.Room, error){
 	for user1, topics:= range db.Topics {
@@ -43,6 +43,10 @@ func (db *Mappings) HandleRequest(request models.Requests) (*models.Room, error)
 		if roomId, err := generateRoomId(); err != nil {
 			return nil, err
 		} else {
+			//match found! delete user1 from store
+			delete(db.Topics, user1)
+			delete(db.Difficulty, user1)
+
 			return &models.Room{
 				RoomId: roomId,
 				User1: user1,
@@ -54,6 +58,9 @@ func (db *Mappings) HandleRequest(request models.Requests) (*models.Room, error)
 	}
 
 	//no match found
+	//add user2 to the mappings
+	db.Topics[request.UserId] = request.TopicTags
+	db.Difficulty[request.UserId] = request.Difficulty
 	
 	return nil, nil
 }
