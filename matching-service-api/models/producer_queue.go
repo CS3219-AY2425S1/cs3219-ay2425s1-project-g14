@@ -5,6 +5,7 @@ import (
 )
 
 type ProducerQueue struct {
+	Connection *rabbit.Connection
 	Channel *rabbit.Channel
 
 	Queue rabbit.Queue
@@ -17,7 +18,6 @@ func InitialiseQueue(URI string) (*ProducerQueue, error) {
 		return nil, err
 	}
 
-	defer connection.Close()
 
 	channel, err := connection.Channel()
 
@@ -39,6 +39,7 @@ func InitialiseQueue(URI string) (*ProducerQueue, error) {
 	}
 
 	return &ProducerQueue{
+		Connection: connection,
 		Channel: channel,
 		Queue: queue,
 	}, nil

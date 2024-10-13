@@ -8,7 +8,7 @@ import (
 )
 
 func SetAllEndpoints(router *gin.Engine, producerQueue *models.ProducerQueue, logger *models.Logger) {
-	router.POST("/request", )
+	router.POST("/request", HandleRquest(producerQueue, logger))
 
 }
 

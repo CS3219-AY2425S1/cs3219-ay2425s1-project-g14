@@ -39,7 +39,7 @@ func main() {
 		logger.Log.Error("Failed to create log directory: " + err.Error())
 	}
 
-	logFile, err := os.OpenFile("./log/question_api.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	logFile, err := os.OpenFile("./log/matching_service_api.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 
 	if err != nil {
 		logger.Log.Warn("Failed to log to file, using default stderr")
@@ -59,6 +59,8 @@ func main() {
 		panic(err)
 	}
 
+	defer channel.Connection.Close()
+	defer channel.Channel.Close()
 
 	router := gin.Default()
 	transport.SetCors(router, ORIGIN)

@@ -11,6 +11,7 @@ import (
 	"matching-service/models"
 
 	rabbit "github.com/streadway/amqp"
+	"fmt"
 )
 
 func Process(msg rabbit.Delivery, mappings *db.Mappings) error {
@@ -23,6 +24,7 @@ func Process(msg rabbit.Delivery, mappings *db.Mappings) error {
 
 	room, err := mappings.HandleRequest(request)
 
+	fmt.Println("handled!")
 	if err != nil {
 		return err
 	}

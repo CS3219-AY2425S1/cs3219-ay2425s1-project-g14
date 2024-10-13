@@ -11,7 +11,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
-func HandleRquest(channel *models.ProducerQueue, logger *models.Logger) (gin.HandlerFunc) {
+func HandleRquest(channel *models.ProducerQueue, logger *models.Logger) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var req models.Request
 
@@ -20,7 +20,7 @@ func HandleRquest(channel *models.ProducerQueue, logger *models.Logger) (gin.Han
 			ctx.JSON(http.StatusBadGateway, gin.H{"error receiving request": err.Error()})
 			return
 		}
-		
+
 		parsedTime, err := time.Parse("2006-01-02 15-04-05", req.RequestTime)
 
 		if err != nil {
@@ -28,7 +28,7 @@ func HandleRquest(channel *models.ProducerQueue, logger *models.Logger) (gin.Han
 			ctx.JSON(http.StatusBadRequest, "error parsing time, ensure time is parsed in YYYY-MM-DD HH:mm:ss format")
 			return
 		}
-		
+
 		//current time is more than 30 seconds after request time, timeout
 		if time.Now().After(parsedTime.Add(30 * time.Second)) {
 			logger.Log.Warn("request timeout")
@@ -37,25 +37,27 @@ func HandleRquest(channel *models.ProducerQueue, logger *models.Logger) (gin.Han
 		}
 
 		message, err := json.Marshal(req)
-		
+
 		if err != nil {
 			logger.Log.Error("error converting request to bytes: ", err.Error())
 			ctx.JSON(http.StatusBadGateway, "error processing request")
 			return
 		}
 
-		channel.Channel.Publish(
+		if err := channel.Channel.Publish(
 			"",
 			channel.Queue.Name,
 			false,
 			false,
-			amqp.Publishing {
+			amqp.Publishing{
 				DeliveryMode: amqp.Persistent,
-				ContentType: "text/plain",
-				Body: []byte(message),
-			},
-		)
-
+				ContentType:  "text/plain",
+				Body:         []byte(message),
+			}); err != nil {
+				logger.Log.Error("error publishing message:", err.Error())
+				return
+			}
+		
 
 		logger.Log.Info(fmt.Sprintf("request from user %s successfully published", req.UserId))
 		ctx.JSON(http.StatusOK, "processing request")

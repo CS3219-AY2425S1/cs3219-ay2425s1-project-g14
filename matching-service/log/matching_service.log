@@ -1,0 +1,5 @@
+time="2024-10-13T11:38:29+08:00" level=info msg="Begin processing requests"
+time="2024-10-13T11:39:11+08:00" level=info msg="Beginning consumption from message queue"
+time="2024-10-13T11:39:11+08:00" level=info msg="Begin processing requests"
+time="2024-10-13T12:56:34+08:00" level=info msg="Beginning consumption from message queue"
+time="2024-10-13T12:56:34+08:00" level=info msg="Begin processing requests"

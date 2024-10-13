@@ -13,7 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func initialiseLogger() *models.Logger {
+func initialiseLogger() (*models.Logger, *os.File) {
 	logger := models.Logger{
 		Log: logrus.New(),
 	}
@@ -24,17 +24,16 @@ func initialiseLogger() *models.Logger {
 		logger.Log.Error("Failed to create log directory: " + err.Error())
 	}
 
-	logFile, err := os.OpenFile("./log/question_api.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	logFile, err := os.OpenFile("./log/matching_service.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 
 	if err != nil {
 		logger.Log.Warn("Failed to log to file, using default stderr")
 	}
 
-	defer logFile.Close()
 
 	logger.Log.Out = logFile
 
-	return &logger
+	return &logger, logFile
 }
 
 
@@ -73,6 +72,8 @@ func main() {
 		log.Fatal("Could not open a channel" + err.Error())
 	}
 	
+	defer channel.Close()
+	
 	queue, err := channel.QueueDeclare(
 		"match_queue", // name
 		true,         // durable
@@ -88,9 +89,12 @@ func main() {
 	
 	mq := createRabbitChannel(channel, queue)	
 	
-	logger := initialiseLogger() 
+	logger, logFile := initialiseLogger()
 
+	defer logFile.Close()
 	storage := mappings.CreateMappings()
+
+	logger.Log.Info("Beginning consumption from message queue")
 	consumer.BeginConsuming(mq, logger, storage)
 
 }
