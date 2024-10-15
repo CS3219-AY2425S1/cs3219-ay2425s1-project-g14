@@ -26,7 +26,7 @@ func BeginConsuming(mq *models.MessageQueue, logger *models.Logger, clientMappin
 
 	go func() {
 		for req := range msgs {
-			if err := Process(req, clientMappings); err != nil {
+			if err := Process(req, clientMappings, roomMappings); err != nil {
 				logger.Log.Error("Unable to convert request from JSON:" + err.Error())
 			}
 		}

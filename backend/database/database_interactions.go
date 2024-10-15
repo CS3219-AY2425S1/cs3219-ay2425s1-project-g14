@@ -10,6 +10,7 @@ import (
 	"peerprep/common"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -32,6 +33,36 @@ func (db *QuestionDB) GetAllQuestionsWithQuery(
 	}
 
 	return questions, nil
+}
+
+func (db *QuestionDB) GetOneQuestionWithQuery(
+	logger *common.Logger,
+	filter bson.D,
+) (*common.Question, error) {
+	// Define the aggregation pipeline with the $match and $sample stages
+	pipeline := mongo.Pipeline{
+		{{Key: "$match", Value: filter}},
+		{{Key: "$sample", Value: bson.D{{Key: "size", Value: 1}}}},
+	}
+
+	// Execute the aggregation pipeline
+	cursor, err := db.questions.Aggregate(context.Background(), pipeline)
+	if err != nil {
+		logger.Log.Error("Error retrieving questions: ", err.Error())
+		return nil, err
+	}
+
+	var questions []common.Question
+	if err = cursor.All(context.Background(), &questions); err != nil {
+		logger.Log.Error("Error decoding questions: ", err.Error())
+		return nil, err
+	}
+	
+	if len(questions) == 0 {
+		return nil, nil
+	}
+
+	return &questions[0], nil
 }
 
 func (db *QuestionDB) AddQuestion(logger *common.Logger, question *common.Question) (int, error) {

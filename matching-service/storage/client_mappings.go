@@ -8,6 +8,7 @@ import (
 	"errors"
 	"io"
 	"matching-service/models"
+	"matching-service/transport"
 	"time"
 
 	redis "github.com/go-redis/redis/v8"
@@ -32,7 +33,7 @@ func InitialiseClientMappings(addr string, db_num int) *ClientMappings {
 
 func (db *ClientMappings) HandleRequest(request models.IncomingRequests) (*models.Room, error){
 	ctx := context.Background()
-	user2, user2_difficulty, user2_topics := request.UserId, request.Difficulty, request.TopicTags
+	user2, user2_difficulty, user2_topics, user2_requestTime := request.UserId, request.Difficulty, request.TopicTags, request.RequestTime
 
 	currMappings, err := db.Conn.Keys(ctx, "*").Result()
 
@@ -55,7 +56,8 @@ func (db *ClientMappings) HandleRequest(request models.IncomingRequests) (*model
 		}
 
 		user1_difficulty := result["difficulty"]
-
+		user1_requestTime := result["requestTime"]
+		
 		if user1_difficulty != user2_difficulty {
 			continue
 		}
@@ -67,21 +69,31 @@ func (db *ClientMappings) HandleRequest(request models.IncomingRequests) (*model
 		}	
 
 		
-		if roomId, err := generateRoomId(); err != nil {
+		roomId, err := generateRoomId()
+		
+		if err != nil {
 			return nil, err
-		} else {
-			db.Conn.Del(ctx, user1)
+		} 
+		
+		db.Conn.Del(ctx, user1)
 			
-			
-
-			return &models.Room{
-				RoomId: roomId,
-				User1: user1,
-				User2: user2,
-				TopicTags: overlappingTopics,
-				Difficulty: user1_difficulty,
-			}, nil
+		room := models.Room{
+			RoomId: roomId,
+			User1: user1,
+			User2: user2,
+			RequestTime: user1_requestTime,
 		}
+
+		err = transport.FindSuitableQuestionId(overlappingTopics, user1_difficulty, &room)
+
+		if err != nil {
+			return nil, err
+		} else if room.QuestionId == 0 {
+			//no matching question
+			continue
+		}
+
+		return &room, nil
 
 	}
 
@@ -96,13 +108,14 @@ func (db *ClientMappings) HandleRequest(request models.IncomingRequests) (*model
 	err = db.Conn.HSet(ctx, user2, map[string]interface{}{
 		"topicTags": user2_topics_json,
 		"difficulty": user2_difficulty,
-	}).Err()
+		"requestTime": user2_requestTime,
+		}).Err()
 
 	if err != nil {
 		return nil, err
 	}
 
-	requestTime, err := time.Parse("2006-01-02 15-04-05", request.RequestTime)
+	requestTime, err := time.Parse("2006-01-02 15-04-05", user2_requestTime)
 
 	if err != nil {
 		return nil, err

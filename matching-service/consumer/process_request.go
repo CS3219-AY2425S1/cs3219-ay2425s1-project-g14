@@ -7,31 +7,36 @@ package consumer
 
 import (
 	"encoding/json"
-	db "matching-service/storage"
-	"matching-service/models"
-
 	"fmt"
+	"matching-service/models"
+	db "matching-service/storage"
 
 	rabbit "github.com/streadway/amqp"
 )
 
-func Process(msg rabbit.Delivery, mappings *db.ClientMappings) error {
+func Process(msg rabbit.Delivery, clientMappings *db.ClientMappings, roomMappings *db.RoomMappings) error {
 	var request models.IncomingRequests
 
 	if err := json.Unmarshal(msg.Body, &request); err != nil {
-		return err
+		return fmt.Errorf("error unmarshling the request from JSON: %s", err.Error())
 	}
 
-	room, err := mappings.HandleRequest(request)
+	room, err := clientMappings.HandleRequest(request)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("error handling incoming request: %s", err.Error())
 	}
 
+	fmt.Println("success handling incoming request!")
 	//deliver the response to the backend
 	//TODO: to implement this
 	if room != nil {
-		
+		if err := roomMappings.SendToStorageBlob(room); err != nil {
+			return err
+		}
+
+		fmt.Println("success sending to storage blob")
 	}
+
 	return nil
 }

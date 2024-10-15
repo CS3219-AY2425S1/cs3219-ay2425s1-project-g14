@@ -6,11 +6,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"matching-service/models"
 	"net/http"
 )
 
-func FindSuitableQuestionId(topicTags []string, difficulty string) (error) {
+func FindSuitableQuestionId(topicTags []string, difficulty string, target *models.Room) (error) {
 	data := models.OutGoingRequests{
 		TopicTags: topicTags,
 		Difficulty: difficulty,
@@ -22,7 +23,7 @@ func FindSuitableQuestionId(topicTags []string, difficulty string) (error) {
 		return fmt.Errorf("failed to convert outgoing req to JSON: %s", err.Error())
 	}
 
-	req, err := http.NewRequest("POST", "http://localhost:9090", bytes.NewBuffer(reqBody))
+	req, err := http.NewRequest("POST", "http://localhost:9090/match", bytes.NewBuffer(reqBody))
 
 	if err != nil {
 		return fmt.Errorf("failed to make request: %s", err.Error())
@@ -36,8 +37,27 @@ func FindSuitableQuestionId(topicTags []string, difficulty string) (error) {
 
 	if err != nil {
 		return fmt.Errorf("error sending request: %s", err.Error())
+	} else if resp.StatusCode == http.StatusNotFound {
+		//no matching questions
+		return nil
+	} else if resp.StatusCode >= 300 {
+		return fmt.Errorf("question service encountered error when processing request")
 	}
 
-	var response 
 
+	body, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		return fmt.Errorf("error reading response body: %s", err.Error())
+	}
+
+	//unmarshal the data into the target room struct
+	err = json.Unmarshal(body, target)
+
+	if err != nil {
+		return fmt.Errorf("error unmarshalling JSON to question: %s", err.Error())
+	}
+
+
+	return nil
 }

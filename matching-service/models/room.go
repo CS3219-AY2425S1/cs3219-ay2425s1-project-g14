@@ -1,10 +1,19 @@
 package models
 
 type Room struct {
-	RoomId     string
-	User1      string
-	User2      string
-	TopicTags  []string
-	Difficulty string
-	RequestTime string  //takes user1's requestTime since this is older
+	
+	RoomId     string	`json:"roomId"`
+	User1      string	`json:"user1"`
+	User2      string	`json:"user2"`
+	RequestTime string	`json:"requestTime"` //takes user1's requestTime since this is older
+	
+	//contains question Data
+	Title      string   `json:"title"`
+	TitleSlug  string   `json:"titleSlug"`
+	Difficulty string   `json:"difficulty"`
+	TopicTags  []string `json:"topicTags"`
+	Content    string   `json:"content"`
+	Schemas    []string `json:"schemas"`
+	QuestionId         int      `json:"id"`
+
 }

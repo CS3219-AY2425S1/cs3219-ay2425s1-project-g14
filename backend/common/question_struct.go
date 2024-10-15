@@ -17,3 +17,8 @@ type FrontendQuestion struct {
 	TopicTags  []string `json:"topicTags"`
 	Content    string   `json:"content"`
 }
+
+type MatchingQuestion struct {
+	TopicTags []string `json:"topicTags"`
+	Difficulty string `json:"difficulty"`
+}
