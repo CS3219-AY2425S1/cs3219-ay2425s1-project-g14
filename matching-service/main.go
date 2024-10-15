@@ -4,9 +4,10 @@ import (
 	"log"
 	"os"
 
-	models "matching-service/models"
-	"matching-service/mappings"
 	"matching-service/consumer"
+	models "matching-service/models"
+	"matching-service/storage"
+
 	"github.com/joho/godotenv"
 	rabbit "github.com/streadway/amqp"
 
@@ -92,9 +93,21 @@ func main() {
 	logger, logFile := initialiseLogger()
 
 	defer logFile.Close()
-	storage := mappings.CreateMappings()
+	//TODO: remove this
+	//deprecatedStorage := mappings.CreateMappings()
+
+
+	REDIS_URI := os.Getenv("REDIS_URI")
+
+	if REDIS_URI == "" {
+		REDIS_URI = "localhost://9190"
+	}
+	
+	clientMappings := storage.InitialiseClientMappings(REDIS_URI, 0)
+	roomMappings := storage.InitialiseRoomMappings(REDIS_URI, 1)
+
 
 	logger.Log.Info("Beginning consumption from message queue")
-	consumer.BeginConsuming(mq, logger, storage)
+	consumer.BeginConsuming(mq, logger, clientMappings, roomMappings)
 
 }

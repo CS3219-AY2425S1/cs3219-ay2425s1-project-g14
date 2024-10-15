@@ -2,10 +2,10 @@ package consumer
 
 import (
 	"matching-service/models"
-	db "matching-service/mappings"
+	db "matching-service/storage"
 )
 
-func BeginConsuming(mq *models.MessageQueue, logger *models.Logger, mappings *db.Mappings) {
+func BeginConsuming(mq *models.MessageQueue, logger *models.Logger, clientMappings *db.ClientMappings, roomMappings *db.RoomMappings) {
 	logger.Log.Info("Begin processing requests")
 
 	msgs, err := mq.Channel.Consume(
@@ -26,7 +26,7 @@ func BeginConsuming(mq *models.MessageQueue, logger *models.Logger, mappings *db
 
 	go func() {
 		for req := range msgs {
-			if err := Process(req, mappings); err != nil {
+			if err := Process(req, clientMappings); err != nil {
 				logger.Log.Error("Unable to convert request from JSON:" + err.Error())
 			}
 		}

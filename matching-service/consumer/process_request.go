@@ -7,30 +7,31 @@ package consumer
 
 import (
 	"encoding/json"
-	db "matching-service/mappings"
+	db "matching-service/storage"
 	"matching-service/models"
 
-	rabbit "github.com/streadway/amqp"
 	"fmt"
+
+	rabbit "github.com/streadway/amqp"
 )
 
-func Process(msg rabbit.Delivery, mappings *db.Mappings) error {
-	var request models.Requests
+func Process(msg rabbit.Delivery, mappings *db.ClientMappings) error {
+	var request models.IncomingRequests
 
 	if err := json.Unmarshal(msg.Body, &request); err != nil {
 		return err
 	}
 
-
 	room, err := mappings.HandleRequest(request)
 
-	fmt.Println("handled!")
 	if err != nil {
 		return err
 	}
 
 	//deliver the response to the backend
 	//TODO: to implement this
-	if room != nil {}
+	if room != nil {
+		
+	}
 	return nil
 }
