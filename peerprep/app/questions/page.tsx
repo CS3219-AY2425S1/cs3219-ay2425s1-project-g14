@@ -1,13 +1,14 @@
 import React from "react";
 import QuestionList from "@/components/questionpage/QuestionList";
 import Matchmaking from "@/components/questionpage/Matchmaking";
+import { QuestionFilterProvider } from "@/contexts/QuestionFilterContext";
 
 const QuestionsPage = () => {
   return (
-    <div>
+    <QuestionFilterProvider>
       <Matchmaking></Matchmaking>
       <QuestionList></QuestionList>
-    </div>
+    </QuestionFilterProvider>
   );
 };
 

@@ -4,16 +4,15 @@ import QuestionCard from "./QuestionCard";
 import { Question, StatusBody, Difficulty, isError } from "@/api/structs";
 import PeerprepDropdown from "../shared/PeerprepDropdown";
 import PeerprepSearchBar from "../shared/PeerprepSearchBar";
-
+import { useQuestionFilter } from "@/contexts/QuestionFilterContext";
+// TODO make multiple select for topics at least
 const QuestionList: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
-  const [difficultyFilter, setDifficultyFilter] = useState<string>(
-    Difficulty.All
-  );
-  const [topicFilter, setTopicFilter] = useState<string>("all");
   const [searchFilter, setSearchFilter] = useState<string>("");
-  const [topics, setTopics] = useState<string[]>(["all"]);
+  const [topicsList, setTopicsList] = useState<string[]>(["all"]);
+
+  const { difficulty, setDifficulty, topics, setTopics } = useQuestionFilter();
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -34,7 +33,7 @@ const QuestionList: React.FC = () => {
       const uniqueTopics = Array.from(
         new Set(data.flatMap((question) => question.topicTags))
       );
-      setTopics(["all", ...uniqueTopics]);
+      setTopicsList(["all", ...uniqueTopics]);
     };
 
     fetchQuestions();
@@ -42,11 +41,10 @@ const QuestionList: React.FC = () => {
 
   const filteredQuestions = questions.filter((question) => {
     const matchesDifficulty =
-      difficultyFilter === Difficulty.All ||
-      Difficulty[question.difficulty] === difficultyFilter;
+      difficulty === Difficulty.All ||
+      Difficulty[question.difficulty] === difficulty;
     const matchesTopic =
-      topicFilter === topics[0] ||
-      (question.topicTags ?? []).includes(topicFilter);
+      topics[0] === "all" || (question.topicTags ?? []).includes(topics[0]);
     const matchesSearch =
       searchFilter === "" ||
       (question.title ?? "").toLowerCase().includes(searchFilter.toLowerCase());
@@ -66,15 +64,15 @@ const QuestionList: React.FC = () => {
         />
         <PeerprepDropdown
           label="Difficulty"
-          value={difficultyFilter}
-          onChange={(e) => setDifficultyFilter(e.target.value)}
+          value={difficulty}
+          onChange={(e) => setDifficulty(e.target.value)}
           options={Object.keys(Difficulty).filter((key) => isNaN(Number(key)))}
         />
         <PeerprepDropdown
           label="Topics"
-          value={topicFilter}
-          onChange={(e) => setTopicFilter(e.target.value)}
-          options={topics}
+          value={topics[0]}
+          onChange={(e) => setTopics([e.target.value])}
+          options={topicsList}
         />
       </div>
 
