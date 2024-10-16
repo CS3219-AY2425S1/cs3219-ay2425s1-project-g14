@@ -93,9 +93,6 @@ func main() {
 	logger, logFile := initialiseLogger()
 
 	defer logFile.Close()
-	//TODO: remove this
-	//deprecatedStorage := mappings.CreateMappings()
-
 
 	REDIS_URI := os.Getenv("REDIS_URI")
 

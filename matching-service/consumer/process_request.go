@@ -6,6 +6,7 @@
 package consumer
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"matching-service/models"
@@ -36,6 +37,11 @@ func Process(msg rabbit.Delivery, clientMappings *db.ClientMappings, roomMapping
 		}
 
 		fmt.Println("success sending to storage blob")
+		keys, _ := roomMappings.Conn.Keys(context.Background(), "*").Result()
+		fmt.Println(keys)
+		result, _ := roomMappings.Conn.HGetAll(context.Background(), "user1").Result()
+
+		fmt.Println(len(result))
 	}
 
 	return nil

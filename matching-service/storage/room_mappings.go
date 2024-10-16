@@ -70,10 +70,13 @@ func (db *RoomMappings) SendToStorageBlob(room *models.Room) error {
 	}
 
 	
-	err = db.Conn.HSet(ctx, room.User1, user1_info, room.User2, user2_info).Err()
+	if err1 := db.Conn.HSet(ctx, room.User1, user1_info).Err(); err1 != nil {	
+		return fmt.Errorf("error setting user1's room to storage: %s", err1.Error())
+	}
 
-	if err != nil {
-		return fmt.Errorf("error setting rooms to storage: %s", err.Error())
+
+	if err2 := db.Conn.HSet(ctx, room.User2, user2_info).Err(); err2 != nil {	
+		return fmt.Errorf("error setting user2's room to storage: %s", err2.Error())
 	}
 	
 	requestTime, err := time.Parse("2006-01-02 15-04-05", room.RequestTime)

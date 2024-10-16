@@ -11,7 +11,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
-func HandleRquest(channel *models.ProducerQueue, logger *models.Logger) gin.HandlerFunc {
+func HandleRequest(channel *models.ProducerQueue, logger *models.Logger) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var req models.Request
 
@@ -54,10 +54,9 @@ func HandleRquest(channel *models.ProducerQueue, logger *models.Logger) gin.Hand
 				ContentType:  "text/plain",
 				Body:         []byte(message),
 			}); err != nil {
-				logger.Log.Error("error publishing message:", err.Error())
-				return
-			}
-		
+			logger.Log.Error("error publishing message:", err.Error())
+			return
+		}
 
 		logger.Log.Info(fmt.Sprintf("request from user %s successfully published", req.UserId))
 		ctx.JSON(http.StatusOK, "processing request")
