@@ -30,9 +30,9 @@ func HandleRequest(channel *models.ProducerQueue, logger *models.Logger) gin.Han
 		}
 
 		//current time is more than 30 seconds after request time, timeout
-		if time.Now().After(parsedTime.Add(30 * time.Second)) {
+		if time.Now().After(parsedTime.Add(30 * time.Second).Add(-8 * time.Hour)) {
 			logger.Log.Warn("request timeout")
-			ctx.JSON(http.StatusRequestTimeout, "request timed out")
+			ctx.JSON(http.StatusRequestTimeout, "request time is too old")
 			return
 		}
 
