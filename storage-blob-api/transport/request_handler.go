@@ -31,6 +31,7 @@ func HandleRequest(db *storage.RoomMappings, logger *models.Logger) (gin.Handler
 		
 		if len(result) == 0 {
 			ctx.JSON(http.StatusNotFound, "data not ready")
+			return
 		}
 
 		var topics_json, schemas_json []string 
