@@ -1,4 +1,4 @@
-// maybe store  SAFE user info and wrap the whole damn app in it
+// maybe store  SAFE user info and wrap the relevant client components in it (like titlebar? matchmaking?)
 // username, userid?, userstate (matching, idle, inmenu)
 
 "use client";
@@ -16,7 +16,7 @@ const UserInfoContext = createContext<UserInfoContextType | undefined>(
 export const UserInfoProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [userid, setUserid] = useState<string>("dummy-user");
+  const [userid, setUserid] = useState<string>("test-user");
 
   return (
     <UserInfoContext.Provider value={{ userid, setUserid }}>

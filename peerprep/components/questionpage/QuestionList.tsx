@@ -32,7 +32,7 @@ const QuestionList: React.FC = () => {
       // get all present topics in all qns
       const uniqueTopics = Array.from(
         new Set(data.flatMap((question) => question.topicTags))
-      );
+      ).sort();
       setTopicsList(["all", ...uniqueTopics]);
     };
 
@@ -54,6 +54,20 @@ const QuestionList: React.FC = () => {
 
   const sortedQuestions = filteredQuestions.sort((a, b) => a.id - b.id);
 
+  const handleSetDifficulty = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const diff = e.target.value;
+    setDifficulty(diff);
+  };
+
+  const handleSetTopics = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const topic = e.target.value;
+    if (topic === "all") {
+      setTopics(topicsList);
+    } else {
+      setTopics([topic]);
+    }
+  };
+
   return (
     <div className="flex-grow max-h-screen overflow-y-auto p-4">
       <div className="flex space-x-4 mb-4 items-end">
@@ -65,13 +79,14 @@ const QuestionList: React.FC = () => {
         <PeerprepDropdown
           label="Difficulty"
           value={difficulty}
-          onChange={(e) => setDifficulty(e.target.value)}
+          onChange={handleSetDifficulty}
           options={Object.keys(Difficulty).filter((key) => isNaN(Number(key)))}
         />
         <PeerprepDropdown
           label="Topics"
+          // coincidentally "all" is at the top of the list so the display works out...dumb luck!
           value={topics[0]}
-          onChange={(e) => setTopics([e.target.value])}
+          onChange={handleSetTopics}
           options={topicsList}
         />
       </div>

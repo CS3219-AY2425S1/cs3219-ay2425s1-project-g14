@@ -1,11 +1,19 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import PeerprepButton from "../shared/PeerprepButton";
 import { useQuestionFilter } from "@/contexts/QuestionFilterContext";
 import { useUserInfo } from "@/contexts/UserInfoContext";
+import { isError, MatchRequest, MatchResponse } from "@/api/structs";
+import {
+  checkMatchStatus,
+  findMatch,
+} from "@/app/api/internal/matching/helper";
+import { match } from "assert";
+import { TIMEOUT } from "dns";
 
-const QUERY_INTERVAL_MILLISECONDS = 2000;
+const QUERY_INTERVAL_MILLISECONDS = 5000;
+const TIMEOUT_MILLISECONDS = 30000;
 
 const getMatchRequestTime = (): string => {
   const now = new Date();
@@ -41,29 +49,58 @@ const usePeriodicCallback = (
 
 const Matchmaking = () => {
   const router = useRouter();
-  const [isMatching, setIsMatching] = useState(false);
+  const [isMatching, setIsMatching] = useState<boolean>(false);
   const { difficulty, topics } = useQuestionFilter();
   const { userid } = useUserInfo();
+  const timeout = useRef<NodeJS.Timeout>();
 
-  const handleMatch = () => {
+  const handleMatch = async () => {
     if (!isMatching) {
-      setIsMatching(true);
-      console.log("Match attempted");
-      console.log("Selected Difficulty:", difficulty);
-      console.log("Selected Topics:", topics);
-      console.debug("Request time: ", getMatchRequestTime());
-      console.debug("User id: ", userid);
-    } else {
-      setIsMatching(false);
-      console.debug("User stopped matching");
-    }
+      // start 30s timeout
+      timeout.current = setTimeout(() => {
+        setIsMatching(false);
+        console.log("Match request timed out after 30s");
+      }, TIMEOUT_MILLISECONDS);
 
-    // username as userid?
-    // should probably just use the questionlist selections as params
+      setIsMatching(true);
+      const matchRequest: MatchRequest = {
+        userId: userid,
+        difficulty: difficulty,
+        topicTags: topics,
+        requestTime: getMatchRequestTime(),
+      };
+      console.log("Match attempted");
+      console.debug(matchRequest);
+
+      const status = await findMatch(matchRequest);
+      if (status.error) {
+        console.log("Failed to find match. Cancel matching.");
+        setIsMatching(false);
+        return;
+      }
+      console.log(`Started finding match.`);
+    } else {
+      // if user manually stopped it clear timeout
+      if (timeout.current) {
+        clearTimeout(timeout.current);
+      }
+
+      setIsMatching(false);
+      console.log("User stopped matching");
+    }
   };
 
-  const queryResource = () => {
-    console.debug("Querying resource blob for matchmaking status");
+  const queryResource = async () => {
+    const res = await checkMatchStatus(userid);
+    if (isError(res)) {
+      // for now 404 means no match found so dont stop matching on error, let request timeout
+      return;
+    }
+    setIsMatching(false);
+    // TODO: iron out what is in a match response and sync up with collab service rooms
+    const matchRes: MatchResponse = res as MatchResponse;
+    console.log("Match found!");
+    console.debug(matchRes);
   };
 
   usePeriodicCallback(queryResource, QUERY_INTERVAL_MILLISECONDS, isMatching);
@@ -79,7 +116,7 @@ const Matchmaking = () => {
           {isMatching ? "Cancel Match" : "Find Match"}
         </PeerprepButton>
         {isMatching && (
-          <div className="w-5 h-5 bg-difficulty-hard rounded-full ml-2" />
+          <div className="w-3 h-3 bg-difficulty-hard rounded-full ml-2" />
         )}
       </div>
     </div>

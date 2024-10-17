@@ -48,6 +48,24 @@ export interface SigninResponse {
   data: UserData;
 }
 
+export interface MatchRequest {
+  userId: string;
+  topicTags: string[];
+  difficulty: string;
+  requestTime: string;
+}
+
+export interface MatchData {
+  roomId: string;
+  user1: string;
+  user2: string;
+}
+
+export interface MatchResponse {
+  isMatchFound: boolean;
+  data: MatchData;
+}
+
 // credit - taken from Next.JS Auth tutorial
 export type FormState =
   | {
