@@ -34,6 +34,7 @@ const QuestionList: React.FC = () => {
         new Set(data.flatMap((question) => question.topicTags))
       ).sort();
       setTopicsList(["all", ...uniqueTopics]);
+      setTopics(["all", ...uniqueTopics]);
     };
 
     fetchQuestions();

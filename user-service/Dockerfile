@@ -4,7 +4,8 @@ WORKDIR /user-service
 # TODO: don't include the .env file in the COPY
 # TODO: multistage build
 COPY package*.json ./
-RUN npm install --verbose
+# why did it only work with --force
+RUN npm install --force --verbose
 RUN npm rebuild bcrypt --build-from-source
 COPY . .
 EXPOSE 3001

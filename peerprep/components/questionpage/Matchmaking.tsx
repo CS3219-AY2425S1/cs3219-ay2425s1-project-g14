@@ -54,15 +54,25 @@ const Matchmaking = () => {
   const { userid } = useUserInfo();
   const timeout = useRef<NodeJS.Timeout>();
 
+  const stopTimer = () => {
+    // if user manually stopped it clear timeout
+    if (timeout.current) {
+      console.debug("Match request timeout stopped");
+      clearTimeout(timeout.current);
+    }
+  };
+
   const handleMatch = async () => {
     if (!isMatching) {
+      setIsMatching(true);
+
       // start 30s timeout
       timeout.current = setTimeout(() => {
         setIsMatching(false);
         console.log("Match request timed out after 30s");
       }, TIMEOUT_MILLISECONDS);
 
-      setIsMatching(true);
+      // assemble the match request
       const matchRequest: MatchRequest = {
         userId: userid,
         difficulty: difficulty,
@@ -72,19 +82,17 @@ const Matchmaking = () => {
       console.log("Match attempted");
       console.debug(matchRequest);
 
+      // send match request
       const status = await findMatch(matchRequest);
       if (status.error) {
+        stopTimer();
         console.log("Failed to find match. Cancel matching.");
         setIsMatching(false);
         return;
       }
       console.log(`Started finding match.`);
     } else {
-      // if user manually stopped it clear timeout
-      if (timeout.current) {
-        clearTimeout(timeout.current);
-      }
-
+      stopTimer();
       setIsMatching(false);
       console.log("User stopped matching");
     }
