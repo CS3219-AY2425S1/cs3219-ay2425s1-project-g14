@@ -25,7 +25,7 @@ func SetAllEndpoints(router *gin.Engine, db *database.QuestionDB, logger *common
 // enable CORS for the frontend
 func SetCors(router *gin.Engine, origin string) {
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{origin, "http://localhost"},
+		AllowOrigins:     []string{"http://host.docker.internal", origin},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Content-Length", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},

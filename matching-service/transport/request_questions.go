@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"os"
 	"io"
 	"matching-service/models"
 	"net/http"
@@ -23,7 +24,13 @@ func FindSuitableQuestionId(topicTags []string, difficulty string, target *model
 		return fmt.Errorf("failed to convert outgoing req to JSON: %s", err.Error())
 	}
 
-	req, err := http.NewRequest("POST", "http://localhost:9090/match", bytes.NewBuffer(reqBody))
+	URI := os.Getenv("BACKEND_MATCH_URI")
+
+	if URI == "" {
+		URI = "http://localhost:9090/match"
+	}
+
+	req, err := http.NewRequest("POST", URI, bytes.NewBuffer(reqBody))
 
 	if err != nil {
 		return fmt.Errorf("failed to make request: %s", err.Error())

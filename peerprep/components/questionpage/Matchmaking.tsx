@@ -104,11 +104,16 @@ const Matchmaking = () => {
       // for now 404 means no match found so dont stop matching on error, let request timeout
       return;
     }
+    stopTimer();
     setIsMatching(false);
     // TODO: iron out what is in a match response and sync up with collab service rooms
     const matchRes: MatchResponse = res as MatchResponse;
     console.log("Match found!");
-    console.debug(matchRes);
+    // display in a popup for now
+    const message = `Room ID: ${matchRes.data.roomId}
+    User1: ${matchRes.data.user1}
+    User2: ${matchRes.data.user2}`;
+    window.alert(message);
   };
 
   usePeriodicCallback(queryResource, QUERY_INTERVAL_MILLISECONDS, isMatching);
