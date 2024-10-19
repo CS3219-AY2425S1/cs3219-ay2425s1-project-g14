@@ -21,9 +21,12 @@ import (
 func main() {
 	//initialise logger file and directory if they do not exist
 
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal("Error loading environment variables: " + err.Error())
+	// In Docker, the godotenv is not needed as the environment variables are set in the Dockerfile
+	if os.Getenv("ENV") == "" {
+		err := godotenv.Load(".env")
+		if err != nil {
+			log.Fatal("Error loading environment variables: " + err.Error())
+		}
 	}
 
 	ORIGIN := os.Getenv("CORS_ORIGIN")
@@ -39,19 +42,24 @@ func main() {
 
 	logDirectory := "./log"
 
-	if err := os.MkdirAll(logDirectory, 0755); err != nil {
-		logger.Log.Error("Failed to create log directory: " + err.Error())
+	if os.Getenv("ENV") != "prod" {
+		if err := os.MkdirAll(logDirectory, 0755); err != nil {
+			logger.Log.Error("Failed to create log directory: " + err.Error())
+		}
+		logFile, err := os.OpenFile(
+			"./log/question_api.log",
+			os.O_CREATE|os.O_WRONLY|os.O_APPEND,
+			0666,
+		)
+
+		if err != nil {
+			logger.Log.Warn("Failed to log to file, using default stderr")
+		}
+
+		defer logFile.Close()
+
+		logger.Log.Out = logFile
 	}
-
-	logFile, err := os.OpenFile("./log/question_api.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-
-	if err != nil {
-		logger.Log.Warn("Failed to log to file, using default stderr")
-	}
-
-	defer logFile.Close()
-
-	logger.Log.Out = logFile
 
 	//initialise the database and handle errors
 	server, err := apidatabase.InitialiseDB()
@@ -63,7 +71,7 @@ func main() {
 	//create a new instance of the questionDB
 	questionDB := apidatabase.NewQuestionDB(server)
 
-	f, _ := os.Create("log/gin.log")
+	f, _ := os.Create("./log/gin.log")
 	gin.DefaultWriter = io.MultiWriter(f, os.Stdout)
 
 	router := gin.Default()
