@@ -1,0 +1,14 @@
+/*dropdown*/
+.select {
+  @apply text-text-2 bg-gray-1  rounded p-2 focus:outline-none focus:ring-2 focus:ring-highlight focus:fill-highlight;
+}
+
+/*button*/
+.button {
+  @apply px-4 py-2 text-text-1 bg-gray-2 rounded hover:bg-gray-3 focus:outline-none focus:ring focus:ring-highlight;
+}
+
+/*search*/
+.input {
+  @apply bg-gray-1 rounded-md p-2 w-full text-text-2;
+}
