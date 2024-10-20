@@ -63,15 +63,10 @@ services:
       - "9100:5672"
       - "9101:15672"
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "rabbitmq-diagnostics -q ping && rabbitmq-diagnostics -q check_running && rabbitmq-diagnostics -q check_local_alarms",
-        ]
+      test: rabbitmq-diagnostics check_port_connectivity
       interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
+      timeout: 30s
+      retries: 10
 
   matching-service:
     build: matching-service
@@ -84,7 +79,6 @@ services:
         - action: rebuild
           path: matching-service
           target: matching-service/app
-    # TODO for some reason healthcheck doesnt really work, still ahve to manually start MS and MS-api
     depends_on:
       rabbitmq:
         condition: service_healthy
