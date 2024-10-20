@@ -15,6 +15,7 @@ import {
   findMatch,
 } from "@/app/api/internal/matching/helper";
 import ResettingStopwatch from "../shared/ResettingStopwatch";
+import PeerprepDropdown from "../shared/PeerprepDropdown";
 
 const QUERY_INTERVAL_MILLISECONDS = 5000;
 const TIMEOUT_MILLISECONDS = 30000;
@@ -54,7 +55,9 @@ const usePeriodicCallback = (
 const Matchmaking = () => {
   const router = useRouter();
   const [isMatching, setIsMatching] = useState<boolean>(false);
-  const { difficulty, topics } = useQuestionFilter();
+  const [difficultyFilter, setDifficultyFilter] = useState<string>(Difficulty.Easy);
+  const [topicFilter, setTopicFilter] = useState<string[]>(["all"]);
+  const { difficulties, topicList } = useQuestionFilter();
   const { userid } = useUserInfo();
   const timeout = useRef<NodeJS.Timeout>();
 
@@ -69,9 +72,8 @@ const Matchmaking = () => {
   const getMatchMakingRequest = (): MatchRequest => {
     const matchRequest: MatchRequest = {
       userId: userid,
-      // welp, just bandaid default easy
-      difficulty: difficulty === Difficulty.All ? Difficulty.Easy : difficulty,
-      topicTags: topics,
+      difficulty: difficultyFilter,
+      topicTags: topicFilter,
       requestTime: getMatchRequestTime(),
     };
 
@@ -139,6 +141,19 @@ const Matchmaking = () => {
         <PeerprepButton onClick={handleMatch}>
           {isMatching ? "Cancel Match" : "Find Match"}
         </PeerprepButton>
+        {!isMatching && 
+          <PeerprepDropdown label="Difficulty"
+            value={difficultyFilter}
+            onChange={e => setDifficultyFilter(e.target.value)}
+            // truthfully we don't need this difficulties list, but we are temporarily including it
+            options={difficulties} />
+        }
+        {!isMatching && 
+          <PeerprepDropdown label="Topics"
+            value={topicFilter[0]}
+            onChange={e => setTopicFilter(e.target.value === "all" ? topicList : [e.target.value])}
+            options={topicList} />
+        }
         {isMatching && <ResettingStopwatch isActive={isMatching} />}
       </div>
     </div>

@@ -3,10 +3,9 @@ import { Difficulty } from "@/api/structs";
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
 interface QuestionFilterContextType {
-  difficulty: string;
-  setDifficulty: (difficulty: string) => void;
-  topics: string[];
-  setTopics: (topics: string[]) => void;
+  difficulties: string[];
+  topicList: string[];
+  setTopicList: (topics: string[]) => void;
 }
 
 const QuestionFilterContext = createContext<
@@ -16,13 +15,16 @@ const QuestionFilterContext = createContext<
 export const QuestionFilterProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [difficulty, setDifficulty] = useState<string>(Difficulty.All); // default to all
-  const [topics, setTopics] = useState<string[]>(["all"]); // I guess default set this too the whole list of topics from questionlist
-  //can also consider moving all the uniqu topics here?
+  const difficulties = [Difficulty.Easy, Difficulty.Medium, Difficulty.Hard];
+  const [topicList, setTopicList] = useState<string[]>([]);
+  // I guess default set this too the whole list of topics from questionlist
+  // can also consider moving all the uniqu topics here? -- yes, we are doing that now
+  // TODO: since QuestionFilterProvider now exists to wrap the QuestionList, 
+  //       we can move the question fetching 1 layer higher, theoretically, so look into this
 
   return (
     <QuestionFilterContext.Provider
-      value={{ difficulty, setDifficulty, topics, setTopics }}
+      value={{ difficulties, topicList, setTopicList }}
     >
       {children}
     </QuestionFilterContext.Provider>
