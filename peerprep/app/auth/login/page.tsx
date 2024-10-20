@@ -11,17 +11,23 @@ type Props = {};
 
 function LoginPage({}: Props) {
   const [state, action] = useFormState(login, undefined);
+  // we can actually use server actions to auth the user... maybe we can
+  // change our AddQn action too.
   return (
-    // we can actually use server actions to auth the user... maybe we can
-    // change our AddQn action too.
     <div className={style.wrapper}>
       <form className={style.form_container} action={action}>
-        <h1 className={style.title}>Login to PeerPrep</h1>
+        <h1 className={style.title}>Welcome to PeerPrep!</h1>
+
         <FormTextInput required label="Email:" name="email" />
-        {state?.errors?.email && <p>{state.errors.email}</p>}
+
+        {state?.errors?.email && (
+          <p className={style.error}>{state.errors.email}</p>
+        )}
+
         <FormPasswordInput required label="Password:" name="password" />
+
         {state?.errors?.password && (
-          <div>
+          <div className={style.error}>
             <p>Password must:</p>
             <ul>
               {state.errors.password.map((error) => (
@@ -30,9 +36,13 @@ function LoginPage({}: Props) {
             </ul>
           </div>
         )}
+
         <SubmitButton />
         <p>
-          No account? <Link href="/auth/register">Register here.</Link>
+          No account?{" "}
+          <Link className={"font-bold hover:underline"} href="/auth/register">
+            Register here.
+          </Link>
         </p>
       </form>
     </div>
@@ -43,7 +53,13 @@ function SubmitButton() {
   const { pending } = useFormStatus();
 
   return (
-    <button disabled={pending} type="submit">
+    <button
+      // bg-blue-500 hover:bg-blue-600 text-white font-bold py-1
+      className={`      bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-4 rounded
+      `}
+      disabled={pending}
+      type="submit"
+    >
       Login
     </button>
   );
