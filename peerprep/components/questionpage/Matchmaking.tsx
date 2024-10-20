@@ -55,11 +55,15 @@ const usePeriodicCallback = (
 const Matchmaking = () => {
   const router = useRouter();
   const [isMatching, setIsMatching] = useState<boolean>(false);
-  const [difficultyFilter, setDifficultyFilter] = useState<string>(Difficulty.Easy);
-  const [topicFilter, setTopicFilter] = useState<string[]>(["all"]);
   const { difficulties, topicList } = useQuestionFilter();
+  const [difficultyFilter, setDifficultyFilter] = useState<string>(Difficulty.Easy);
+  const [topicFilter, setTopicFilter] = useState<string[]>(topicList);
   const { userid } = useUserInfo();
   const timeout = useRef<NodeJS.Timeout>();
+
+  useEffect(() => {
+    setTopicFilter(topicList);
+  }, [topicList]);
 
   const stopTimer = () => {
     // if user manually stopped it clear timeout

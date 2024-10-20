@@ -5,6 +5,7 @@
 package consumer
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"matching-service/models"
@@ -20,11 +21,31 @@ func Process(msg rabbit.Delivery, clientMappings *db.ClientMappings, roomMapping
 		return fmt.Errorf("error unmarshling the request from JSON: %s", err.Error())
 	}
 
+  keys, err := clientMappings.Conn.Keys(context.Background(), "*").Result() 
+
+  if err != nil {
+    fmt.Println("error getting keys")
+  } else {
+    fmt.Printf("queue before user match: %s / ",keys)
+  } 
+
 	room, err := clientMappings.HandleRequest(request)
 
 	if err != nil {
 		return fmt.Errorf("error handling incoming request: %s", err.Error())
 	}
+
+  keys, err = clientMappings.Conn.Keys(context.Background(), "*").Result()
+  
+  if err != nil {
+    fmt.Println("error getting keys")
+  } else {
+    fmt.Printf("queue after user match:%s / ", keys)
+  }
+
+  if err != nil {
+    return fmt.Errorf("error handling incoming request: %s", err.Error())
+  }
 
 	fmt.Println("success handling incoming request!")
 	if room != nil {
