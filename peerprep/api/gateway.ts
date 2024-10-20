@@ -1,11 +1,11 @@
 import { cookies } from "next/headers";
-import { LoginResponse, Question, SigninResponse, StatusBody } from "./structs";
+import { LoginResponse, Question, UserServiceResponse, StatusBody } from "./structs";
 import DOMPurify from "isomorphic-dompurify";
 
 export function generateAuthHeaders() {
   return {
-    Authorization: `Bearer ${cookies().get("session")}`,
-  };
+    "Authorization": `Bearer ${cookies().get("session")?.value}`,
+  };;
 }
 
 export function generateJSONHeaders() {
@@ -75,7 +75,7 @@ export async function postSignupUser(validatedFields: {
   username: string;
   email: string;
   password: string;
-}): Promise<SigninResponse | StatusBody> {
+}): Promise<UserServiceResponse | StatusBody> {
   try {
     console.log(JSON.stringify(validatedFields));
     const res = await fetch(`${process.env.NEXT_PUBLIC_USER_SERVICE}/users`, {
@@ -92,6 +92,26 @@ export async function postSignupUser(validatedFields: {
       return { error: json.message, status: res.status };
     }
     // TODO: handle OK
+    return json;
+  } catch (err: any) {
+    return { error: err.message, status: 400 };
+  }
+}
+
+export async function verifyUser(): Promise<UserServiceResponse | StatusBody> {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_USER_SERVICE}/auth/verify-token`,
+      {
+        method: "GET",
+        headers: generateAuthHeaders(),
+      }
+    );
+    const json = await res.json();
+
+    if (!res.ok) {
+      return { error: json.message, status: res.status };
+    }
     return json;
   } catch (err: any) {
     return { error: err.message, status: 400 };

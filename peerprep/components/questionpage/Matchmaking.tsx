@@ -4,13 +4,18 @@ import { useRouter } from "next/navigation";
 import PeerprepButton from "../shared/PeerprepButton";
 import { useQuestionFilter } from "@/contexts/QuestionFilterContext";
 import { useUserInfo } from "@/contexts/UserInfoContext";
-import { isError, MatchRequest, MatchResponse } from "@/api/structs";
+import {
+  Difficulty,
+  isError,
+  MatchRequest,
+  MatchResponse,
+} from "@/api/structs";
 import {
   checkMatchStatus,
   findMatch,
 } from "@/app/api/internal/matching/helper";
-import { match } from "assert";
-import { TIMEOUT } from "dns";
+import ResettingStopwatch from "../shared/ResettingStopwatch";
+import PeerprepDropdown from "../shared/PeerprepDropdown";
 
 const QUERY_INTERVAL_MILLISECONDS = 5000;
 const TIMEOUT_MILLISECONDS = 30000;
@@ -50,7 +55,9 @@ const usePeriodicCallback = (
 const Matchmaking = () => {
   const router = useRouter();
   const [isMatching, setIsMatching] = useState<boolean>(false);
-  const { difficulty, topics } = useQuestionFilter();
+  const [difficultyFilter, setDifficultyFilter] = useState<string>(Difficulty.Easy);
+  const [topicFilter, setTopicFilter] = useState<string[]>(["all"]);
+  const { difficulties, topicList } = useQuestionFilter();
   const { userid } = useUserInfo();
   const timeout = useRef<NodeJS.Timeout>();
 
@@ -60,6 +67,17 @@ const Matchmaking = () => {
       console.debug("Match request timeout stopped");
       clearTimeout(timeout.current);
     }
+  };
+
+  const getMatchMakingRequest = (): MatchRequest => {
+    const matchRequest: MatchRequest = {
+      userId: userid,
+      difficulty: difficultyFilter,
+      topicTags: topicFilter,
+      requestTime: getMatchRequestTime(),
+    };
+
+    return matchRequest;
   };
 
   const handleMatch = async () => {
@@ -73,12 +91,7 @@ const Matchmaking = () => {
       }, TIMEOUT_MILLISECONDS);
 
       // assemble the match request
-      const matchRequest: MatchRequest = {
-        userId: userid,
-        difficulty: difficulty,
-        topicTags: topics,
-        requestTime: getMatchRequestTime(),
-      };
+      const matchRequest = getMatchMakingRequest();
       console.log("Match attempted");
       console.debug(matchRequest);
 
@@ -128,9 +141,20 @@ const Matchmaking = () => {
         <PeerprepButton onClick={handleMatch}>
           {isMatching ? "Cancel Match" : "Find Match"}
         </PeerprepButton>
-        {isMatching && (
-          <div className="w-3 h-3 bg-difficulty-hard rounded-full ml-2" />
-        )}
+        {!isMatching && 
+          <PeerprepDropdown label="Difficulty"
+            value={difficultyFilter}
+            onChange={e => setDifficultyFilter(e.target.value)}
+            // truthfully we don't need this difficulties list, but we are temporarily including it
+            options={difficulties} />
+        }
+        {!isMatching && 
+          <PeerprepDropdown label="Topics"
+            value={topicFilter[0]}
+            onChange={e => setTopicFilter(e.target.value === "all" ? topicList : [e.target.value])}
+            options={topicList} />
+        }
+        {isMatching && <ResettingStopwatch isActive={isMatching} />}
       </div>
     </div>
   );

@@ -1,14 +1,16 @@
 "use server";
-import { getSessionLogin, postSignupUser } from "@/api/gateway";
+import { getSessionLogin, postSignupUser, verifyUser } from "@/api/gateway";
 // defines the server-sided login action.
 import {
   SignupFormSchema,
   LoginFormSchema,
   FormState,
   isError,
+  UserServiceResponse,
 } from "@/api/structs";
-import { createSession } from "@/app/actions/session";
+import { createSession, expireSession } from "@/app/actions/session";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 
 // credit - taken from Next.JS Auth tutorial
 export async function signup(state: FormState, formData: FormData) {
@@ -58,4 +60,19 @@ export async function login(state: FormState, formData: FormData) {
   } else {
     console.log(json.error);
   }
+}
+
+export async function hydrateUid(): Promise<undefined | string> {
+  if (!cookies().has("session")) {
+    console.log("No session found - triggering switch back to login page.");
+    redirect("/auth/login");
+  }
+  const json = await verifyUser();
+  if (isError(json)) {
+    console.log("Failed to fetch user ID.");
+    console.log(`Error ${json.status}: ${json.error}`);
+    redirect("/api/internal/auth/expire");
+  }
+
+  return json.data.id;
 }

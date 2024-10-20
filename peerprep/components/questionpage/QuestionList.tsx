@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import QuestionCard from "./QuestionCard";
-import { Question, StatusBody, Difficulty, isError } from "@/api/structs";
+import { Question, Difficulty, isError } from "@/api/structs";
 import PeerprepDropdown from "../shared/PeerprepDropdown";
 import PeerprepSearchBar from "../shared/PeerprepSearchBar";
 import { useQuestionFilter } from "@/contexts/QuestionFilterContext";
@@ -10,9 +10,12 @@ const QuestionList: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchFilter, setSearchFilter] = useState<string>("");
-  const [topicsList, setTopicsList] = useState<string[]>(["all"]);
+  const [difficultyFilter, setDifficultyFilter] = useState<string>(
+    Difficulty.All
+  );
+  const [topicFilter, setTopicFilter] = useState<string>("all");
 
-  const { difficulty, setDifficulty, topics, setTopics } = useQuestionFilter();
+  const { topicList, setTopicList } = useQuestionFilter();
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -33,8 +36,7 @@ const QuestionList: React.FC = () => {
       const uniqueTopics = Array.from(
         new Set(data.flatMap((question) => question.topicTags))
       ).sort();
-      setTopicsList(["all", ...uniqueTopics]);
-      setTopics(["all", ...uniqueTopics]);
+      setTopicList(["all", ...uniqueTopics]);
     };
 
     fetchQuestions();
@@ -42,10 +44,10 @@ const QuestionList: React.FC = () => {
 
   const filteredQuestions = questions.filter((question) => {
     const matchesDifficulty =
-      difficulty === Difficulty.All ||
-      Difficulty[question.difficulty] === difficulty;
+      difficultyFilter === Difficulty.All ||
+      Difficulty[question.difficulty] === difficultyFilter;
     const matchesTopic =
-      topics[0] === "all" || (question.topicTags ?? []).includes(topics[0]);
+      topicFilter === "all" || (question.topicTags ?? []).includes(topicFilter);
     const matchesSearch =
       searchFilter === "" ||
       (question.title ?? "").toLowerCase().includes(searchFilter.toLowerCase());
@@ -57,16 +59,12 @@ const QuestionList: React.FC = () => {
 
   const handleSetDifficulty = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const diff = e.target.value;
-    setDifficulty(diff);
+    setDifficultyFilter(diff);
   };
 
   const handleSetTopics = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const topic = e.target.value;
-    if (topic === "all") {
-      setTopics(topicsList);
-    } else {
-      setTopics([topic]);
-    }
+    setTopicFilter(topic);
   };
 
   return (
@@ -79,16 +77,15 @@ const QuestionList: React.FC = () => {
         />
         <PeerprepDropdown
           label="Difficulty"
-          value={difficulty}
+          value={difficultyFilter}
           onChange={handleSetDifficulty}
           options={Object.keys(Difficulty).filter((key) => isNaN(Number(key)))}
         />
         <PeerprepDropdown
           label="Topics"
-          // coincidentally "all" is at the top of the list so the display works out...dumb luck!
-          value={topics[0]}
+          value={topicFilter}
           onChange={handleSetTopics}
-          options={topicsList}
+          options={topicList}
         />
       </div>
 
