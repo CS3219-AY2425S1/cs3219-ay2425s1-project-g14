@@ -62,7 +62,7 @@ export async function login(state: FormState, formData: FormData) {
   }
 }
 
-export async function hydrateUid(): Promise<undefined|string> {
+export async function hydrateUid(): Promise<undefined | string> {
   if (!cookies().has("session")) {
     console.log("No session found - triggering switch back to login page.");
     redirect("/auth/login");

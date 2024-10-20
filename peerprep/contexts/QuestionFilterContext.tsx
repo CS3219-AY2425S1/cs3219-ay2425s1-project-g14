@@ -18,6 +18,7 @@ export const QuestionFilterProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [difficulty, setDifficulty] = useState<string>(Difficulty.All); // default to all
   const [topics, setTopics] = useState<string[]>(["all"]); // I guess default set this too the whole list of topics from questionlist
+  //can also consider moving all the uniqu topics here?
 
   return (
     <QuestionFilterContext.Provider

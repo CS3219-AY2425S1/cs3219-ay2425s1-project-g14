@@ -4,11 +4,17 @@ import { useRouter } from "next/navigation";
 import PeerprepButton from "../shared/PeerprepButton";
 import { useQuestionFilter } from "@/contexts/QuestionFilterContext";
 import { useUserInfo } from "@/contexts/UserInfoContext";
-import { isError, MatchRequest, MatchResponse } from "@/api/structs";
+import {
+  Difficulty,
+  isError,
+  MatchRequest,
+  MatchResponse,
+} from "@/api/structs";
 import {
   checkMatchStatus,
   findMatch,
 } from "@/app/api/internal/matching/helper";
+import ResettingStopwatch from "../shared/ResettingStopwatch";
 
 const QUERY_INTERVAL_MILLISECONDS = 5000;
 const TIMEOUT_MILLISECONDS = 30000;
@@ -60,6 +66,18 @@ const Matchmaking = () => {
     }
   };
 
+  const getMatchMakingRequest = (): MatchRequest => {
+    const matchRequest: MatchRequest = {
+      userId: userid,
+      // welp, just bandaid default easy
+      difficulty: difficulty === Difficulty.All ? Difficulty.Easy : difficulty,
+      topicTags: topics,
+      requestTime: getMatchRequestTime(),
+    };
+
+    return matchRequest;
+  };
+
   const handleMatch = async () => {
     if (!isMatching) {
       setIsMatching(true);
@@ -71,12 +89,7 @@ const Matchmaking = () => {
       }, TIMEOUT_MILLISECONDS);
 
       // assemble the match request
-      const matchRequest: MatchRequest = {
-        userId: userid,
-        difficulty: difficulty,
-        topicTags: topics,
-        requestTime: getMatchRequestTime(),
-      };
+      const matchRequest = getMatchMakingRequest();
       console.log("Match attempted");
       console.debug(matchRequest);
 
@@ -126,9 +139,7 @@ const Matchmaking = () => {
         <PeerprepButton onClick={handleMatch}>
           {isMatching ? "Cancel Match" : "Find Match"}
         </PeerprepButton>
-        {isMatching && (
-          <div className="w-3 h-3 bg-difficulty-hard rounded-full ml-2" />
-        )}
+        {isMatching && <ResettingStopwatch isActive={isMatching} />}
       </div>
     </div>
   );

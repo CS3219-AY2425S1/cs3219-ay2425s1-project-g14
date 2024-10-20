@@ -15,7 +15,7 @@ function isSession(request: NextRequest): boolean {
 }
 
 export function middleware(request: NextRequest) {
-  // // UNCOMMENT AND ADD TO ENV IF JUST TESTING FRONTEND STUFF
+  // UNCOMMENT AND ADD TO ENV IF JUST TESTING FRONTEND STUFF
   // if (process.env.NEXT_BYPASS_LOGIN === "yesplease") {
   //   return NextResponse.next();
   // }
