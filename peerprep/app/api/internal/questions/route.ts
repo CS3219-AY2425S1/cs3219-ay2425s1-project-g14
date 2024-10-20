@@ -1,5 +1,4 @@
 import { generateAuthHeaders, generateJSONHeaders } from "@/api/gateway";
-import { QuestionFullBody } from "@/api/structs";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {

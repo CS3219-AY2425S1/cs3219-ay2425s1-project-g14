@@ -11,3 +11,7 @@ export async function createSession(accessToken: string) {
     path: "/",
   });
 }
+
+export async function expireSession() {
+  cookies().delete("session");
+}

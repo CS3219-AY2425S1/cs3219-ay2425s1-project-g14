@@ -43,7 +43,7 @@ export interface LoginResponse {
   data: UserDataAccessToken;
 }
 
-export interface SigninResponse {
+export interface UserServiceResponse {
   message: string;
   data: UserData;
 }

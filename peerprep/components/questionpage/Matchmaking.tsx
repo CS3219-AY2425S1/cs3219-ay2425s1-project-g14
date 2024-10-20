@@ -9,8 +9,6 @@ import {
   checkMatchStatus,
   findMatch,
 } from "@/app/api/internal/matching/helper";
-import { match } from "assert";
-import { TIMEOUT } from "dns";
 
 const QUERY_INTERVAL_MILLISECONDS = 5000;
 const TIMEOUT_MILLISECONDS = 30000;

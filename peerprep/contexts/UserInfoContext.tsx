@@ -4,22 +4,23 @@
 "use client";
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
+interface UserInfoProviderProps {
+  userid: string|undefined,
+  children: ReactNode
+}
+
 interface UserInfoContextType {
   userid: string;
-  setUserid: (userid: string) => void;
 }
 
 const UserInfoContext = createContext<UserInfoContextType | undefined>(
   undefined
 );
 
-export const UserInfoProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
-  const [userid, setUserid] = useState<string>("test-user");
-
+export function UserInfoProvider({ userid, children }: UserInfoProviderProps) {
+  const val = userid ? userid : "";
   return (
-    <UserInfoContext.Provider value={{ userid, setUserid }}>
+    <UserInfoContext.Provider value={{ userid: val }}>
       {children}
     </UserInfoContext.Provider>
   );
