@@ -1,55 +1,137 @@
+x-common-environment:
+  environment:
+    - ENV=${ENV:-dev}
+
+# NOTE: Ports do not need to be exposed if not needed to expose outside the network
+
 services:
-  peerprep:
-    build: peerprep
+  peerprep-dev:
+    depends_on:
+      - user-service-dev
+      - backend-dev
+    build:
+      context: peerprep
+      target: dev
     env_file:
       - peerprep/.env
+    environment:
+      - ENV=${ENV:-dev}
+    volumes:
+      - ./peerprep:/frontend
     ports:
-      - "3000:3000"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-
+      - "${PEERPREP_PORT:-3000}:3000"
+    networks:
+      - backend
+      - user-service
+      - matching
+      ####### Dockerfile Node is distroless, no curl
+      #    healthcheck:
+      #      test: [ "CMD", "curl", "-f", "http://localhost:3000/" ]
+    restart: on-failure
     develop:
       watch:
         - action: sync
           path: peerprep
           target: /frontend
 
-  user-service:
-    build: user-service
-    volumes:
-      - /user-service/node_modules
+
+  user-service-dev:
+    #    profiles:
+    #      - [ dev ]
+    build:
+      context: user-service
+      target: dev
+    depends_on:
+      - mongo-dev
     env_file:
       - user-service/.env
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    environment:
+      - ENV=${ENV:-DEV}
+    volumes:
+      - ./user-service:/user-service
     ports:
-      - "3001:3001"
+      - "${USER_SERVICE_PORT:-3001}:3001"
+    networks:
+      - user-service
+      - user-mongo
+    ##### No curl on distroless node
+    #    healthcheck:
+    #      test: [ "CMD", "curl", "-f", "http://localhost:3001/" ]
+    restart: on-failure
     develop:
       watch:
-        - action: rebuild
+        - action: sync
           path: user-service
           target: /user-service
 
-  backend:
-    build: backend
+
+  #  user-service-prod:
+  #    extends:
+  #      service: user-service-dev
+  #    profiles:
+  #      - [ prod ]
+  #    environment:
+  #      - ENV=prod
+  #    build:
+  #      target: final
+
+  backend-dev:
+    #    profiles:
+    #      - [ dev ]
+    build:
+      context: backend
+      target: dev
     env_file:
       - backend/.env
+    environment:
+      - ENV=${ENV:-dev}
+    volumes:
+      - logs:/log
+      - ./backend:/src
     ports:
-      - "9090:9090"
+      - "${BACKEND_PORT:-9090}:9090"
+    networks:
+      - backend
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9090/health" ]
+    restart: on-failure
     develop:
       watch:
         - action: rebuild
           path: backend
           target: backend/app
 
+
+  #    backend-prod:
+  #      extends:
+  #        service: backend-prod
+  #      profiles:
+  #        - [ prod ]
+  #      environment:
+  #        - ENV=prod
+  #      build:
+  #        target: final
+
+  mongo-dev:
+    image: "mongo:latest"
+    restart: on-failure
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "27017:27017"
+      - "${usermongoport:-27017}:27017"
+    networks:
+      - user-mongo
+
+
   # blob and mq
   redis:
     image: redis
     container_name: redis-peerprep
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     ports:
       - "9190:6379"
+    networks:
+      - matching
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -57,46 +139,51 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: grp14
       RABBITMQ_DEFAULT_PASS: grp14
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     ports:
       - "9100:5672"
       - "9101:15672"
+    networks:
+      - matching
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "rabbitmq-diagnostics -q ping && rabbitmq-diagnostics -q check_running && rabbitmq-diagnostics -q check_local_alarms",
-        ]
+      test: rabbitmq-diagnostics check_port_connectivity
       interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
+      timeout: 30s
+      retries: 10
 
   matching-service:
-    build: matching-service
+    build:
+      context: matching-service
+      target: dev
     env_file:
       - matching-service/.env
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    networks:
+      - matching
+    volumes:
+      - logs:/log
+      - ./matching-service:/src
     develop:
       watch:
         - action: rebuild
           path: matching-service
           target: matching-service/app
-    # TODO for some reason healthcheck doesnt really work, still ahve to manually start MS and MS-api
+    # TODO for some reason healthcheck doesnt really work, still have to manually start MS and MS-api
     depends_on:
       rabbitmq:
         condition: service_healthy
 
   matching-service-api:
-    build: matching-service-api
+    build:
+      context: matching-service-api
+      target: dev
     env_file:
       - matching-service-api/.env
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     ports:
       - "9200:9200"
+    volumes:
+      - logs:/log
+      - ./matching-service-api:/src
+    networks:
+      - matching
     develop:
       watch:
         - action: rebuild
@@ -107,13 +194,18 @@ services:
         condition: service_healthy
 
   storage-blob-api:
-    build: storage-blob-api
+    build:
+      context: storage-blob-api
+      target: dev
     env_file:
       - storage-blob-api/.env
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    volumes:
+      - logs:/log
+      - ./storage-blob-api:/src
     ports:
       - "9300:9300"
+    networks:
+      - matching
     develop:
       watch:
         - action: rebuild
@@ -121,7 +213,19 @@ services:
           target: storage-blob-api/app
     depends_on:
       - redis
-#  mongo:
-#    image: "mongo:latest"
-#    ports:
-#      - "27017:27017"
+
+
+
+networks:
+  backend:
+    driver: bridge
+  user-service:
+    driver: bridge
+  user-mongo:
+    driver: bridge
+  matching:
+    driver: bridge
+
+volumes:
+  logs:
+  mongo-data:

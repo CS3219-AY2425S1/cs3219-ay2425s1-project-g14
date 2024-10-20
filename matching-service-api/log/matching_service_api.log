@@ -33,3 +33,4 @@ time="2024-10-16T12:12:09+08:00" level=info msg="request from user user1 success
 time="2024-10-16T12:12:14+08:00" level=info msg="request from user user2 successfully published"
 time="2024-10-16T12:16:10+08:00" level=info msg="request from user user1 successfully published"
 time="2024-10-16T12:16:15+08:00" level=info msg="request from user user2 successfully published"
+time="2024-10-20T09:31:40Z" level=info msg="Server started at time: 2024-10-20 09:31:40.524569232 +0000 UTC m=+0.623840563"

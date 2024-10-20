@@ -8,3 +8,4 @@ time="2024-10-16T11:55:08+08:00" level=error msg="unable to unmarshal topicTags 
 time="2024-10-16T11:57:16+08:00" level=info msg="Server started running successfully"
 time="2024-10-16T12:15:40+08:00" level=info msg="Server started running successfully"
 time="2024-10-16T12:16:23+08:00" level=info msg="Request handled successfully"
+time="2024-10-20T10:22:38Z" level=info msg="Server started running successfully"
