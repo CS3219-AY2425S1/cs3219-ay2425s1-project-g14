@@ -35,7 +35,7 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
 
 
 
-FROM build as dev
+FROM build AS dev
 
 COPY --from=build /bin/server /bin/server
 

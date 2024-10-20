@@ -16,7 +16,7 @@ func SetAllEndpoints(router *gin.Engine, db *storage.RoomMappings, logger *model
 func SetCors(router *gin.Engine, origin string) {
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{origin},
-		AllowMethods:     []string{"POST","OPTIONS"},
+		AllowMethods:     []string{"GET", "POST", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Content-Length", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,

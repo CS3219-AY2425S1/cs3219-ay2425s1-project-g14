@@ -5,10 +5,10 @@ x-common-environment:
 # NOTE: Ports do not need to be exposed if not needed to expose outside the network
 
 services:
-  peerprep-dev:
+  peerprep:
     depends_on:
-      - user-service-dev
-      - backend-dev
+      - user-service
+      - backend
     build:
       context: peerprep
       target: dev
@@ -35,14 +35,14 @@ services:
           target: /frontend
 
 
-  user-service-dev:
+  user-service:
     #    profiles:
     #      - [ dev ]
     build:
       context: user-service
       target: dev
     depends_on:
-      - mongo-dev
+      - mongo
     env_file:
       - user-service/.env
     environment:
@@ -64,7 +64,7 @@ services:
           path: user-service
           target: /user-service
 
-  backend-dev:
+  backend:
     #    profiles:
     #      - [ dev ]
     build:
@@ -145,7 +145,6 @@ services:
         - action: rebuild
           path: matching-service
           target: matching-service/app
-    # TODO for some reason healthcheck doesnt really work, still have to manually start MS and MS-api
     depends_on:
       rabbitmq:
         condition: service_healthy
