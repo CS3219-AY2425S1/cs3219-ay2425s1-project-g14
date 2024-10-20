@@ -64,17 +64,6 @@ services:
           path: user-service
           target: /user-service
 
-
-  #  user-service-prod:
-  #    extends:
-  #      service: user-service-dev
-  #    profiles:
-  #      - [ prod ]
-  #    environment:
-  #      - ENV=prod
-  #    build:
-  #      target: final
-
   backend-dev:
     #    profiles:
     #      - [ dev ]
@@ -102,17 +91,7 @@ services:
           target: backend/app
 
 
-  #    backend-prod:
-  #      extends:
-  #        service: backend-prod
-  #      profiles:
-  #        - [ prod ]
-  #      environment:
-  #        - ENV=prod
-  #      build:
-  #        target: final
-
-  mongo-dev:
+  mongo:
     image: "mongo:latest"
     restart: on-failure
     volumes:
