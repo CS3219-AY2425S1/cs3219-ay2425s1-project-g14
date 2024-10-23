@@ -50,19 +50,51 @@ export default function CollabEditor({ question }: Props) {
   const [theme, setTheme] = useState("terminal");
   const [fontSize, setFontSize] = useState(18);
   const [language, setLanguage] = useState("python");
+  const [value, setValue] = useState("def foo:\n  pass");
+  const [socket, setSocket] = useState<WebSocket | null>(null);
+  const [connected, setConnected] = useState(false);
 
   const handleOnChange = (newValue: string) => {
+    setValue(newValue);
     console.log("Content changed:", newValue);
+
+    if (socket && connected) {
+      socket.send(JSON.stringify({ type: "content_change", data: newValue }));
+    }
   };
 
   const handleOnLoad = (editor: any) => {
     editor.container.style.resize = "both";
   };
 
+  const connectWebSocket = () => {
+    const newSocket = new WebSocket("ws://localhost:4000/ws?secret=bruh");
+
+    newSocket.onopen = () => {
+      console.log("WebSocket connection established");
+      setConnected(true);
+    };
+
+    newSocket.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      console.log("Received WebSocket message:", message);
+
+      // Handle incoming WebSocket messages if required
+      if (message.type === "content_change") {
+        setValue(message.data); // Update the editor value
+      }
+    };
+
+    newSocket.onclose = () => {
+      console.log("WebSocket connection closed");
+      setConnected(false);
+    };
+
+    setSocket(newSocket);
+  };
+
   // TODO: to be taken from question props instead
   // const value = question[language] ?? "// Comment"
-  const value = `def foo: 
-  pass`;
 
   return (
     <>
@@ -96,6 +128,15 @@ export default function CollabEditor({ question }: Props) {
             "border border-gray-600 bg-gray-800 text-white p-2 rounded"
           }
         />
+
+        <div>
+          <button
+            onClick={connectWebSocket}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            {connected ? "Connected" : "Connect WebSocket"}
+          </button>
+        </div>
       </div>
 
       <AceEditor
