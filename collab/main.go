@@ -18,22 +18,22 @@ var upgrader = websocket.Upgrader{
 // Client represents a WebSocket client
 type Client struct {
 	conn   *websocket.Conn
-	secret string
+	roomID string
 }
 
-// Hub maintains the set of active clients, broadcasts messages, and stores the current color per secret
+// Hub maintains the set of active clients, broadcasts messages, and stores the current workspace per roomID
 type Hub struct {
 	clients    map[*Client]bool
-	colors     map[string]string // Store current color per secret
+	workspaces     map[string]string
 	broadcast  chan Message
 	register   chan *Client
 	unregister chan *Client
 	mutex      sync.Mutex
 }
 
-// Message represents a message with the associated secret
+// Message represents a message with the associated roomID
 type Message struct {
-	secret  string
+	roomID  string
 	content []byte
 }
 
@@ -41,7 +41,7 @@ type Message struct {
 func NewHub() *Hub {
 	return &Hub{
 		clients:    make(map[*Client]bool),
-		colors:     make(map[string]string),
+		workspaces:     make(map[string]string),
 		broadcast:  make(chan Message),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
@@ -67,10 +67,10 @@ func (h *Hub) Run() {
 
 		case message := <-h.broadcast:
 			h.mutex.Lock()
-			// Update the current color for this secret
-			h.colors[message.secret] = string(message.content)
+			// Update the current workspace for this roomID
+			h.workspaces[message.roomID] = string(message.content)
 			for client := range h.clients {
-				if client.secret == message.secret {
+				if client.roomID == message.roomID {
 					err := client.conn.WriteMessage(websocket.TextMessage, message.content)
 					if err != nil {
 						log.Printf("Error sending message: %v", err)
@@ -86,9 +86,9 @@ func (h *Hub) Run() {
 
 // ServeWs handles WebSocket requests
 func serveWs(hub *Hub, c *gin.Context) {
-	secret := c.Query("secret")
-	if secret == "" {
-		http.Error(c.Writer, "Secret required", http.StatusBadRequest)
+	roomID := c.Query("roomID")
+	if roomID == "" {
+		http.Error(c.Writer, "roomID required", http.StatusBadRequest)
 		return
 	}
 
@@ -98,13 +98,12 @@ func serveWs(hub *Hub, c *gin.Context) {
 		return
 	}
 
-	client := &Client{conn: conn, secret: secret}
+	client := &Client{conn: conn, roomID: roomID}
 	hub.register <- client
 
 	go handleMessages(client, hub)
 }
 
-// HandleMessages listens for color messages from the client
 func handleMessages(client *Client, hub *Hub) {
 	defer func() {
 		hub.unregister <- client
@@ -118,11 +117,11 @@ func handleMessages(client *Client, hub *Hub) {
 		}
 
 		// Broadcast the message to other clients
-		hub.broadcast <- Message{secret: client.secret, content: message}
+		hub.broadcast <- Message{roomID: client.roomID, content: message}
 	}
 }
 
-// Status endpoint that shows the number of clients and the current color for each secret
+// Status endpoint that shows the number of clients and the current color for each roomID
 func statusHandler(hub *Hub) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		hub.mutex.Lock()
@@ -130,19 +129,19 @@ func statusHandler(hub *Hub) gin.HandlerFunc {
 
 		status := make(map[string]interface{})
 		for client := range hub.clients {
-			secret := client.secret
-			currentStatus, ok := status[secret]
+			roomID := client.roomID
+			currentStatus, ok := status[roomID]
 			if !ok {
-				// Initialize status for a new secret
-				status[secret] = map[string]interface{}{
+				// Initialize status for a new roomID
+				status[roomID] = map[string]interface{}{
 					"clients": 1,
-					"color":   hub.colors[secret],
+					"workspace":   hub.workspaces[roomID],
 				}
 			} else {
-				// Update the client count for an existing secret
-				status[secret] = map[string]interface{}{
+				// Update the client count for an existing roomID
+				status[roomID] = map[string]interface{}{
 					"clients": currentStatus.(map[string]interface{})["clients"].(int) + 1,
-					"color":   hub.colors[secret],
+					"workspace":   hub.workspaces[roomID],
 				}
 			}
 		}

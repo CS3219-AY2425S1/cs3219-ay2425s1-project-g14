@@ -56,7 +56,9 @@ const Matchmaking = () => {
   const router = useRouter();
   const [isMatching, setIsMatching] = useState<boolean>(false);
   const { difficulties, topicList } = useQuestionFilter();
-  const [difficultyFilter, setDifficultyFilter] = useState<string>(Difficulty.Easy);
+  const [difficultyFilter, setDifficultyFilter] = useState<string>(
+    Difficulty.Easy
+  );
   const [topicFilter, setTopicFilter] = useState<string[]>(topicList);
   const { userid } = useUserInfo();
   const timeout = useRef<NodeJS.Timeout>();
@@ -99,7 +101,7 @@ const Matchmaking = () => {
       console.log("Match attempted");
       console.debug(matchRequest);
 
-      // send match request
+      //   send match request
       const status = await findMatch(matchRequest);
       if (status.error) {
         stopTimer();
@@ -131,6 +133,8 @@ const Matchmaking = () => {
     User1: ${matchRes.data.user1}
     User2: ${matchRes.data.user2}`;
     window.alert(message);
+    // redirect to question page
+    router.push(`/questions/1/${matchRes.data.roomId}`);
   };
 
   usePeriodicCallback(queryResource, QUERY_INTERVAL_MILLISECONDS, isMatching);
@@ -145,19 +149,27 @@ const Matchmaking = () => {
         <PeerprepButton onClick={handleMatch}>
           {isMatching ? "Cancel Match" : "Find Match"}
         </PeerprepButton>
-        {!isMatching && 
-          <PeerprepDropdown label="Difficulty"
+        {!isMatching && (
+          <PeerprepDropdown
+            label="Difficulty"
             value={difficultyFilter}
-            onChange={e => setDifficultyFilter(e.target.value)}
+            onChange={(e) => setDifficultyFilter(e.target.value)}
             // truthfully we don't need this difficulties list, but we are temporarily including it
-            options={difficulties} />
-        }
-        {!isMatching && 
-          <PeerprepDropdown label="Topics"
+            options={difficulties}
+          />
+        )}
+        {!isMatching && (
+          <PeerprepDropdown
+            label="Topics"
             value={topicFilter[0]}
-            onChange={e => setTopicFilter(e.target.value === "all" ? topicList : [e.target.value])}
-            options={topicList} />
-        }
+            onChange={(e) =>
+              setTopicFilter(
+                e.target.value === "all" ? topicList : [e.target.value]
+              )
+            }
+            options={topicList}
+          />
+        )}
         {isMatching && <ResettingStopwatch isActive={isMatching} />}
       </div>
     </div>

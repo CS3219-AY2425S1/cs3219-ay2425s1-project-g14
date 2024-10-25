@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AceEditor from "react-ace";
 
 import "ace-builds/src-noconflict/mode-python";
@@ -44,9 +44,10 @@ themes.forEach((theme) => require(`ace-builds/src-noconflict/theme-${theme}`));
 
 interface Props {
   question: Question;
+  roomID?: String;
 }
 
-export default function CollabEditor({ question }: Props) {
+export default function CollabEditor({ question, roomID }: Props) {
   const [theme, setTheme] = useState("terminal");
   const [fontSize, setFontSize] = useState(18);
   const [language, setLanguage] = useState("python");
@@ -67,8 +68,10 @@ export default function CollabEditor({ question }: Props) {
     editor.container.style.resize = "both";
   };
 
-  const connectWebSocket = () => {
-    const newSocket = new WebSocket("ws://localhost:4000/ws?secret=bruh");
+  useEffect(() => {
+    if (!roomID) return;
+
+    const newSocket = new WebSocket(`ws://localhost:4000/ws?roomID=${roomID}`);
 
     newSocket.onopen = () => {
       console.log("WebSocket connection established");
@@ -79,7 +82,7 @@ export default function CollabEditor({ question }: Props) {
       const message = JSON.parse(event.data);
       console.log("Received WebSocket message:", message);
 
-      // Handle incoming WebSocket messages if required
+      // Handle incoming WebSocket messages
       if (message.type === "content_change") {
         setValue(message.data); // Update the editor value
       }
@@ -91,10 +94,7 @@ export default function CollabEditor({ question }: Props) {
     };
 
     setSocket(newSocket);
-  };
-
-  // TODO: to be taken from question props instead
-  // const value = question[language] ?? "// Comment"
+  }, []);
 
   return (
     <>
@@ -128,17 +128,12 @@ export default function CollabEditor({ question }: Props) {
             "border border-gray-600 bg-gray-800 text-white p-2 rounded"
           }
         />
-
-        <div>
-          <button
-            onClick={connectWebSocket}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          >
-            {connected ? "Connected" : "Connect WebSocket"}
-          </button>
-        </div>
       </div>
-
+      {roomID && (
+        <div className="w-full text-center mb-[16px]">
+          {connected ? "Connected" : "Disconnected"}
+        </div>
+      )}
       <AceEditor
         mode={language}
         className={"editor"}
