@@ -134,7 +134,9 @@ const Matchmaking = () => {
     User2: ${matchRes.data.user2}`;
     window.alert(message);
     // redirect to question page
-    router.push(`/questions/1/${matchRes.data.roomId}`);
+    router.push(
+      `/questions/${matchRes.data.QuestionId}/${matchRes.data.roomId}`
+    );
   };
 
   usePeriodicCallback(queryResource, QUERY_INTERVAL_MILLISECONDS, isMatching);

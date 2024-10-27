@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"sync"
@@ -19,6 +20,7 @@ var upgrader = websocket.Upgrader{
 type Client struct {
 	conn   *websocket.Conn
 	roomID string
+	authenticated bool
 }
 
 // Hub maintains the set of active clients, broadcasts messages, and stores the current workspace per roomID
@@ -35,6 +37,31 @@ type Hub struct {
 type Message struct {
 	roomID  string
 	content []byte
+}
+
+func verifyToken(token string) bool {
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "http://localhost:3001/auth/verify-token", nil)
+	if err != nil {
+		log.Println("Error creating request:", err)
+		return false
+	}
+
+	req.Header.Set("Authorization", "Bearer " + token)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println("Error making request:", err)
+		return false
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		log.Println("Token verification failed with status:", resp.Status)
+		return false
+	}
+
+	return true;
 }
 
 // NewHub creates a new hub instance
@@ -115,6 +142,32 @@ func handleMessages(client *Client, hub *Hub) {
 			log.Printf("WebSocket error: %v", err)
 			break
 		}
+
+		var msgData map[string]interface{}
+		if err := json.Unmarshal(message, &msgData); err != nil {
+			log.Printf("Failed to parse message: %v", err)
+			continue
+		}
+
+		// Handle authentication message
+		if msgData["type"] == "auth" {
+			token, ok := msgData["token"].(string)
+			if !ok {
+				log.Printf("Auth message missing token")
+				continue
+			}
+			if verifyToken(token) { // Implement this function to verify the token
+				client.authenticated = true
+				log.Println("Client authenticated successfully")
+			} else {
+				log.Println("Invalid auth token")
+				client.conn.WriteMessage(websocket.TextMessage, []byte("Authentication failed"))
+				client.conn.Close()
+				break
+			}
+			continue
+		}
+
 
 		// Broadcast the message to other clients
 		hub.broadcast <- Message{roomID: client.roomID, content: message}

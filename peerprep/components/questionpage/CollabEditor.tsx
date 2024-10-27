@@ -45,9 +45,10 @@ themes.forEach((theme) => require(`ace-builds/src-noconflict/theme-${theme}`));
 interface Props {
   question: Question;
   roomID?: String;
+  authToken?: String;
 }
 
-export default function CollabEditor({ question, roomID }: Props) {
+export default function CollabEditor({ question, roomID, authToken }: Props) {
   const [theme, setTheme] = useState("terminal");
   const [fontSize, setFontSize] = useState(18);
   const [language, setLanguage] = useState("python");
@@ -76,15 +77,24 @@ export default function CollabEditor({ question, roomID }: Props) {
     newSocket.onopen = () => {
       console.log("WebSocket connection established");
       setConnected(true);
+
+      const authMessage = {
+        type: "auth",
+        token: authToken,
+      };
+      newSocket.send(JSON.stringify(authMessage));
     };
 
     newSocket.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      console.log("Received WebSocket message:", message);
+      if (event.data == "Authentication failed") {
+        console.log("Authentication failed");
+        return;
+      }
 
-      // Handle incoming WebSocket messages
+      const message = JSON.parse(event.data);
+
       if (message.type === "content_change") {
-        setValue(message.data); // Update the editor value
+        setValue(message.data);
       }
     };
 

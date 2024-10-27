@@ -12,6 +12,7 @@ import DOMPurify from "dompurify";
 interface Props {
   question: Question;
   roomID?: String;
+  authToken?: String;
 }
 
 interface DifficultyChipProps {
@@ -28,7 +29,7 @@ function DifficultyChip({ diff }: DifficultyChipProps) {
   );
 }
 
-function QuestionBlock({ question, roomID }: Props) {
+function QuestionBlock({ question, roomID, authToken }: Props) {
   const router = useRouter();
 
   const handleDelete = async () => {
