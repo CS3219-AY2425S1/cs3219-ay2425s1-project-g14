@@ -7,9 +7,7 @@ import FormPasswordInput from "@/components/shared/form/FormPasswordInput";
 import { login } from "@/app/actions/server_actions";
 import Link from "next/link";
 
-type Props = {};
-
-function LoginPage({}: Props) {
+function LoginPage() {
   const [state, action] = useFormState(login, undefined);
   // we can actually use server actions to auth the user... maybe we can
   // change our AddQn action too.
@@ -55,8 +53,7 @@ function SubmitButton() {
   return (
     <button
       // bg-blue-500 hover:bg-blue-600 text-white font-bold py-1
-      className={`      bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-4 rounded
-      `}
+      className={`rounded bg-blue-500 px-4 py-1 font-bold text-white hover:bg-blue-600`}
       disabled={pending}
       type="submit"
     >
