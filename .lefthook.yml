@@ -6,5 +6,5 @@ pre-push:
       run: golangci-lint run {staged_files}
     lint-staged:
       root: "peerprep/"
-      glob: "*"
+      glob: "*.(ts|tsx|css|scss|md|json)"
       run: npx lint-staged
