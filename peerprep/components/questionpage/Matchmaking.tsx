@@ -131,11 +131,13 @@ const Matchmaking = () => {
     // display in a popup for now
     const message = `Room ID: ${matchRes.data.roomId}
     User1: ${matchRes.data.user1}
-    User2: ${matchRes.data.user2}`;
+    User2: ${matchRes.data.user2}
+    Question: ${matchRes.data.questionId}
+    `;
     window.alert(message);
     // redirect to question page
     router.push(
-      `/questions/${matchRes.data.QuestionId}/${matchRes.data.roomId}`
+      `/questions/${matchRes.data.questionId}/${matchRes.data.roomId}`
     );
   };
 

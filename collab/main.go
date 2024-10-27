@@ -16,14 +16,12 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-// Client represents a WebSocket client
 type Client struct {
 	conn   *websocket.Conn
 	roomID string
 	authenticated bool
 }
 
-// Hub maintains the set of active clients, broadcasts messages, and stores the current workspace per roomID
 type Hub struct {
 	clients    map[*Client]bool
 	workspaces     map[string]string
@@ -33,7 +31,6 @@ type Hub struct {
 	mutex      sync.Mutex
 }
 
-// Message represents a message with the associated roomID
 type Message struct {
 	roomID  string
 	content []byte

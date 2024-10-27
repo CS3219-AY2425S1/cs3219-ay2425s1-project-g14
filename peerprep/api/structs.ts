@@ -59,7 +59,7 @@ export interface MatchData {
   roomId: string;
   user1: string;
   user2: string;
-  QuestionId: string
+  questionId: string;
 }
 
 export interface MatchResponse {
