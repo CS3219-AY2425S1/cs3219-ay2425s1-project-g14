@@ -3,6 +3,8 @@
 # environment file
 .env
 
+.eslintcache
+
 # dependencies
 /node_modules
 /.pnp

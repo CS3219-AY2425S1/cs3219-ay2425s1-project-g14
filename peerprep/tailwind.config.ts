@@ -1,4 +1,7 @@
-import type { Config } from "tailwindcss";
+import type {Config} from "tailwindcss";
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const defaultTheme = require("tailwindcss/defaultTheme");
 
 const config: Config = {
   content: [
@@ -8,6 +11,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["InterVariable", ...defaultTheme.fontFamily.sans],
+      },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
