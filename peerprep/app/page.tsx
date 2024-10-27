@@ -22,16 +22,18 @@ export default function Home() {
             <p className={"text-center"}>Boring code platforms 😢</p>
           </div>
           <div className={"m-3 flex w-1/2 justify-center rounded-md text-lg"}>
-            <div className={"rounded-md border-2 border-black p-5"}>
+            <div className={"rounded-md bg-gray-1 p-5"}>
               <p>Tired of solving interview questions by yourself?</p>
               <p> Code with a friend 👥 instead! 😊</p>
               <p>PeerPrep is a platform for technical interview preparation</p>
 
-              <div className={"m-5 rounded-md border-2 border-black p-5"}>
-                <p>Features:</p>
+              <div className={"m-5 rounded-md border-black p-5"}>
+                <p>
+                  <strong>Features:</strong>
+                </p>
                 <ol>
-                  <li>Online coding</li>
-                  <li> A code editor</li>
+                  <li>- Online coding</li>
+                  <li>- A code editor</li>
                 </ol>
               </div>
             </div>

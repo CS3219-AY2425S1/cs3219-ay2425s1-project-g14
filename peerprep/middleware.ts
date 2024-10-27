@@ -2,29 +2,28 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 
-function isNoSession(request: NextRequest): boolean {
-  return (
-    request.nextUrl.pathname.startsWith("/auth") && cookies().has("session")
-  );
-}
+const protectedRoutes = ["/questions/*", "/user/*"];
+const publicRoutes = ["/", "/auth/login/", "/auth/register"];
 
-function isSession(request: NextRequest): boolean {
-  return (
-    !request.nextUrl.pathname.startsWith("/auth") && !cookies().has("session")
-  );
-}
+const isValidSession = () => {
+  return cookies().has("session");
+};
 
 export function middleware(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+  const isProtectedRoute = protectedRoutes.includes(path);
+  const isPublicRoute = publicRoutes.includes(path);
+
+  if (isPublicRoute) {
+    return NextResponse.next();
+  }
+
   // UNCOMMENT AND ADD TO ENV IF JUST TESTING FRONTEND STUFF
   if (process.env.NEXT_BYPASS_LOGIN === "yesplease") {
     return NextResponse.next();
   }
 
-  if (isNoSession(request)) {
-    return NextResponse.redirect(new URL("/questions", request.url));
-  }
-
-  if (isSession(request)) {
+  if (!isValidSession() && isProtectedRoute) {
     return NextResponse.redirect(new URL("/auth/login", request.url));
   }
 }
@@ -39,6 +38,6 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico, sitemap.xml, robots.txt (metadata files)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\.png$).*)",
   ],
 };

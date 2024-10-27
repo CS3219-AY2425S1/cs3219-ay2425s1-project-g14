@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion, MotionConfig } from "framer-motion";
-import {ChevronLeftIcon, ChevronRightIcon} from "@heroicons/react/24/outline";
-
-
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
 // code adapted from https://buildui.com/courses/framer-motion-recipes/carousel-part-1
 
@@ -47,6 +45,7 @@ const Carousel = ({ images }: { images: ImageProps[] }) => {
   });
 
   // TODO: make it infinite scroll to not show white background
+  // TODO: use bigger pictures
 
   return (
     <div className="m-auto flex flex-auto items-center">
@@ -56,15 +55,16 @@ const Carousel = ({ images }: { images: ImageProps[] }) => {
             <motion.div
               animate={{ x: `-${index * 33}%` }}
               className="flex"
-              style={{ width: `${200 * images.length}%` }}
+              initial={"center"}
+              // style={{ width: `${200 * images.length}%` }}
             >
               {images.map((image, i) => (
                 <motion.img
                   key={i}
                   src={image.url}
                   alt={image.alt}
-                  width={600}
-                  height={600}
+                  width={800}
+                  height={800}
                   className="h-auto w-full rounded-md border-2 border-white object-cover"
                 />
               ))}

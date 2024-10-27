@@ -17,8 +17,8 @@ const PeerprepDropdown = <T extends string | number>({
   className,
 }: PeerprepDropdownProps<T>): JSX.Element => {
   return (
-    <div className="flex flex-col space-y-1 space-x-2">
-      <label className="text-base font-medium">{label}</label>
+    <div className="flex flex-col space-x-2 space-y-1">
+      <label className="pl-2 text-base font-medium">{label}</label>
       <select
         value={value}
         onChange={onChange}
