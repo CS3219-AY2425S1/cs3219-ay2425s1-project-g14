@@ -3,7 +3,6 @@ import React from "react";
 import style from "@/style/form.module.css";
 import { useFormState, useFormStatus } from "react-dom";
 import FormTextInput from "@/components/shared/form/FormTextInput";
-import FormPasswordInput from "@/components/shared/form/FormPasswordInput";
 import { login } from "@/app/actions/server_actions";
 import Link from "next/link";
 
@@ -13,36 +12,49 @@ function LoginPage() {
   // change our AddQn action too.
   return (
     <div className={style.wrapper}>
-      <form className={style.form_container} action={action}>
-        <h1 className={style.title}>Welcome to PeerPrep!</h1>
+      <div className={"flex flex-col content-center"}>
+        <form className={style.form_container} action={action}>
+          <h1 className={style.title}>Login to start using our services</h1>
 
-        <FormTextInput required label="Email:" name="email" />
+          <FormTextInput
+            required
+            label="Email:"
+            name="email"
+            isPassword={false}
+          />
 
-        {state?.errors?.email && (
-          <p className={style.error}>{state.errors.email}</p>
-        )}
+          {state?.errors?.email && (
+            <p className={style.error}>{state.errors.email}</p>
+          )}
 
-        <FormPasswordInput required label="Password:" name="password" />
+          <FormTextInput
+            required
+            label="Password:"
+            name="password"
+            isPassword={true}
+          />
 
-        {state?.errors?.password && (
-          <div className={style.error}>
-            <p>Password must:</p>
-            <ul>
-              {state.errors.password.map((error) => (
-                <li key={error}>- {error}</li>
-              ))}
-            </ul>
-          </div>
-        )}
+          {state?.errors?.password && (
+            <div className={style.error}>
+              <p>Password must:</p>
+              <ul>
+                {state.errors.password.map((error) => (
+                  <li key={error}>- {error}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
-        <SubmitButton />
-        <p>
-          No account?{" "}
+          <SubmitButton />
+        </form>
+        <p className={"flex flex-auto justify-center"}>
+          No account?&nbsp;
           <Link className={"font-bold hover:underline"} href="/auth/register">
+            {" "}
             Register here.
           </Link>
         </p>
-      </form>
+      </div>
     </div>
   );
 }
