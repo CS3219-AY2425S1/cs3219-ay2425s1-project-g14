@@ -91,7 +91,11 @@ function QuestionBlock({ question, roomID, authToken }: Props) {
         }
       </div>
       <div className={styles.editor_container}>
-        <CollabEditor question={question} roomID={roomID} />
+        <CollabEditor
+          question={question}
+          roomID={roomID}
+          authToken={authToken}
+        />
       </div>
     </>
   );

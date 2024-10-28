@@ -56,14 +56,13 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
   const [language, setLanguage] = useState("python");
   const [value, setValue] = useState("def foo:\n  pass");
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [connected, setConnected] = useState(false);
   const router = useRouter();
 
   const handleOnChange = (newValue: string) => {
     setValue(newValue);
     console.log("Content changed:", newValue);
 
-    if (socket && connected) {
+    if (socket) {
       socket.send(JSON.stringify({ type: "content_change", data: newValue }));
     }
   };
@@ -79,7 +78,6 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
 
     newSocket.onopen = () => {
       console.log("WebSocket connection established");
-      setConnected(true);
 
       const authMessage = {
         type: "auth",
@@ -90,17 +88,17 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
 
     newSocket.onmessage = (event) => {
       if (event.data == "Authentication failed") {
-        console.log("Authentication failed");
-        router.push("/questions");
-        return;
-      } else if (event.data == "The session has been closed by a user.") {
-        window.alert("Session has ended");
+        window.alert("Authentication failed");
         if (socket) {
-          console.log("what");
           socket.close();
         }
         router.push("/questions");
-        return;
+      } else if (event.data == "The session has been closed by a user.") {
+        window.alert("Session has ended");
+        if (socket) {
+          socket.close();
+        }
+        router.push("/questions");
       } else {
         const message = JSON.parse(event.data);
 
@@ -110,9 +108,13 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
       }
     };
 
+    newSocket.onerror = () => {
+      console.log("server down");
+    };
+
     newSocket.onclose = () => {
       console.log("WebSocket connection closed");
-      setConnected(false);
+      //   router.push("/questions");
     };
 
     setSocket(newSocket);
@@ -120,7 +122,7 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
     return () => {
       newSocket.close();
     };
-  }, [roomID, authToken]);
+  }, []);
 
   const handleCloseConnection = () => {
     const confirmClose = confirm(
@@ -174,11 +176,6 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
           </div>
         )}
       </div>
-      {roomID && (
-        <div className="w-full text-center mb-[16px]">
-          {connected ? "Connected" : "Disconnected"}
-        </div>
-      )}
       <AceEditor
         mode={language}
         className={"editor"}

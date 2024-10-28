@@ -1,7 +1,9 @@
 package main
 
 import (
+	verify "collab/verify"
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -37,33 +39,57 @@ type Message struct {
 	content []byte
 }
 
-func verifyToken(token string) bool {
+func verifyToken(token string) (bool, string) {
 	client := &http.Client{}
 	USER_SERVICE_URI := os.Getenv("USER_SERVICE_URI")
 	if USER_SERVICE_URI == "" {
 		USER_SERVICE_URI = "http://localhost:3001"
 	}
-	req, err := http.NewRequest("GET", USER_SERVICE_URI + "/auth/verify-token", nil)
+	req, err := http.NewRequest("GET", USER_SERVICE_URI+"/auth/verify-token", nil)
 	if err != nil {
 		log.Println("Error creating request:", err)
-		return false
+		return false, ""
 	}
 
-	req.Header.Set("Authorization", "Bearer " + token)
+	req.Header.Set("Authorization", "Bearer "+token)
 
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("Error making request:", err)
-		return false
+		return false, ""
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		log.Println("Token verification failed with status:", resp.Status)
-		return false
+	var response struct {
+		Message string `json:"message"`
+		Data    struct {
+			ID       string `json:"id"`
+			Username string `json:"username"`
+			Email    string `json:"email"`
+			IsAdmin  bool   `json:"isAdmin"`
+		} `json:"data"`
 	}
 
-	return true;
+    body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("Error reading response body:", err)
+		return false, ""
+	}
+
+	// Unmarshal the response body into the struct
+	if err := json.Unmarshal(body, &response); err != nil {
+		log.Println("Error unmarshaling response:", err)
+		return false, ""
+	}
+
+	// Check if the token was verified successfully
+	if resp.StatusCode != http.StatusOK {
+		log.Println("Token verification failed with status:", resp.Status)
+		return false, ""
+	}
+
+	// Return true and the ID from the response
+	return true, response.Data.ID
 }
 
 // NewHub creates a new hub instance
@@ -114,7 +140,7 @@ func (h *Hub) Run() {
 }
 
 // ServeWs handles WebSocket requests
-func serveWs(hub *Hub, c *gin.Context) {
+func serveWs(hub *Hub, c *gin.Context, roomMappings *verify.RoomMappings) {
 	roomID := c.Query("roomID")
 	if roomID == "" {
 		http.Error(c.Writer, "roomID required", http.StatusBadRequest)
@@ -130,10 +156,19 @@ func serveWs(hub *Hub, c *gin.Context) {
 	client := &Client{conn: conn, roomID: roomID}
 	hub.register <- client
 
-	go handleMessages(client, hub)
+	go handleMessages(client, hub, roomMappings)
 }
 
-func handleMessages(client *Client, hub *Hub) {
+func authenticateClient(token string, client *Client, roomMappings *verify.RoomMappings) bool {
+	ok, userID := verifyToken(token)
+	if !ok {
+		log.Println("bruh")
+		return false
+	}
+	return verify.VerifyRoom(roomMappings, client.roomID, userID)
+}
+
+func handleMessages(client *Client, hub *Hub, roomMappings *verify.RoomMappings) {
 	defer func() {
 		hub.unregister <- client
 	}()
@@ -150,25 +185,18 @@ func handleMessages(client *Client, hub *Hub) {
 			log.Printf("Failed to parse message: %v", err)
 			continue
 		}
-
 		// Handle authentication message
 		if msgData["type"] == "auth" {
-			token, ok := msgData["token"].(string)
-			if !ok {
-				log.Printf("Auth message missing token")
-				continue
-			}
-			if verifyToken(token) { // Implement this function to verify the token
-				client.authenticated = true
-				log.Println("Client authenticated successfully")
-			} else {
-				log.Println("Invalid auth token")
-				client.conn.WriteMessage(websocket.TextMessage, []byte("Authentication failed"))
-				client.conn.Close()
-				break
-			}
-			continue
-		}
+            token, ok := msgData["token"].(string)
+            if !ok || !authenticateClient(token, client, roomMappings) {
+                log.Println("Authentication failed")
+                client.conn.WriteMessage(websocket.TextMessage, []byte("Authentication failed"))
+                client.conn.Close()
+                break
+            }
+            client.authenticated = true
+            log.Println("Client authenticated successfully")
+        }
 
 		if msgData["type"] == "close_session" {
 			closeMessage := Message{
@@ -218,9 +246,15 @@ func main() {
 	hub := NewHub()
 	go hub.Run()
 
+	REDIS_URI := os.Getenv("REDIS_URI")
+	if REDIS_URI == "" {
+		REDIS_URI = "localhost:9190"
+	}
+	roomMappings := verify.InitialiseRoomMappings(REDIS_URI, 1)
+
 	// WebSocket connection endpoint
 	r.GET("/ws", func(c *gin.Context) {
-		serveWs(hub, c)
+		serveWs(hub, c, roomMappings)
 	})
 
 	// Status endpoint
