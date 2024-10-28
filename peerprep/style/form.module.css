@@ -64,7 +64,7 @@
 }
 
 .text_input {
-  background-color: rgb(30, 31, 31);
+  /*background-color: rgb(30, 31, 31);*/
   border: 1px solid white;
   width: 80%;
   border-radius: 3%;
