@@ -116,7 +116,11 @@ function NewQuestion({}: Props) {
           disabled={loading}
           label="Difficulty: "
           group="difficulty"
-          options={{ Easy: 1, Medium: 2, Hard: 3 }}
+          options={{
+            Easy: Difficulty.Easy,
+            Medium: Difficulty.Medium,
+            Hard: Difficulty.Hard,
+          }}
           onChange={handleFormTextInput}
         />
         <FormTextAreaInput
