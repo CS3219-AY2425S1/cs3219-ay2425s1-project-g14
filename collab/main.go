@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -38,7 +39,11 @@ type Message struct {
 
 func verifyToken(token string) bool {
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "http://localhost:3001/auth/verify-token", nil)
+	USER_SERVICE_URI := os.Getenv("USER_SERVICE_URI")
+	if USER_SERVICE_URI == "" {
+		USER_SERVICE_URI = "http://localhost:3001"
+	}
+	req, err := http.NewRequest("GET", USER_SERVICE_URI + "/auth/verify-token", nil)
 	if err != nil {
 		log.Println("Error creating request:", err)
 		return false
@@ -140,8 +145,6 @@ func handleMessages(client *Client, hub *Hub) {
 			break
 		}
 
-		log.Printf("Received")
-
 		var msgData map[string]interface{}
 		if err := json.Unmarshal(message, &msgData); err != nil {
 			log.Printf("Failed to parse message: %v", err)
@@ -168,7 +171,6 @@ func handleMessages(client *Client, hub *Hub) {
 		}
 
 		if msgData["type"] == "close_session" {
-			log.Println("It's time")
 			closeMessage := Message{
 				roomID:  client.roomID,
 				content: []byte("The session has been closed by a user."),
@@ -224,5 +226,9 @@ func main() {
 	// Status endpoint
 	r.GET("/status", statusHandler(hub))
 
-	r.Run(":4000")
+	PORT := os.Getenv("PORT")
+	if PORT == "" {
+		PORT = ":4000"
+	}
+	r.Run(PORT)
 }

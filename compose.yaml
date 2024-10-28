@@ -115,6 +115,18 @@ services:
           target: storage-blob-api/app
     depends_on:
       - redis
+
+  collab:
+    build: collab
+    env_file:
+      - collab/.env
+    ports:
+      - "4000:4000"
+    develop:
+      watch:
+        - action: rebuild
+          path: collab
+          target: collab/app
 #  mongo:
 #    image: "mongo:latest"
 #    ports:

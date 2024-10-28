@@ -36,3 +36,5 @@ time="2024-10-27T15:29:09+08:00" level=error msg="error handling incoming reques
 time="2024-10-27T15:29:10+08:00" level=error msg="error handling incoming request: WRONGTYPE Operation against a key holding the wrong kind of value"
 time="2024-10-27T16:08:08+08:00" level=error msg="error handling incoming request: WRONGTYPE Operation against a key holding the wrong kind of value"
 time="2024-10-27T16:08:10+08:00" level=error msg="error handling incoming request: WRONGTYPE Operation against a key holding the wrong kind of value"
+time="2024-10-28T13:01:38+08:00" level=info msg="Beginning consumption from message queue"
+time="2024-10-28T13:01:38+08:00" level=info msg="Begin processing requests"
