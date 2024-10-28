@@ -140,6 +140,8 @@ func handleMessages(client *Client, hub *Hub) {
 			break
 		}
 
+		log.Printf("Received")
+
 		var msgData map[string]interface{}
 		if err := json.Unmarshal(message, &msgData); err != nil {
 			log.Printf("Failed to parse message: %v", err)
@@ -165,6 +167,14 @@ func handleMessages(client *Client, hub *Hub) {
 			continue
 		}
 
+		if msgData["type"] == "close_session" {
+			log.Println("It's time")
+			closeMessage := Message{
+				roomID:  client.roomID,
+				content: []byte("The session has been closed by a user."),
+			}
+			hub.broadcast <- closeMessage
+		}
 
 		// Broadcast the message to other clients
 		hub.broadcast <- Message{roomID: client.roomID, content: message}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import AceEditor from "react-ace";
 
 import "ace-builds/src-noconflict/mode-python";
@@ -12,6 +13,7 @@ import "ace-builds/src-min-noconflict/ext-language_tools";
 import PeerprepDropdown from "@/components/shared/PeerprepDropdown";
 
 import { Question } from "@/api/structs";
+import PeerprepButton from "../shared/PeerprepButton";
 
 const languages = [
   "javascript",
@@ -55,6 +57,7 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
   const [value, setValue] = useState("def foo:\n  pass");
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [connected, setConnected] = useState(false);
+  const router = useRouter();
 
   const handleOnChange = (newValue: string) => {
     setValue(newValue);
@@ -88,13 +91,22 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
     newSocket.onmessage = (event) => {
       if (event.data == "Authentication failed") {
         console.log("Authentication failed");
+        router.push("/questions");
         return;
-      }
+      } else if (event.data == "The session has been closed by a user.") {
+        window.alert("Session has ended");
+        if (socket) {
+          console.log("what");
+          socket.close();
+        }
+        router.push("/questions");
+        return;
+      } else {
+        const message = JSON.parse(event.data);
 
-      const message = JSON.parse(event.data);
-
-      if (message.type === "content_change") {
-        setValue(message.data);
+        if (message.type === "content_change") {
+          setValue(message.data);
+        }
       }
     };
 
@@ -104,7 +116,22 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
     };
 
     setSocket(newSocket);
-  }, []);
+
+    return () => {
+      newSocket.close();
+    };
+  }, [roomID, authToken]);
+
+  const handleCloseConnection = () => {
+    const confirmClose = confirm(
+      "Are you sure you are finished? This will close the room for all users."
+    );
+
+    if (confirmClose && socket) {
+      console.log("Sent!");
+      socket.send(JSON.stringify({ type: "close_session" }));
+    }
+  };
 
   return (
     <>
@@ -138,6 +165,14 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
             "border border-gray-600 bg-gray-800 text-white p-2 rounded"
           }
         />
+
+        {roomID && (
+          <div className="h-full align-middle">
+            <PeerprepButton onClick={handleCloseConnection}>
+              Close Room
+            </PeerprepButton>
+          </div>
+        )}
       </div>
       {roomID && (
         <div className="w-full text-center mb-[16px]">
