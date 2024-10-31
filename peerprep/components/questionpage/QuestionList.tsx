@@ -19,9 +19,9 @@ const QuestionList: React.FC = () => {
 
   useEffect(() => {
     const fetchQuestions = async () => {
-      const payload = await fetch(
-        `${process.env.NEXT_PUBLIC_NGINX}/api/internal/questions`
-      ).then((res) => res.json());
+      const payload = await fetch(`/api/internal/questions`).then((res) =>
+        res.json()
+      );
       // uh
       if (isError(payload)) {
         // should also reflect the error

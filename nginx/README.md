@@ -1,11 +1,7 @@
-### So far local testing completed:
+nginx is dockerised, just have to run `docker compose up --build` as usual.
 
-1. Run frontend/backend services (front 3000, qn 9090, user 3001)
-2. copy nginx.conf into ur local install location
-3. start nginx
-4. go to localhost and should hopefully see the site
+if edits are made to the local nginx.conf file, following command must be run to see changes reflected in docker:
 
-### TODO:
+`docker exec cs3219-ay2425s1-project-g14-nginx-1  nginx -s reload`
 
-- dockerize nginx
-- change config to work with dockerised services
+(or just exec `nginx -s reload` in the container directly)

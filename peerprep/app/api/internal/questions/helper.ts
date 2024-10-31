@@ -1,13 +1,10 @@
 import { QuestionFullBody, StatusBody } from "@/api/structs";
 
 export async function deleteQuestion(id: number): Promise<StatusBody> {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_NGINX}/api/internal/questions`,
-    {
-      method: "DELETE",
-      body: JSON.stringify({ qid: id }),
-    },
-  );
+  const res = await fetch(`/api/internal/questions`, {
+    method: "DELETE",
+    body: JSON.stringify({ qid: id }),
+  });
   if (res.ok) {
     return { status: res.status };
   }
@@ -16,17 +13,14 @@ export async function deleteQuestion(id: number): Promise<StatusBody> {
 }
 
 export async function addQuestion(
-  question: QuestionFullBody,
+  question: QuestionFullBody
 ): Promise<StatusBody> {
   // TODO: this is not desired
   question.content = "<p>" + question.content + "</p>";
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_NGINX}/api/internal/questions`,
-    {
-      method: "POST",
-      body: JSON.stringify(question),
-    },
-  );
+  const res = await fetch(`/api/internal/questions`, {
+    method: "POST",
+    body: JSON.stringify(question),
+  });
   if (!res.ok) {
     return { status: res.status };
   }
