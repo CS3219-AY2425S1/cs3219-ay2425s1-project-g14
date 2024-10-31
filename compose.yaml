@@ -127,6 +127,11 @@ services:
         - action: rebuild
           path: collab
           target: collab/app
+
+  nginx:
+    build: nginx
+    ports:
+      - "80:80"
 #  mongo:
 #    image: "mongo:latest"
 #    ports:
