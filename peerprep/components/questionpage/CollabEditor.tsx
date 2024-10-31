@@ -56,6 +56,7 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
   const [language, setLanguage] = useState("python");
   const [value, setValue] = useState("def foo:\n  pass");
   const [socket, setSocket] = useState<WebSocket | null>(null);
+  const [connected, setconnected] = useState(false);
   const router = useRouter();
 
   const handleOnChange = (newValue: string) => {
@@ -74,10 +75,13 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
   useEffect(() => {
     if (!roomID) return;
 
+    console.log("Yep");
+
     const newSocket = new WebSocket(`ws://localhost:4000/ws?roomID=${roomID}`);
 
     newSocket.onopen = () => {
       console.log("WebSocket connection established");
+      setconnected(true);
 
       const authMessage = {
         type: "auth",
@@ -168,10 +172,19 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
           }
         />
 
-        {roomID && (
+        {roomID && connected ? (
           <div className="h-full align-middle">
             <PeerprepButton onClick={handleCloseConnection}>
               Close Room
+            </PeerprepButton>
+          </div>
+        ) : (
+          <div className="h-full align-middle">
+            <PeerprepButton
+              onClick={handleCloseConnection}
+              className="disabled"
+            >
+              Disconnected. Check logs.
             </PeerprepButton>
           </div>
         )}

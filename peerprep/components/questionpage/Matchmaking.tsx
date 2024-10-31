@@ -129,11 +129,12 @@ const Matchmaking = () => {
     const matchRes: MatchResponse = res as MatchResponse;
     console.log("Match found!");
     // display in a popup for now
-    const message = `Room ID: ${matchRes.data.roomId}
-    User1: ${matchRes.data.user1}
-    User2: ${matchRes.data.user2}
-    Question: ${matchRes.data.questionId}
-    `;
+    // const message = `Room ID: ${matchRes.data.roomId}
+    // User1: ${matchRes.data.user1}
+    // User2: ${matchRes.data.user2}
+    // Question: ${matchRes.data.questionId}
+    // `;
+    const message = "Match found! Redirecting to collab page...";
     window.alert(message);
     // redirect to question page
     router.push(
