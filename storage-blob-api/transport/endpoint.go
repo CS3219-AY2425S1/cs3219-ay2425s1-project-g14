@@ -10,7 +10,7 @@ import (
 )
 
 func SetAllEndpoints(router *gin.Engine, db *storage.RoomMappings, logger *models.Logger) {
-	router.GET("/request/:userId", HandleRequest(db, logger))
+	router.GET("/request/:matchHash", HandleRequest(db, logger))
 }
 
 func SetCors(router *gin.Engine, origin string) {

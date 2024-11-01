@@ -1,6 +1,7 @@
 package models
 
 type IncomingRequests struct {
+	MatchHash   string	 `json:"matchHash"`
 	UserId      string   `json:"userId"`
 	TopicTags   []string `json:"topicTags"`
 	Difficulty  string   `json:"difficulty"`

@@ -15,17 +15,17 @@ import (
 
 func HandleRequest(db *storage.RoomMappings, logger *models.Logger) (gin.HandlerFunc){
 	return func(ctx *gin.Context) {
-		userId := ctx.Param("userId")
+		matchHash := ctx.Param("matchHash")
 
-		result, err := db.Conn.HGetAll(context.Background(), userId).Result()
+		result, err := db.Conn.HGetAll(context.Background(), matchHash).Result()
 		
 		if err == redis.Nil {
-			logger.Log.Warn(fmt.Sprintf("userId %s expired: ", userId))
-			ctx.JSON(http.StatusGone, "userId has expired")
+			logger.Log.Warn(fmt.Sprintf("matchHash %s expired: ", matchHash))
+			ctx.JSON(http.StatusGone, "matchHash has expired")
 			return
 		} else if err != nil {
-			logger.Log.Error(fmt.Errorf("error retrieving userId from database: %s", err.Error()))
-			ctx.JSON(http.StatusBadGateway, "error retriving userId from database")
+			logger.Log.Error(fmt.Errorf("error retrieving matchHash from database: %s", err.Error()))
+			ctx.JSON(http.StatusBadGateway, "error retriving matchHash from database")
 			return
 		}
 		
@@ -49,10 +49,12 @@ func HandleRequest(db *storage.RoomMappings, logger *models.Logger) (gin.Handler
 			return
 		}
 
-		roomId, user2, requestTime, title, titleSlug, difficulty, content, questionId_string := 
-			result["roomId"], result["otherUser"], result["requestTime"], 
-			result["title"], result["titleSlug"], result["difficulty"], result["content"], result["id"]
-
+		roomId, user1, user2, requestTime := 
+			result["roomId"], result["thisUser"], result["otherUser"], result["requestTime"]
+			
+		
+		title, titleSlug, difficulty, content, questionId_string :=
+		result["title"], result["titleSlug"], result["difficulty"], result["content"], result["id"]
 		questionId, err := strconv.Atoi(questionId_string)
 
 		if err != nil {
@@ -63,7 +65,7 @@ func HandleRequest(db *storage.RoomMappings, logger *models.Logger) (gin.Handler
 
 		room := models.Room{
 			RoomId: roomId,
-			User1: userId,
+			User1: user1,
 			User2: user2,
 			RequestTime: requestTime,
 
