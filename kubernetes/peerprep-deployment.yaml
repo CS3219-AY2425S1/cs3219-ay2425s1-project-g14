@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: peerprep
+spec:
+  selector:
+    matchLabels:
+      app: peerprep
+  template:
+    metadata:
+      labels:
+        app: peerprep
+    spec:
+      containers:
+        - name: peerprep
+          image: distractedcat/peerprep:1.0.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: NEXT_PUBLIC_QUESTION_SERVICE
+              value: http://backend:9090
+            - name: NEXT_PUBLIC_USER_SERVICE
+              value: http://user-service:3001
+            - name: NEXT_PUBLIC_MATCHING_SERVICE
+              value: http://matching-service-api:9200
+            - name: NEXT_PUBLIC_STORAGE_BLOB
+              value: http://storage-blob-api:9300
+            - name: NEXT_PUBLIC_NGINX
+              value: http://peerprep:3000
+            - name: DEV_ENV
+              value: not
+          ports:
+            - containerPort: 3000
+              name: peerprep
