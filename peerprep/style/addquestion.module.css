@@ -29,13 +29,13 @@
 
 .tooltip {
     @apply absolute bottom-full mb-2 p-1 text-xs text-white bg-black rounded opacity-0 transition-opacity duration-200;
-    transform: translateX(-50%);
+    transform: translate(-50%, 0%);
     left: 50%;
     white-space: nowrap;
 }
 
 .tooltipWrapper:hover .tooltip {
-    @apply opacity-100;
+    @apply opacity-100 bg-black text-white;
 }
 
 
