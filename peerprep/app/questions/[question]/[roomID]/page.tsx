@@ -6,13 +6,16 @@ import React from "react";
 import QuestionBlock from "./question";
 
 type Props = {
+  searchParams: {
+    match?: string
+  },
   params: {
     question: string;
     roomID: string;
   };
 };
 
-async function Question({ params }: Props) {
+async function Question({ params, searchParams }: Props) {
   const question = await fetchQuestion(params.question);
 
   return (
@@ -24,6 +27,7 @@ async function Question({ params }: Props) {
           question={question as QnType}
           roomID={params.roomID}
           authToken={getSessionToken()}
+          matchHash={searchParams.match}
         />
       )}
     </div>

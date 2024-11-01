@@ -48,9 +48,10 @@ interface Props {
   question: Question;
   roomID?: String;
   authToken?: String;
+  matchHash?: String;
 }
 
-export default function CollabEditor({ question, roomID, authToken }: Props) {
+export default function CollabEditor({ question, roomID, authToken, matchHash }: Props) {
   const [theme, setTheme] = useState("terminal");
   const [fontSize, setFontSize] = useState(18);
   const [language, setLanguage] = useState("python");
@@ -86,6 +87,7 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
       const authMessage = {
         type: "auth",
         token: authToken,
+        matchHash: matchHash // omitted if undefined
       };
       newSocket.send(JSON.stringify(authMessage));
     };

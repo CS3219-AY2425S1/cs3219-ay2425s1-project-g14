@@ -13,6 +13,7 @@ interface Props {
   question: Question;
   roomID?: String;
   authToken?: String;
+  matchHash?: String;
 }
 
 interface DifficultyChipProps {
@@ -29,7 +30,7 @@ function DifficultyChip({ diff }: DifficultyChipProps) {
   );
 }
 
-function QuestionBlock({ question, roomID, authToken }: Props) {
+function QuestionBlock({ question, roomID, authToken, matchHash }: Props) {
   const router = useRouter();
 
   const handleDelete = async () => {
@@ -95,6 +96,7 @@ function QuestionBlock({ question, roomID, authToken }: Props) {
           question={question}
           roomID={roomID}
           authToken={authToken}
+          matchHash={matchHash}
         />
       </div>
     </>

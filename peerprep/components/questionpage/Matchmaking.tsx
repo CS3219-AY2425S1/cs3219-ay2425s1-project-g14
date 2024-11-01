@@ -55,6 +55,7 @@ const usePeriodicCallback = (
 const Matchmaking = () => {
   const router = useRouter();
   const [isMatching, setIsMatching] = useState<boolean>(false);
+  const [matchHash, setMatchHash] = useState<string>("");
   const { difficulties, topicList } = useQuestionFilter();
   const [difficultyFilter, setDifficultyFilter] = useState<string>(
     Difficulty.Easy
@@ -86,12 +87,16 @@ const Matchmaking = () => {
     return matchRequest;
   };
 
+  // TODO: Canceling the match should propagate a cancellation signal
+  //       Currently, we can actually match yourself rn due to this change
+  //       This indicates to me that 1 users can match on a cancellation
   const handleMatch = async () => {
     if (!isMatching) {
       setIsMatching(true);
 
       // start 30s timeout
       timeout.current = setTimeout(() => {
+        setMatchHash("");
         setIsMatching(false);
         console.log("Match request timed out after 30s");
       }, TIMEOUT_MILLISECONDS);
@@ -103,14 +108,17 @@ const Matchmaking = () => {
 
       //   send match request
       const status = await findMatch(matchRequest);
-      if (status.error) {
+      if (isError(status)) {
         stopTimer();
         console.log("Failed to find match. Cancel matching.");
+        setMatchHash("");
         setIsMatching(false);
         return;
       }
+      setMatchHash(status.match_code);
       console.log(`Started finding match.`);
     } else {
+      setMatchHash("");
       stopTimer();
       setIsMatching(false);
       console.log("User stopped matching");
@@ -118,7 +126,7 @@ const Matchmaking = () => {
   };
 
   const queryResource = async () => {
-    const res = await checkMatchStatus(userid);
+    const res = await checkMatchStatus(matchHash);
     if (isError(res)) {
       // for now 404 means no match found so dont stop matching on error, let request timeout
       return;
@@ -128,17 +136,8 @@ const Matchmaking = () => {
     // TODO: iron out what is in a match response and sync up with collab service rooms
     const matchRes: MatchResponse = res as MatchResponse;
     console.log("Match found!");
-    // display in a popup for now
-    // const message = `Room ID: ${matchRes.data.roomId}
-    // User1: ${matchRes.data.user1}
-    // User2: ${matchRes.data.user2}
-    // Question: ${matchRes.data.questionId}
-    // `;
-    const message = "Match found! Redirecting to collab page...";
-    window.alert(message);
-    // redirect to question page
     router.push(
-      `/questions/${matchRes.data.questionId}/${matchRes.data.roomId}`
+      `/questions/${matchRes.data.questionId}/${matchRes.data.roomId}?match=${matchHash}`
     );
   };
 
@@ -151,8 +150,8 @@ const Matchmaking = () => {
         Add Question
       </PeerprepButton>
       <div className="flex flex-row items-center space-x-4">
-        <PeerprepButton onClick={handleMatch}>
-          {isMatching ? "Cancel Match" : "Find Match"}
+        <PeerprepButton onClick={handleMatch} disabled={!isMatching && matchHash !== ""}>
+          {isMatching ? "Cancel Match" : matchHash === "" ? "Find Match" : "Redirecting..."}
         </PeerprepButton>
         {!isMatching && (
           <PeerprepDropdown

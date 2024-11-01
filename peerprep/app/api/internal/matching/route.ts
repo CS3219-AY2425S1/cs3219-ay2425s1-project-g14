@@ -4,15 +4,15 @@ import { NextRequest, NextResponse } from "next/server";
 
 // all get request interpreted as getting from storage blob
 export async function GET(request: NextRequest) {
-  const uid = request.nextUrl.searchParams.get("uid"); // Assuming you're passing the userId as a query parameter
-  console.log("in route,", uid);
-  if (!uid) {
-    return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+  const matchHash = request.nextUrl.searchParams.get("matchHash"); // Assuming you're passing the userId as a query parameter
+  console.log("in route,", matchHash);
+  if (!matchHash) {
+    return NextResponse.json({ error: "MatchHash is required" }, { status: 400 });
   }
 
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_STORAGE_BLOB}/request/${uid}`,
+      `${process.env.NEXT_PUBLIC_STORAGE_BLOB}/request/${matchHash}`,
       {
         method: "GET",
         headers: generateAuthHeaders(),
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     );
     if (response.ok) {
       return NextResponse.json(
-        { status: response.status },
+        { match_code: (await response.json()).match_code },
         { status: response.status }
       );
     }
