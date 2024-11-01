@@ -172,22 +172,23 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
           }
         />
 
-        {roomID && connected ? (
-          <div className="h-full align-middle">
-            <PeerprepButton onClick={handleCloseConnection}>
-              Close Room
-            </PeerprepButton>
-          </div>
-        ) : (
-          <div className="h-full align-middle">
-            <PeerprepButton
-              onClick={handleCloseConnection}
-              className="disabled"
-            >
-              Disconnected. Check logs.
-            </PeerprepButton>
-          </div>
-        )}
+        {roomID &&
+          (connected ? (
+            <div className="h-full align-middle">
+              <PeerprepButton onClick={handleCloseConnection}>
+                Close Room
+              </PeerprepButton>
+            </div>
+          ) : (
+            <div className="h-full align-middle">
+              <PeerprepButton
+                onClick={handleCloseConnection}
+                className="disabled"
+              >
+                Disconnected. Check logs.
+              </PeerprepButton>
+            </div>
+          ))}
       </div>
       <AceEditor
         mode={language}
