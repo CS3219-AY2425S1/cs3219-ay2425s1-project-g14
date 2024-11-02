@@ -14,6 +14,7 @@ import PeerprepDropdown from "@/components/shared/PeerprepDropdown";
 
 import { Question } from "@/api/structs";
 import PeerprepButton from "../shared/PeerprepButton";
+import CallPanel from "./CallPanel";
 
 const languages = [
   "javascript",
@@ -78,7 +79,7 @@ export default function CollabEditor({ question, roomID, authToken, matchHash }:
 
     console.log("Yep");
 
-    const newSocket = new WebSocket(`ws://localhost:4000/ws?roomID=${roomID}`);
+    const newSocket = new WebSocket(`ws://${process.env.NEXT_PUBLIC_NGINX}/api/proxy?roomID=${roomID}`);
 
     newSocket.onopen = () => {
       console.log("WebSocket connection established");
@@ -143,6 +144,7 @@ export default function CollabEditor({ question, roomID, authToken, matchHash }:
 
   return (
     <>
+      <CallPanel/>
       <div className="flex space-x-4 items-center p-4 m-4">
         <div className="flex flex-col">
           <label className="font-semibold mb-1">Font Size</label>
