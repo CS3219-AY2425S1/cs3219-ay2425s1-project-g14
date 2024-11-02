@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z, ZodType } from "zod";
 
 export enum Difficulty {
   All = "All",
@@ -114,3 +114,16 @@ export const LoginFormSchema = z.object({
 export function isError(obj: any | StatusBody): obj is StatusBody {
   return (obj as StatusBody).status !== undefined;
 }
+
+export const QuestionSchema = z.object({
+  difficulty: z.nativeEnum(Difficulty),
+  title: z.string().min(2, {
+    message: "Please input a title.",
+  }),
+  content: z.string().min(2, {
+    message: "Please input content.",
+  }),
+  topicTags: z.array(z.string()).min(1, {
+    message: "Please input at least one topic tag.",
+  }),
+}) satisfies ZodType<QuestionFullBody>;

@@ -2,36 +2,38 @@
 
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-
-import { Difficulty, QuestionSchema } from "@/api/structs";
-import { useRouter } from "next/navigation";
-import { exampleQuestion } from "@/app/questions/new/ExampleQuestion";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Question, QuestionSchema } from "@/api/structs";
+import { editQuestion } from "@/app/api/internal/questions/helper";
 import QuestionForm from "@/app/questions/QuestionForm";
-import { addQuestion } from "@/app/api/internal/questions/helper";
+import { useRouter } from "next/navigation";
 
-const NewQuestion = () => {
+const EditQuestion = ({ question }: { question: Question }) => {
   const router = useRouter();
 
   const form = useForm<z.infer<typeof QuestionSchema>>({
     resolver: zodResolver(QuestionSchema),
     defaultValues: {
-      title: "",
-      difficulty: Difficulty.Easy,
-      content: exampleQuestion,
-      topicTags: [],
+      title: question.title,
+      difficulty: question.difficulty,
+      content: question.content,
+      topicTags: question.topicTags,
     },
   });
 
   const onSubmit = async (values: z.infer<typeof QuestionSchema>) => {
     console.log(values);
-    const status = await addQuestion(values);
+    const qn = {
+      id: question.id,
+      ...values,
+    };
+    const status = await editQuestion(qn);
     if (status.error) {
       console.log("Failed to add question.");
       console.log(`Code ${status.status}:  ${status.error}`);
       return;
     }
-    console.log(`Successfully added the question.`);
+    console.log(`Successfully modified the question.`);
     router.push("/questions");
   };
 
@@ -44,4 +46,4 @@ const NewQuestion = () => {
   );
 };
 
-export default NewQuestion;
+export default EditQuestion;
