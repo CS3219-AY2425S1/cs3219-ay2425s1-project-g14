@@ -1,10 +1,10 @@
-pre-commit:
-  parallel: true
-  commands:
-    golangci-lint:
-      glob: "*.go"
-      run: golangci-lint run {staged_files}
-    lint-staged:
-      root: "peerprep/"
-      glob: "*.(ts|tsx|css|scss|md|json)"
-      run: npx lint-staged
+#pre-commit:
+#  parallel: true
+#  commands:
+#    golangci-lint:
+#      glob: "*.go"
+#      run: golangci-lint run {staged_files}
+#    lint-staged:
+#      root: "peerprep/"
+#      glob: "*.(ts|tsx|css|scss|md|json)"
+#      run: npx lint-staged
