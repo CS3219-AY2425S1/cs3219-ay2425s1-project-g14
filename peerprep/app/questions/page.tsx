@@ -15,6 +15,6 @@ async function QuestionsPage() {
       </QuestionFilterProvider>
     </UserInfoProvider>
   );
-};
+}
 
 export default QuestionsPage;

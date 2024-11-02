@@ -134,6 +134,19 @@ services:
         - action: rebuild
           path: collab
           target: collab/app
+
+  nginx:
+    build: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - peerprep
+      - backend
+      - user-service
+      - storage-blob-api
+      - matching-service-api
 #  mongo:
 #    image: "mongo:latest"
 #    ports:
