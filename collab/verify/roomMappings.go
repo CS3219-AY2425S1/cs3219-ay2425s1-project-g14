@@ -23,12 +23,44 @@ func InitialiseRoomMappings(addr string, db_num int) *RoomMappings {
 	}
 }
 
-func VerifyRoom(roomMappings *RoomMappings, roomID string, userID string) bool {
-	data, err := roomMappings.Conn.HGetAll(context.Background(), userID).Result()
+func VerifyRoomAndMoveToPersist(
+		roomMappings *RoomMappings,
+		roomID string,
+		userId string,
+		matchHash string,
+		persistMappings *PersistMappings,
+) bool {
+	ctx := context.Background()
+	data, err := roomMappings.Conn.HGetAll(ctx, matchHash).Result()
 	if err != nil {
-		log.Printf("Error retrieving data for userID %s: %v", userID, err)
+		log.Printf("Error retrieving data for matchHash %s: %v", matchHash, err)
 		return false
 	}
 
-	return data["roomId"] == roomID
+	if data["roomId"] != roomID || data["thisUser"] != userId {
+		log.Printf("Mismatch in room data and user data")
+		return false
+	}
+
+	roomMappings.Conn.Del(ctx, matchHash);
+	persistentRoom := map[string]interface{}{
+		"roomId":      roomID,
+		"otherUser":   data["otherUser"],
+		"requestTime": data["requestTime"],
+
+		"title":       data["title"],
+		"titleSlug":   data["titleSlug"],
+		"difficulty":  data["difficulty"],
+		"topicTags":   data["topicTags"],
+		"content":     data["content"],
+		"schemas":     data["schemas"],
+		"id":          data["id"],
+	}
+
+	// this always overrides the persistent room
+	if err := persistMappings.Conn.HSet(ctx, userId, persistentRoom).Err(); err != nil {
+		log.Printf("error sending room to persistent storage: %s", err.Error())
+	}
+
+	return true
 }

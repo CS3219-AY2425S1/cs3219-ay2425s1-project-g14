@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -52,8 +53,19 @@ func main() {
 	if REDIS_URI == "" {
 		REDIS_URI = "localhost://9190"
 	}
+	
+	REDIS_ROOM_MAPPING   := 1
 
-	roomMappings := storage.InitialiseRoomMappings(REDIS_URI, 1)	
+	if os.Getenv("REDIS_ROOM_MAPPING") != "" {
+		num, err := strconv.Atoi(os.Getenv("REDIS_ROOM_MAPPING"))
+		if err != nil {
+			log.Fatal("DB no of room map is badly formatted" + err.Error())
+		} else {
+			REDIS_ROOM_MAPPING = num
+		}
+	}
+
+	roomMappings := storage.InitialiseRoomMappings(REDIS_URI, REDIS_ROOM_MAPPING)	
 
 	router := gin.Default()
 	transport.SetCors(router, ORIGIN)

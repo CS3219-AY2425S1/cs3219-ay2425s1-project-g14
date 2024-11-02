@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"sync"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -140,7 +141,11 @@ func (h *Hub) Run() {
 }
 
 // ServeWs handles WebSocket requests
-func serveWs(hub *Hub, c *gin.Context, roomMappings *verify.RoomMappings) {
+func serveWs(
+		hub *Hub, c *gin.Context,
+		roomMappings *verify.RoomMappings,
+		persistMappings *verify.PersistMappings,
+) {
 	roomID := c.Query("roomID")
 	if roomID == "" {
 		http.Error(c.Writer, "roomID required", http.StatusBadRequest)
@@ -156,19 +161,40 @@ func serveWs(hub *Hub, c *gin.Context, roomMappings *verify.RoomMappings) {
 	client := &Client{conn: conn, roomID: roomID}
 	hub.register <- client
 
-	go handleMessages(client, hub, roomMappings)
+	go handleMessages(client, hub, roomMappings, persistMappings)
 }
 
-func authenticateClient(token string, client *Client, roomMappings *verify.RoomMappings) bool {
+func authenticateClient(
+		token string, match string, client *Client,
+		roomMappings *verify.RoomMappings,
+		persistMappings *verify.PersistMappings,
+) bool {
 	ok, userID := verifyToken(token)
 	if !ok {
-		log.Println("bruh")
+		log.Println("bad token in request")
 		return false
 	}
-	return verify.VerifyRoom(roomMappings, client.roomID, userID)
+	return verify.VerifyRoomAndMoveToPersist(
+		roomMappings, client.roomID, userID, match, persistMappings)
 }
 
-func handleMessages(client *Client, hub *Hub, roomMappings *verify.RoomMappings) {
+func authenticateClientNoMatch(
+		token string, client *Client,
+		persistMappings *verify.PersistMappings,
+) bool {
+	ok, userID := verifyToken(token)
+	if !ok {
+		log.Println("bad token in request")
+		return false
+	}
+	return verify.VerifyPersist(persistMappings, client.roomID, userID)
+}
+
+func handleMessages(
+		client *Client, hub *Hub,
+		roomMappings *verify.RoomMappings,
+		persistMappings *verify.PersistMappings,
+) {
 	defer func() {
 		hub.unregister <- client
 	}()
@@ -187,16 +213,41 @@ func handleMessages(client *Client, hub *Hub, roomMappings *verify.RoomMappings)
 		}
 		// Handle authentication message
 		if msgData["type"] == "auth" {
-            token, ok := msgData["token"].(string)
-            if !ok || !authenticateClient(token, client, roomMappings) {
-                log.Println("Authentication failed")
-                client.conn.WriteMessage(websocket.TextMessage, []byte("Authentication failed"))
-                client.conn.Close()
-                break
-            }
-            client.authenticated = true
-            log.Println("Client authenticated successfully")
-        }
+      token, tokenOk := msgData["token"].(string)
+      if !tokenOk {
+          log.Println("Authentication failed - no token attached")
+          client.conn.WriteMessage(
+						websocket.TextMessage,
+						[]byte("Authentication failed - no JWT token"),
+					)
+          client.conn.Close()
+          break
+      }
+			isSuccess := false
+			match, matchOk := msgData["matchHash"].(string)
+			if matchOk && !authenticateClient(token, match, client, roomMappings, persistMappings) {
+				log.Println(
+					"failed to find a matching room from match hash, proceeding with persistence check",
+				)
+			}
+			// I will ping the persistent map even if I've found it in the original map
+			if !authenticateClientNoMatch(token, client, persistMappings) {
+				log.Println("failed to find a persistent room")
+				isSuccess = false
+			} else {
+				isSuccess = true
+			}
+			if !isSuccess {
+				client.conn.WriteMessage(
+					websocket.TextMessage,
+					[]byte("Authentication failed - failed to find a matching room"),
+				)
+				client.conn.Close()
+				break
+			}
+      client.authenticated = true
+      log.Println("Client authenticated successfully")
+    }
 
 		if msgData["type"] == "close_session" {
 			closeMessage := Message{
@@ -250,11 +301,34 @@ func main() {
 	if REDIS_URI == "" {
 		REDIS_URI = "localhost:9190"
 	}
-	roomMappings := verify.InitialiseRoomMappings(REDIS_URI, 1)
+
+	REDIS_ROOM_MAPPING := 1
+	REDIS_ROOM_PERSIST := 2
+
+	if os.Getenv("REDIS_ROOM_MAPPING") != "" {
+		num, err := strconv.Atoi(os.Getenv("REDIS_ROOM_MAPPING"))
+		if err != nil {
+			log.Fatal("DB no of room map is badly formatted" + err.Error())
+		} else {
+			REDIS_ROOM_MAPPING = num
+		}
+	}
+
+	if os.Getenv("REDIS_ROOM_PERSIST") != "" {
+		num, err := strconv.Atoi(os.Getenv("REDIS_ROOM_PERSIST"))
+		if err != nil {
+			log.Fatal("DB no of room persistance store is badly formatted" + err.Error())
+		} else {
+			REDIS_ROOM_PERSIST = num
+		}
+	}
+
+	roomMappings    := verify.InitialiseRoomMappings(REDIS_URI, REDIS_ROOM_MAPPING)
+	persistMappings := verify.InitialisePersistMappings(REDIS_URI, REDIS_ROOM_PERSIST);
 
 	// WebSocket connection endpoint
 	r.GET("/ws", func(c *gin.Context) {
-		serveWs(hub, c, roomMappings)
+		serveWs(hub, c, roomMappings, persistMappings)
 	})
 
 	// Status endpoint
