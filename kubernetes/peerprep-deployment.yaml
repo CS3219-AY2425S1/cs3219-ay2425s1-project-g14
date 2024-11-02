@@ -14,18 +14,18 @@ spec:
       containers:
         - name: peerprep
           image: distractedcat/peerprep:1.0.0
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           env:
             - name: NEXT_PUBLIC_QUESTION_SERVICE
-              value: http://backend:9090
+              value: backend
             - name: NEXT_PUBLIC_USER_SERVICE
-              value: http://user-service:3001
+              value: users
             - name: NEXT_PUBLIC_MATCHING_SERVICE
-              value: http://matching-service-api:9200
+              value: matchmaking
             - name: NEXT_PUBLIC_STORAGE_BLOB
-              value: http://storage-blob-api:9300
+              value: blob
             - name: NEXT_PUBLIC_NGINX
-              value: http://peerprep:3000
+              value: http://nginx:80
             - name: DEV_ENV
               value: not
           ports:

@@ -21,4 +21,4 @@ spec:
             - name: REDIS_URI
               value: redis:6379
             - name: BACKEND_MATCH_URI
-              value: http:///backend:9090/match
+              value: http://backend:9090/match
