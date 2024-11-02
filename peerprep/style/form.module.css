@@ -1,80 +1,90 @@
 .title {
-    font-size: x-large;
+  font-size: x-large;
 }
 
 .wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 10px;
-    height: 100%;
-    width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 10px;
+  height: 100%;
+  width: 100%;
 }
 
 .form_container {
-    color: white;
-    font-family: Helvetica, Arial, sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: left;
-    gap: 10px;
-    padding: 2rem;
-    border-radius: 12px;
-    max-width: 400px;
-    width: 100%;
-    text-align: left;
+  color: white;
+  font-family: Helvetica, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: left;
+  gap: 10px;
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 800px;
+  width: 100%;
+  text-align: left;
 }
 
 .input_container {
-    padding-top: 5px;
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 10px;
+  padding-top: 5px;
+  /*margin: 5px;*/
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  /*align-items: center;*/
+  gap: 10px;
+  position: relative;
 }
 
 .label {
-    text-wrap: nowrap;
-    width: 100px;
-    text-align: left;
-    margin-right: 10px;
-    font-weight: bold;
+  text-wrap: nowrap;
+  width: 100px;
+  text-align: left;
+  margin-right: 10px;
+  font-weight: bold;
 }
 
 .deletableText {
-    font-family: monospace, Consolas, Courier;
-    color: white;
-    text-shadow: none;
+  font-family: monospace, Consolas, Courier;
+  color: white;
+  text-shadow: none;
 }
 
 .disabledText {
-    font-family: monospace, Consolas, Courier;
-    color: grey;
-    text-shadow: none;
+  font-family: monospace, Consolas, Courier;
+  color: grey;
+  text-shadow: none;
 }
 
 .deletableText:hover {
-    font-family: monospace, Consolas, Courier;
-    color: red;
-    text-shadow: 1px;
+  font-family: monospace, Consolas, Courier;
+  color: red;
+  text-shadow: 1px;
 }
 
 .text_input {
-    background-color: rgb(30, 31, 31);
-    border: 1px solid white;
-    width: 80%;
-    border-radius: 3%;
+  /*background-color: rgb(30, 31, 31);*/
+  border: 1px solid white;
+  width: 80%;
+  border-radius: 3%;
+  margin: 2px;
+  padding: 2px;
+  position: relative;
 }
 
+.error {
+  color: red;
+  font-size: small;
+}
 
 .radio_container {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
 }
 
 .radio_gap_override {
-    gap: 2px;
+  gap: 2px;
 }

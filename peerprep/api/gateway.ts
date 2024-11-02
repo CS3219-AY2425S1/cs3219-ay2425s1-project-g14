@@ -1,11 +1,16 @@
 import { cookies } from "next/headers";
-import { LoginResponse, Question, UserServiceResponse, StatusBody } from "./structs";
+import {
+  LoginResponse,
+  Question,
+  StatusBody,
+  UserServiceResponse,
+} from "./structs";
 import DOMPurify from "isomorphic-dompurify";
 
 export function generateAuthHeaders() {
   return {
-    "Authorization": `Bearer ${cookies().get("session")?.value}`,
-  };;
+    Authorization: `Bearer ${cookies().get("session")?.value}`,
+  };
 }
 
 export function generateJSONHeaders() {
@@ -24,6 +29,7 @@ export async function fetchQuestion(
       {
         method: "GET",
         headers: generateAuthHeaders(),
+        next: { revalidate: 5 },
       },
     );
     if (!response.ok) {
@@ -105,7 +111,7 @@ export async function verifyUser(): Promise<UserServiceResponse | StatusBody> {
       {
         method: "GET",
         headers: generateAuthHeaders(),
-      }
+      },
     );
     const json = await res.json();
 
