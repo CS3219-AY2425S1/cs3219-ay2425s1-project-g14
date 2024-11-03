@@ -2,10 +2,7 @@
 import React from "react";
 import { Difficulty, Question } from "@/api/structs";
 import Chip from "@/components/shared/Chip";
-import PeerprepButton from "@/components/shared/PeerprepButton";
 import styles from "@/style/question.module.css";
-import { useRouter } from "next/navigation";
-import { deleteQuestion } from "@/app/api/internal/questions/helper";
 import CollabEditor from "@/components/questionpage/CollabEditor";
 import DOMPurify from "isomorphic-dompurify";
 
@@ -31,28 +28,6 @@ function DifficultyChip({ diff }: DifficultyChipProps) {
 }
 
 function QuestionBlock({ question, roomID, authToken, matchHash }: Props) {
-  const router = useRouter();
-
-  const handleDelete = async () => {
-    if (
-      confirm(
-        `Are you sure you want to delete ${question.title}? (ID: ${question.id}) `
-      )
-    ) {
-      const status = await deleteQuestion(question.id);
-      if (status.error) {
-        alert(
-          `Failed to delete question. Code ${status.status}:  ${status.error}`
-        );
-        return;
-      }
-      console.log(`Successfully deleted the question.`);
-      router.push("/questions");
-    } else {
-      console.log("Deletion cancelled.");
-    }
-  };
-
   return (
     <>
       <div className={styles.qn_container}>
@@ -63,12 +38,6 @@ function QuestionBlock({ question, roomID, authToken, matchHash }: Props) {
             </h1>
             <DifficultyChip diff={question.difficulty} />
           </div>
-          <PeerprepButton
-            className={` ${styles.button}`}
-            onClick={handleDelete}
-          >
-            Delete
-          </PeerprepButton>
         </div>
         <div className={styles.label_wrapper}>
           <p>Topics: </p>

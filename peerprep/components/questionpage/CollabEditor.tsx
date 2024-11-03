@@ -14,6 +14,7 @@ import PeerprepDropdown from "@/components/shared/PeerprepDropdown";
 
 import { Question } from "@/api/structs";
 import PeerprepButton from "../shared/PeerprepButton";
+import CommsPanel from "./CommsPanel";
 
 const languages = [
   "javascript",
@@ -51,7 +52,12 @@ interface Props {
   matchHash?: String;
 }
 
-export default function CollabEditor({ question, roomID, authToken, matchHash }: Props) {
+export default function CollabEditor({
+  question,
+  roomID,
+  authToken,
+  matchHash,
+}: Props) {
   const [theme, setTheme] = useState("terminal");
   const [fontSize, setFontSize] = useState(18);
   const [language, setLanguage] = useState("python");
@@ -76,7 +82,7 @@ export default function CollabEditor({ question, roomID, authToken, matchHash }:
   useEffect(() => {
     if (!roomID) return;
 
-    console.log("Yep");
+    console.log("Testing http");
 
     const newSocket = new WebSocket(`/api/proxy?roomID=${roomID}`);
 
@@ -87,7 +93,7 @@ export default function CollabEditor({ question, roomID, authToken, matchHash }:
       const authMessage = {
         type: "auth",
         token: authToken,
-        matchHash: matchHash // omitted if undefined
+        matchHash: matchHash, // omitted if undefined
       };
       newSocket.send(JSON.stringify(authMessage));
     };
@@ -114,8 +120,9 @@ export default function CollabEditor({ question, roomID, authToken, matchHash }:
       }
     };
 
-    newSocket.onerror = () => {
+    newSocket.onerror = (e) => {
       console.log("server down");
+      console.log(e);
     };
 
     newSocket.onclose = () => {
@@ -143,6 +150,7 @@ export default function CollabEditor({ question, roomID, authToken, matchHash }:
 
   return (
     <>
+      <CommsPanel className="flex flex-row justify-around" roomId={roomID}/>
       <div className="flex space-x-4 items-center p-4 m-4">
         <div className="flex flex-col">
           <label className="font-semibold mb-1">Font Size</label>
