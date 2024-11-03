@@ -15,5 +15,6 @@ spec:
       containers:
       - name: nginx
         image: distractedcat/nginx:1.0.0 
+        imagePullPolicy: Always
         ports:
         - containerPort: 80

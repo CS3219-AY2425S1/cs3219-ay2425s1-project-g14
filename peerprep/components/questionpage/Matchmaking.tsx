@@ -17,7 +17,7 @@ import {
 import ResettingStopwatch from "../shared/ResettingStopwatch";
 import PeerprepDropdown from "../shared/PeerprepDropdown";
 
-const QUERY_INTERVAL_MILLISECONDS = 5000;
+const QUERY_INTERVAL_MILLISECONDS = 1000;
 const TIMEOUT_MILLISECONDS = 30000;
 
 const getMatchRequestTime = (): string => {

@@ -9,5 +9,5 @@ spec:
     - protocol: TCP
       port: 4000
       targetPort: 4000
-      nodePort: 31000
-  type: NodePort
+      #nodePort: 31000
+  type: ClusterIP

@@ -27,7 +27,7 @@ spec:
             - name: NEXT_PUBLIC_NGINX
               value: http://nginx:80
             - name: NEXT_PUBLIC_COLLAB
-              value: ws://127.0.0.1/37919
+              value: collab
             - name: DEV_ENV
               value: not
           ports:
