@@ -141,6 +141,8 @@ func (h *Hub) Run() {
 
 // ServeWs handles WebSocket requests
 func serveWs(hub *Hub, c *gin.Context, roomMappings *verify.RoomMappings) {
+
+	log.Println("handler called!")
 	roomID := c.Query("roomID")
 	if roomID == "" {
 		http.Error(c.Writer, "roomID required", http.StatusBadRequest)
@@ -221,7 +223,7 @@ func statusHandler(hub *Hub) gin.HandlerFunc {
 		for client := range hub.clients {
 			roomID := client.roomID
 			currentStatus, ok := status[roomID]
-			if !ok {
+			if (!ok) {
 				// Initialize status for a new roomID
 				status[roomID] = map[string]interface{}{
 					"clients": 1,
@@ -251,7 +253,6 @@ func main() {
 		REDIS_URI = "localhost:9190"
 	}
 	roomMappings := verify.InitialiseRoomMappings(REDIS_URI, 1)
-
 	// WebSocket connection endpoint
 	r.GET("/ws", func(c *gin.Context) {
 		serveWs(hub, c, roomMappings)

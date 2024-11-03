@@ -42,6 +42,7 @@ export async function fetchQuestion(
       };
     }
 
+
     // NOTE: this may cause the following: "Can't resolve canvas"
     // https://github.com/kkomelin/isomorphic-dompurify/issues/54
     const question = (await response.json()) as Question;

@@ -77,8 +77,8 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
 
     console.log("Yep");
 
-    const newSocket = new WebSocket(`ws://localhost:4000/ws?roomID=${roomID}`);
-
+    const newSocket = new WebSocket(`${process.env.NEXT_PUBLIC_COLLAB}/ws?roomID=${roomID}`);
+    
     newSocket.onopen = () => {
       console.log("WebSocket connection established");
       setconnected(true);
@@ -112,8 +112,10 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
       }
     };
 
-    newSocket.onerror = () => {
-      console.log("server down");
+    newSocket.onerror = (event) => {
+      console.error("WebSocket error observed:", event);
+      console.error("WebSocket readyState:", newSocket.readyState);
+      console.error("WebSocket URL:", newSocket.url);
     };
 
     newSocket.onclose = () => {

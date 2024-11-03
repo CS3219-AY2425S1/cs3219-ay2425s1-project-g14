@@ -14,13 +14,13 @@ spec:
       containers:
         - name: collab
           image: distractedcat/collab:1.0.0
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           env:
             - name: PORT
               value: :4000
             - name: REDIS_URI
               value: redis:6379
-            - name: USER_SERVICE_API
+            - name: USER_SERVICE_URI
               value: http://user-service:3001
           ports:
             - containerPort: 4000
