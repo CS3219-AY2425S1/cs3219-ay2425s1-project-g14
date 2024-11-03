@@ -75,11 +75,14 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
   useEffect(() => {
     if (!roomID) return;
 
-    console.log("wat");
+    console.log("new");
 
-    const url = `/api/collab`;
-
-    const newSocket = new WebSocket(`/api/proxy?roomID=${roomID}`);
+    // const newSocket = new WebSocket(
+    //   `ws://localhost:80/collab/ws?roomID=${roomID}`
+    // );
+    const newSocket = new WebSocket(
+      `${process.env.NEXT_PUBLIC_COLLAB}/ws?roomID=${roomID}`
+    );
     // const newSocket = new WebSocket(`/api/proxy?roomID=${roomID}`);
     newSocket.onopen = () => {
       console.log("WebSocket connection established");

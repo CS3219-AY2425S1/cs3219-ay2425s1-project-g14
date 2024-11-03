@@ -1,8 +1,8 @@
 package main
 
 import (
+	// gintransport "collab/transport"
 	verify "collab/verify"
-	gintransport "collab/transport"
 	"encoding/json"
 	"io"
 	"log"
@@ -143,6 +143,7 @@ func (h *Hub) Run() {
 // ServeWs handles WebSocket requests
 func serveWs(hub *Hub, c *gin.Context, roomMappings *verify.RoomMappings) {
 	roomID := c.Query("roomID")
+	log.Println("Joined with " + roomID)
 	if roomID == "" {
 		http.Error(c.Writer, "roomID required", http.StatusBadRequest)
 		return
@@ -247,11 +248,11 @@ func main() {
 	hub := NewHub()
 	go hub.Run()
 
-	ORIGIN := os.Getenv("CORS_ORIGIN")
-	if ORIGIN == "" {
-		ORIGIN = "http://localhost:3000"
-	}
-	gintransport.SetCors(r, ORIGIN)
+	// ORIGIN := os.Getenv("CORS_ORIGIN")
+	// if ORIGIN == "" {
+	// 	ORIGIN = "http://localhost:3000"
+	// }
+	// gintransport.SetCors(r, ORIGIN)
 
 	REDIS_URI := os.Getenv("REDIS_URI")
 	if REDIS_URI == "" {
@@ -271,5 +272,5 @@ func main() {
 	if PORT == "" {
 		PORT = ":4000"
 	}
-	r.Run(PORT)
+	r.Run("0.0.0.0" + PORT)
 }
