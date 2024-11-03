@@ -75,11 +75,12 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
   useEffect(() => {
     if (!roomID) return;
 
-    console.log("Yep");
+    console.log("wat");
 
-    const newSocket = new WebSocket(`/api/proxy?roomID=${roomID}`); // this don't work
-    // so we're supposed to proxy this connection to inside the server?????????????????????????
+    const url = `/api/collab`;
 
+    const newSocket = new WebSocket(`/api/proxy?roomID=${roomID}`);
+    // const newSocket = new WebSocket(`/api/proxy?roomID=${roomID}`);
     newSocket.onopen = () => {
       console.log("WebSocket connection established");
       setconnected(true);

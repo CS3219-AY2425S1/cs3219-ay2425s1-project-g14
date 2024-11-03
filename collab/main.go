@@ -246,6 +246,12 @@ func main() {
 	hub := NewHub()
 	go hub.Run()
 
+	ORIGIN := os.Getenv("CORS_ORIGIN")
+	if ORIGIN == "" {
+		ORIGIN = "http://localhost:3000"
+	}
+	gintransport.SetCors(r, ORIGIN)
+
 	REDIS_URI := os.Getenv("REDIS_URI")
 	if REDIS_URI == "" {
 		REDIS_URI = "localhost:9190"
