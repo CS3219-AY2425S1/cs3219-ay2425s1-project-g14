@@ -77,8 +77,8 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
 
     console.log("Yep");
 
-    const newSocket = new WebSocket(`${process.env.NEXT_PUBLIC_COLLAB}/ws?roomID=${roomID}`);
-    
+    const newSocket = new WebSocket(`/api/proxy?roomID=${roomID}`);
+
     newSocket.onopen = () => {
       console.log("WebSocket connection established");
       setconnected(true);
