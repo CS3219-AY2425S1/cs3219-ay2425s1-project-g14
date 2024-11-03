@@ -78,7 +78,7 @@ export default function CollabEditor({ question, roomID, authToken, matchHash }:
 
     console.log("Yep");
 
-    const newSocket = new WebSocket(`ws://localhost:4000/ws?roomID=${roomID}`);
+    const newSocket = new WebSocket(`/api/proxy?roomID=${roomID}`);
 
     newSocket.onopen = () => {
       console.log("WebSocket connection established");
