@@ -16,6 +16,18 @@ services:
           target: /frontend
 
 
+  history:
+    build: history
+    env_file:
+      - history/.env
+    ports:
+      - "9091:9091"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    develop:
+      watch:
+        - action: rebuild
+
   user-service:
     build: user-service
     image: distractedcat/user-service
@@ -162,6 +174,11 @@ services:
       - user-service
       - storage-blob-api
       - matching-service-api
+    develop:
+      watch:
+        - action: rebuild
+          path: nginx
+          target: /etc/nginx/nginx.conf
 #  mongo:
 #    image: "mongo:latest"
 #    ports:
