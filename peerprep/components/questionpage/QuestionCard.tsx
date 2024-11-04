@@ -16,7 +16,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
   const handleDelete = async () => {
     if (
       confirm(
-        `Are you sure you want to delete ${question.title}? (ID: ${question.id}) `,
+        `Are you sure you want to delete ${question.title}? (ID: ${question.id}) `
       )
     ) {
       const status = await deleteQuestion(question.id);
@@ -58,7 +58,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
           Difficulty:{" "}
           <span
             className={`capitalize font-bold ${getDifficultyColor(
-              question.difficulty,
+              question.difficulty
             )}`}
           >
             {Difficulty[question.difficulty]}
@@ -82,7 +82,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
       </div>
 
       <div className={styles.buttonContainer}>
-        <PeerprepButton onClick={() => router.push(`questions/${question.id}`)}>
+        <PeerprepButton
+          onClick={() => router.push(`/questions/${question.id}`)}
+        >
           View
         </PeerprepButton>
         <PeerprepButton onClick={handleDelete}>Delete</PeerprepButton>

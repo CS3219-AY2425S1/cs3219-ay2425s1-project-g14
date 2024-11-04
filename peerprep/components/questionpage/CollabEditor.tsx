@@ -114,8 +114,10 @@ export default function CollabEditor({ question, roomID, authToken, matchHash }:
       }
     };
 
-    newSocket.onerror = () => {
-      console.log("server down");
+    newSocket.onerror = (event) => {
+      console.error("WebSocket error observed:", event);
+      console.error("WebSocket readyState:", newSocket.readyState);
+      console.error("WebSocket URL:", newSocket.url);
     };
 
     newSocket.onclose = () => {

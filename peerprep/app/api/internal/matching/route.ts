@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_STORAGE_BLOB}/request/${matchHash}`,
+      `${process.env.NEXT_PUBLIC_NGINX}/${process.env.NEXT_PUBLIC_STORAGE_BLOB}/request/${matchHash}`,
       {
         method: "GET",
         headers: generateAuthHeaders(),
@@ -41,11 +41,10 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_MATCHING_SERVICE}/request`,
+      `${process.env.NEXT_PUBLIC_NGINX}/${process.env.NEXT_PUBLIC_MATCHING_SERVICE}/request`,
       {
         method: "POST",
         body: JSON.stringify(body),
-        headers: generateJSONHeaders(),
       }
     );
     if (response.ok) {

@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 
 	"matching-service/consumer"
 	models "matching-service/models"
@@ -58,15 +59,23 @@ func main() {
 		log.Fatal("No Rabbit URI found in environment variables")
 	}
 
-	connection, err := rabbit.Dial(URI)
-	
+	var connection *rabbit.Connection
+	var err error
+
+	for i := 0; i < 10; i++ {
+		connection, err = rabbit.Dial(URI)
+		if err == nil {
+			break
+		}
+		log.Printf("Could not establish connection to RabbitMQ, retrying in 5 seconds... (%d/10)\n", i+1)
+		time.Sleep(5 * time.Second)
+	}
+
 	if err != nil {
-		log.Fatal("Could not establish connection to RabbitMQ" + err.Error())
+		log.Fatal("Could not establish connection to RabbitMQ after 10 attempts: " + err.Error())
 	}
 
 	defer connection.Close()
-	
-
 
 	channel, err := connection.Channel()
 

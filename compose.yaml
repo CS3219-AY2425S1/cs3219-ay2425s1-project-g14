@@ -1,7 +1,7 @@
 services:
   peerprep:
     build: peerprep
-    image: modembcc/peerprep
+    image: distractedcat/peerprep
     env_file:
       - peerprep/.env
     ports:
@@ -17,7 +17,7 @@ services:
 
   user-service:
     build: user-service
-    image: modembcc/user-service
+    image: distractedcat/user-service
     volumes:
       - /user-service/node_modules
     env_file:
@@ -34,7 +34,7 @@ services:
 
   backend:
     build: backend
-    image: modembcc/backend
+    image: distractedcat/backend
     env_file:
       - backend/.env
     ports:
@@ -73,7 +73,7 @@ services:
 
   matching-service:
     build: matching-service
-    image: modembcc/matching-service
+    image: distractedcat/matching-service
     env_file:
       - matching-service/.env
     extra_hosts:
@@ -89,7 +89,7 @@ services:
 
   matching-service-api:
     build: matching-service-api
-    image: modembcc/matching-service-api
+    image: distractedcat/matching-service-api
     env_file:
       - matching-service-api/.env
     extra_hosts:
@@ -107,7 +107,7 @@ services:
 
   storage-blob-api:
     build: storage-blob-api
-    image: modembcc/storage-blob-api
+    image: distractedcat/storage-blob-api
     env_file:
       - storage-blob-api/.env
     extra_hosts:
@@ -124,7 +124,7 @@ services:
 
   collab:
     build: collab
-    image: modembcc/collab
+    image: distractedcat/collab
     env_file:
       - collab/.env
     ports:
@@ -134,6 +134,20 @@ services:
         - action: rebuild
           path: collab
           target: collab/app
+
+  nginx:
+    build: nginx
+    image: distractedcat/nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - peerprep
+      - backend
+      - user-service
+      - storage-blob-api
+      - matching-service-api
 #  mongo:
 #    image: "mongo:latest"
 #    ports:
