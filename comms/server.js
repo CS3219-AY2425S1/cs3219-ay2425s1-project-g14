@@ -5,8 +5,7 @@ const server = http.createServer(app);
 const io = require("socket.io")(server, {
   cors: {
     // temporarily use * to allow all origins
-    origin: `*`,
-    methods: [ "GET", "POST" ]
+    origin: `*`
   }
 });
 

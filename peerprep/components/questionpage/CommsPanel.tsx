@@ -7,7 +7,7 @@ interface Props {
   roomId?: String;
 }
 
-const socket = io("http://localhost:4001");
+const socket = io(`${process.env.NEXT_PUBLIC_COMMS}`);
 
 function CommsPanel({ className, roomId }: Props) {
   const [stream, setStream] = useState<MediaStream>();
@@ -61,6 +61,8 @@ function CommsPanel({ className, roomId }: Props) {
 
   useEffect(() => {
     if (!roomId || !stream || !socket.connected) {
+      console.log("stream status: " + stream);
+      console.log("connection status: " + socket.connected);
       return;
     }
     console.log("in hook");

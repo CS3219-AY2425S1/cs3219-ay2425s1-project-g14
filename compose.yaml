@@ -135,6 +135,19 @@ services:
           path: collab
           target: collab/app
 
+  comms:
+    build: comms
+    image: wzwren/comms
+    env_file:
+      - comms/.env
+    ports:
+      - "4001:4001"
+    develop:
+      watch:
+        - action: sync
+          path: comms
+          target: /comms
+
   nginx:
     build: nginx
     image: distractedcat/nginx
