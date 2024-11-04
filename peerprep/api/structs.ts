@@ -112,3 +112,9 @@ export const LoginFormSchema = z.object({
 export function isError(obj: any | StatusBody): obj is StatusBody {
   return (obj as StatusBody).status !== undefined;
 }
+
+export type Language = "javascript" | "python" | "c_cpp";
+// maybe this shud be in structs
+export type FormatResponse = {
+  formatted_code: string;
+};

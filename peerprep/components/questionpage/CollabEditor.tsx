@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AceEditor from "react-ace";
 
@@ -12,17 +12,13 @@ import "ace-builds/src-min-noconflict/ext-searchbox";
 import "ace-builds/src-min-noconflict/ext-language_tools";
 import PeerprepDropdown from "@/components/shared/PeerprepDropdown";
 
-import { Question } from "@/api/structs";
+import { FormatResponse, Language, Question } from "@/api/structs";
 import PeerprepButton from "../shared/PeerprepButton";
 
-const languages = [
-  "javascript",
-  "java",
-  "python",
-  "mysql",
-  "golang",
-  "typescript",
-];
+import { diff_match_patch } from "diff-match-patch";
+import { callFormatter } from "@/app/api/internal/formatter/helper";
+
+const languages: Language[] = ["javascript", "python", "c_cpp"];
 
 const themes = [
   "monokai",
@@ -46,25 +42,91 @@ themes.forEach((theme) => require(`ace-builds/src-noconflict/theme-${theme}`));
 
 interface Props {
   question: Question;
-  roomID?: String;
-  authToken?: String;
+  roomID?: string;
+  authToken?: string;
+  userId?: string | undefined;
 }
 
-export default function CollabEditor({ question, roomID, authToken }: Props) {
+interface Message {
+  type: "content_change" | "auth" | "close_session";
+  data?: string;
+  userId?: string | undefined;
+  token?: string;
+}
+
+const dmp = new diff_match_patch();
+const questionSeed = "def foo():\n  pass";
+
+export default function CollabEditor({
+  question,
+  roomID,
+  authToken,
+  userId,
+}: Props) {
   const [theme, setTheme] = useState("terminal");
   const [fontSize, setFontSize] = useState(18);
-  const [language, setLanguage] = useState("python");
-  const [value, setValue] = useState("def foo:\n  pass");
+  const [language, setLanguage] = useState<Language>("python");
+  const [value, setValue] = useState(questionSeed);
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [connected, setconnected] = useState(false);
+  const [connected, setConnected] = useState(false);
   const router = useRouter();
 
+  const generatePatch = (oldContent: string, newContent: string): string => {
+    const diffs = dmp.diff_main(oldContent, newContent);
+    const patches = dmp.patch_make(oldContent, diffs);
+
+    // return patches;
+    return dmp.patch_toText(patches);
+  };
+
+  const applyPatches = (text: string, patchText: any): string => {
+    const patches = dmp.patch_fromText(patchText);
+    console.log(patches);
+    const [newText, _results] = dmp.patch_apply(patches, text);
+    return newText;
+  };
+
+  async function formatCode(value: string, language: Language) {
+    try {
+      const res = await callFormatter(value, language);
+      if ("detail" in res) {
+        console.log(res.detail);
+      }
+      const formatResponse = res as FormatResponse;
+      const formatted_code = formatResponse.formatted_code;
+
+      setValue(formatted_code);
+      if (
+        socket &&
+        formatted_code !== value &&
+        socket?.readyState === WebSocket.OPEN
+      ) {
+        const patches = generatePatch(value, formatted_code);
+        const msg: Message = {
+          type: "content_change",
+          data: patches,
+          userId: userId,
+        };
+        socket.send(JSON.stringify(msg));
+      }
+    } catch (e) {
+      alert("Failed to format code. Check console.");
+    }
+  }
+
   const handleOnChange = (newValue: string) => {
+    const patches = generatePatch(value, newValue);
+
     setValue(newValue);
-    console.log("Content changed:", newValue);
+    console.log("Content changed:", userId, newValue);
 
     if (socket) {
-      socket.send(JSON.stringify({ type: "content_change", data: newValue }));
+      const msg: Message = {
+        type: "content_change",
+        data: patches,
+        userId: userId,
+      };
+      socket.send(JSON.stringify(msg));
     }
   };
 
@@ -81,9 +143,9 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
 
     newSocket.onopen = () => {
       console.log("WebSocket connection established");
-      setconnected(true);
+      setConnected(true);
 
-      const authMessage = {
+      const authMessage: Message = {
         type: "auth",
         token: authToken,
       };
@@ -104,10 +166,20 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
         }
         router.push("/questions");
       } else {
-        const message = JSON.parse(event.data);
+        const message: Message = JSON.parse(event.data);
 
-        if (message.type === "content_change") {
-          setValue(message.data);
+        if (message.type === "content_change" && message.userId !== userId) {
+          console.log(
+            "Received message from user: ",
+            message.userId,
+            "I am",
+            userId,
+            "We are the same: ",
+            message.userId === userId,
+          );
+          setValue((currentValue) => {
+            return applyPatches(currentValue, message.data);
+          });
         }
       }
     };
@@ -132,12 +204,16 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
 
   const handleCloseConnection = () => {
     const confirmClose = confirm(
-      "Are you sure you are finished? This will close the room for all users."
+      "Are you sure you are finished? This will close the room for all users.",
     );
 
     if (confirmClose && socket) {
       console.log("Sent!");
-      socket.send(JSON.stringify({ type: "close_session" }));
+      const msg: Message = {
+        type: "close_session",
+        userId: userId,
+      };
+      socket.send(JSON.stringify(msg));
     }
   };
 
@@ -165,14 +241,18 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
         />
 
         <PeerprepDropdown
-          label={"Language"}
+          label={"Syntax Highlighting"}
           value={language}
-          onChange={(e) => setLanguage(e.target.value)}
+          onChange={(e) => setLanguage(e.target.value as Language)}
           options={languages}
           className={
             "border border-gray-600 bg-gray-800 text-white p-2 rounded"
           }
         />
+
+        <PeerprepButton onClick={() => formatCode(value, language)}>
+          Format code
+        </PeerprepButton>
 
         {roomID &&
           (connected ? (

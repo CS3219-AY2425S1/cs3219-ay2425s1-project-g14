@@ -7,12 +7,13 @@ import styles from "@/style/question.module.css";
 import { useRouter } from "next/navigation";
 import { deleteQuestion } from "@/app/api/internal/questions/helper";
 import CollabEditor from "@/components/questionpage/CollabEditor";
-import DOMPurify from "dompurify";
+import DOMPurify from "isomorphic-dompurify";
 
 interface Props {
   question: Question;
-  roomID?: String;
-  authToken?: String;
+  roomID?: string;
+  authToken?: string;
+  userId?: string;
 }
 
 interface DifficultyChipProps {
@@ -29,19 +30,19 @@ function DifficultyChip({ diff }: DifficultyChipProps) {
   );
 }
 
-function QuestionBlock({ question, roomID, authToken }: Props) {
+function QuestionBlock({ question, roomID, authToken, userId }: Props) {
   const router = useRouter();
 
   const handleDelete = async () => {
     if (
       confirm(
-        `Are you sure you want to delete ${question.title}? (ID: ${question.id}) `
+        `Are you sure you want to delete ${question.title}? (ID: ${question.id}) `,
       )
     ) {
       const status = await deleteQuestion(question.id);
       if (status.error) {
         alert(
-          `Failed to delete question. Code ${status.status}:  ${status.error}`
+          `Failed to delete question. Code ${status.status}:  ${status.error}`,
         );
         return;
       }
@@ -95,6 +96,7 @@ function QuestionBlock({ question, roomID, authToken }: Props) {
           question={question}
           roomID={roomID}
           authToken={authToken}
+          userId={userId}
         />
       </div>
     </>

@@ -4,7 +4,7 @@ WORKDIR /frontend
 # TODO: don't include the .env file in the COPY
 # TODO: multistage build
 COPY package*.json ./
-RUN npm install --force
+RUN npm ci
 COPY . .
 RUN npm run build
 EXPOSE 3000
