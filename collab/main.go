@@ -7,8 +7,8 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"sync"
 	"strconv"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -144,9 +144,9 @@ func (h *Hub) Run() {
 
 // ServeWs handles WebSocket requests
 func serveWs(
-		hub *Hub, c *gin.Context,
-		roomMappings *verify.RoomMappings,
-		persistMappings *verify.PersistMappings,
+	hub *Hub, c *gin.Context,
+	roomMappings *verify.RoomMappings,
+	persistMappings *verify.PersistMappings,
 ) {
 	log.Println("handler called!")
 	roomID := c.Query("roomID")
@@ -168,9 +168,9 @@ func serveWs(
 }
 
 func authenticateClient(
-		token string, match string, client *Client,
-		roomMappings *verify.RoomMappings,
-		persistMappings *verify.PersistMappings,
+	token string, match string, client *Client,
+	roomMappings *verify.RoomMappings,
+	persistMappings *verify.PersistMappings,
 ) bool {
 	ok, userID := verifyToken(token)
 	if !ok {
@@ -197,7 +197,8 @@ func handleMessages(
 	client *Client, hub *Hub,
 	roomMappings *verify.RoomMappings,
 	persistMappings *verify.PersistMappings,
-) {	defer func() {
+) {
+	defer func() {
 		hub.unregister <- client
 	}()
 
@@ -274,11 +275,11 @@ func statusHandler(hub *Hub) gin.HandlerFunc {
 		for client := range hub.clients {
 			roomID := client.roomID
 			currentStatus, ok := status[roomID]
-			if (!ok) {
+			if !ok {
 				// Initialize status for a new roomID
 				status[roomID] = map[string]interface{}{
-					"clients": 1,
-					"workspace":   hub.workspaces[roomID],
+					"clients":   1,
+					"workspace": hub.workspaces[roomID],
 				}
 			} else {
 				// Update the client count for an existing roomID
@@ -324,8 +325,8 @@ func main() {
 		}
 	}
 
-	roomMappings    := verify.InitialiseRoomMappings(REDIS_URI, REDIS_ROOM_MAPPING)
-	persistMappings := verify.InitialisePersistMappings(REDIS_URI, REDIS_ROOM_PERSIST);
+	roomMappings := verify.InitialiseRoomMappings(REDIS_URI, REDIS_ROOM_MAPPING)
+	persistMappings := verify.InitialisePersistMappings(REDIS_URI, REDIS_ROOM_PERSIST)
 
 	// WebSocket connection endpoint
 	r.GET("/ws", func(c *gin.Context) {

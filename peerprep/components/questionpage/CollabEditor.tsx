@@ -54,6 +54,7 @@ interface Message {
   data?: string;
   userId?: string | undefined;
   token?: string;
+  matchHash?: string;
 }
 
 const dmp = new diff_match_patch();
