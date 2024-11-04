@@ -11,7 +11,7 @@ const QuestionList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchFilter, setSearchFilter] = useState<string>("");
   const [difficultyFilter, setDifficultyFilter] = useState<string>(
-    Difficulty.All
+    Difficulty.All,
   );
   const [topicFilter, setTopicFilter] = useState<string>("all");
 
@@ -20,7 +20,7 @@ const QuestionList: React.FC = () => {
   useEffect(() => {
     const fetchQuestions = async () => {
       const payload = await fetch(`/api/internal/questions`).then((res) =>
-        res.json()
+        res.json(),
       );
       // uh
       if (isError(payload)) {
@@ -34,7 +34,7 @@ const QuestionList: React.FC = () => {
 
       // get all present topics in all qns
       const uniqueTopics = Array.from(
-        new Set(data.flatMap((question) => question.topicTags))
+        new Set(data.flatMap((question) => question.topicTags)),
       ).sort();
       setTopicList(["all", ...uniqueTopics]);
     };
@@ -68,8 +68,8 @@ const QuestionList: React.FC = () => {
   };
 
   return (
-    <div className="flex-grow max-h-screen overflow-y-auto p-4">
-      <div className="flex space-x-4 mb-4 items-end">
+    <div className="flex-grow overflow-y-auto p-4">
+      <div className="mb-4 flex items-end space-x-4">
         <PeerprepSearchBar
           value={searchFilter}
           label="Search questions..."

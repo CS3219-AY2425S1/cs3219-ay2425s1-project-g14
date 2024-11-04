@@ -14,7 +14,7 @@ export async function deleteQuestion(id: number): Promise<StatusBody> {
 
 export async function editQuestion(question: Question): Promise<StatusBody> {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_NGINX}/api/internal/questions`,
+    `/api/internal/questions`,
     {
       method: "PUT",
       body: JSON.stringify(question),
@@ -30,8 +30,7 @@ export async function editQuestion(question: Question): Promise<StatusBody> {
 export async function addQuestion(
   question: QuestionFullBody
 ): Promise<StatusBody> {
-  // TODO: this is not desired
-  question.content = "<p>" + question.content + "</p>";
+
   const res = await fetch(`/api/internal/questions`, {
     method: "POST",
     body: JSON.stringify(question),

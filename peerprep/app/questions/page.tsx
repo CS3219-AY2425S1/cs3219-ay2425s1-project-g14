@@ -10,8 +10,10 @@ async function QuestionsPage() {
   return (
     <UserInfoProvider userid={userId}>
       <QuestionFilterProvider>
-        <Matchmaking></Matchmaking>
-        <QuestionList></QuestionList>
+        <div className="flex max-h-screen flex-col">
+          <Matchmaking></Matchmaking>
+          <QuestionList></QuestionList>
+        </div>
       </QuestionFilterProvider>
     </UserInfoProvider>
   );

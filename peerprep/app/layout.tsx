@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/navbar/Navbar";
-
 import ThemeProvider from "./theme-provider";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: "PeerPrep - One Stop Technical Interview Preparation",
@@ -11,16 +11,17 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body>
+      <body className="max-h-screen">
         <ThemeProvider>
           <Navbar />
+          <main>{children}</main>
+          <Toaster />
         </ThemeProvider>
-        <ThemeProvider>{children}</ThemeProvider>{" "}
       </body>
     </html>
   );

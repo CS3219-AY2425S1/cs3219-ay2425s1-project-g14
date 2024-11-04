@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import PeerprepButton from "../shared/PeerprepButton";
 import { useQuestionFilter } from "@/contexts/QuestionFilterContext";
@@ -16,9 +16,10 @@ import {
 } from "@/app/api/internal/matching/helper";
 import ResettingStopwatch from "../shared/ResettingStopwatch";
 import PeerprepDropdown from "../shared/PeerprepDropdown";
+import { toast, useToast } from "@/hooks/use-toast";
 
 const QUERY_INTERVAL_MILLISECONDS = 1000;
-const TIMEOUT_MILLISECONDS = 30000;
+const TIMEOUT_MILLISECONDS = 5000;
 
 const getMatchRequestTime = (): string => {
   const now = new Date();
@@ -41,7 +42,7 @@ const getMatchRequestTime = (): string => {
 const usePeriodicCallback = (
   callback: () => void,
   intervalTime: number,
-  isActive: boolean
+  isActive: boolean,
 ) => {
   useEffect(() => {
     if (!isActive) return;
@@ -57,7 +58,7 @@ const Matchmaking = () => {
   const [isMatching, setIsMatching] = useState<boolean>(false);
   const { difficulties, topicList } = useQuestionFilter();
   const [difficultyFilter, setDifficultyFilter] = useState<string>(
-    Difficulty.Easy
+    Difficulty.Easy,
   );
   const [topicFilter, setTopicFilter] = useState<string[]>(topicList);
   const { userid } = useUserInfo();
@@ -70,7 +71,6 @@ const Matchmaking = () => {
   const stopTimer = () => {
     // if user manually stopped it clear timeout
     if (timeout.current) {
-      console.debug("Match request timeout stopped");
       clearTimeout(timeout.current);
     }
   };
@@ -89,31 +89,37 @@ const Matchmaking = () => {
   const handleMatch = async () => {
     if (!isMatching) {
       setIsMatching(true);
+      toast({ title: "Finding match..." });
 
       // start 30s timeout
       timeout.current = setTimeout(() => {
         setIsMatching(false);
-        console.log("Match request timed out after 30s");
+        toast({
+          title: "Unable to find match.",
+          description: "Try again later.",
+        });
       }, TIMEOUT_MILLISECONDS);
 
       // assemble the match request
       const matchRequest = getMatchMakingRequest();
-      console.log("Match attempted");
+
       console.debug(matchRequest);
 
       //   send match request
       const status = await findMatch(matchRequest);
       if (status.error) {
         stopTimer();
-        console.log("Failed to find match. Cancel matching.");
+        toast({
+          title: "Unable to find match.",
+          description: "Try again later.",
+        });
         setIsMatching(false);
         return;
       }
-      console.log(`Started finding match.`);
     } else {
       stopTimer();
+      toast({ title: "Matchmaking cancelled." });
       setIsMatching(false);
-      console.log("User stopped matching");
     }
   };
 
@@ -127,18 +133,13 @@ const Matchmaking = () => {
     setIsMatching(false);
     // TODO: iron out what is in a match response and sync up with collab service rooms
     const matchRes: MatchResponse = res as MatchResponse;
-    console.log("Match found!");
-    // display in a popup for now
-    // const message = `Room ID: ${matchRes.data.roomId}
-    // User1: ${matchRes.data.user1}
-    // User2: ${matchRes.data.user2}
-    // Question: ${matchRes.data.questionId}
-    // `;
-    const message = "Match found! Redirecting to collab page...";
-    window.alert(message);
+    toast({
+      title: "Match found!",
+      description: "Redirecting to collab page...",
+    });
     // redirect to question page
     router.push(
-      `/questions/${matchRes.data.questionId}/${matchRes.data.roomId}`
+      `/questions/${matchRes.data.questionId}/${matchRes.data.roomId}`,
     );
   };
 
@@ -146,7 +147,7 @@ const Matchmaking = () => {
 
   return (
     // TODO: move this to some admin panel or something
-    <div className="p-4 flex flex-row items-center space-x-4">
+    <div className="flex flex-row items-center space-x-4 p-4">
       <PeerprepButton onClick={() => router.push(`questions/new`)}>
         Add Question
       </PeerprepButton>
@@ -169,7 +170,7 @@ const Matchmaking = () => {
             value={topicFilter[0]}
             onChange={(e) =>
               setTopicFilter(
-                e.target.value === "all" ? topicList : [e.target.value]
+                e.target.value === "all" ? topicList : [e.target.value],
               )
             }
             options={topicList}

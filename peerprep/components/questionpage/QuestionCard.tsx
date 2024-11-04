@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import styles from "@/style/questionCard.module.css";
 import { deleteQuestion } from "@/app/api/internal/questions/helper";
 import DOMPurify from "dompurify";
+import { toast } from "@/hooks/use-toast";
 
 type QuestionCardProps = {
   question: Question;
@@ -16,20 +17,28 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
   const handleDelete = async () => {
     if (
       confirm(
-        `Are you sure you want to delete ${question.title}? (ID: ${question.id}) `
+        `Are you sure you want to delete ${question.title}? (ID: ${question.id}) `,
       )
     ) {
       const status = await deleteQuestion(question.id);
       if (status.error) {
-        console.log("Failed to delete question.");
-        console.log(`Code ${status.status}:  ${status.error}`);
+        toast({
+          title: "Failed to delete question.",
+          description: `Code ${status.status}:  ${status.error}`,
+          variant: "destructive",
+        });
         return;
       }
-      console.log(`Successfully deleted the question.`);
+      toast({
+        title: `Delete successful.`,
+        description: `${question.title} (ID: ${question.id})`,
+      });
+      window.location.reload(); // refresh after delete
     } else {
       console.log("Deletion cancelled.");
     }
   };
+
   const handleEdit = () => {
     router.push(`questions/edit/${question.id}`);
   };
