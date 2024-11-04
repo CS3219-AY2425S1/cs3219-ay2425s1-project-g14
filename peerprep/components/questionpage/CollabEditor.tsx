@@ -17,6 +17,7 @@ import PeerprepButton from "../shared/PeerprepButton";
 
 import { diff_match_patch } from "diff-match-patch";
 import { callFormatter } from "@/app/api/internal/formatter/helper";
+import { pingHistory } from "@/app/api/internal/user/helper";
 
 const languages: Language[] = ["javascript", "python", "c_cpp"];
 
@@ -130,6 +131,18 @@ export default function CollabEditor({
   const handleOnLoad = (editor: any) => {
     editor.container.style.resize = "both";
   };
+
+  const MINUTE = 60 * 1000;
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (userId && roomID) {
+      const interval = setInterval(async () => {
+        const res = await pingHistory(userId, roomID);
+      }, MINUTE);
+    }
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (!roomID) return;
