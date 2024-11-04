@@ -1,7 +1,7 @@
 services:
   peerprep:
     build: peerprep
-    image: distractedcat/peerprep
+#    image: distractedcat/peerprep
     env_file:
       - peerprep/.env
     ports:
@@ -17,7 +17,7 @@ services:
 
   user-service:
     build: user-service
-    image: distractedcat/user-service
+#    image: distractedcat/user-service
     volumes:
       - /user-service/node_modules
     env_file:
@@ -34,7 +34,7 @@ services:
 
   backend:
     build: backend
-    image: distractedcat/backend
+#    image: distractedcat/backend
     env_file:
       - backend/.env
     ports:
@@ -73,7 +73,7 @@ services:
 
   matching-service:
     build: matching-service
-    image: distractedcat/matching-service
+#    image: distractedcat/matching-service
     env_file:
       - matching-service/.env
     extra_hosts:
@@ -89,7 +89,7 @@ services:
 
   matching-service-api:
     build: matching-service-api
-    image: distractedcat/matching-service-api
+#    image: distractedcat/matching-service-api
     env_file:
       - matching-service-api/.env
     extra_hosts:
@@ -107,7 +107,7 @@ services:
 
   storage-blob-api:
     build: storage-blob-api
-    image: distractedcat/storage-blob-api
+#    image: distractedcat/storage-blob-api
     env_file:
       - storage-blob-api/.env
     extra_hosts:
@@ -124,7 +124,7 @@ services:
 
   collab:
     build: collab
-    image: distractedcat/collab
+#    image: distractedcat/collab
     env_file:
       - collab/.env
     ports:

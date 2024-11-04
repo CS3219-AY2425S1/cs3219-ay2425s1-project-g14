@@ -2,19 +2,24 @@ import { cookies } from "next/headers";
 import {
   LoginResponse,
   Question,
-  UserServiceResponse,
   StatusBody,
+  UserServiceResponse,
 } from "./structs";
 import DOMPurify from "isomorphic-dompurify";
+import { CookieNames } from "@/app/actions/session";
 
 export function generateAuthHeaders() {
   return {
-    Authorization: `Bearer ${cookies().get("session")?.value}`,
+    Authorization: `Bearer ${cookies().get(CookieNames.SESSION.valueOf())?.value}`,
   };
 }
 
 export function getSessionToken() {
-  return cookies().get("session")?.value;
+  return cookies().get(CookieNames.SESSION.valueOf())?.value;
+}
+
+export function getUserData() {
+  return cookies().get(CookieNames.USER_DATA.valueOf())?.value;
 }
 
 export function generateJSONHeaders() {
@@ -25,7 +30,7 @@ export function generateJSONHeaders() {
 }
 
 export async function fetchQuestion(
-  questionId: string
+  questionId: string,
 ): Promise<Question | StatusBody> {
   try {
     const response = await fetch(
@@ -33,7 +38,7 @@ export async function fetchQuestion(
       {
         method: "GET",
         headers: generateAuthHeaders(),
-      }
+      },
     );
     if (!response.ok) {
       return {
@@ -41,7 +46,6 @@ export async function fetchQuestion(
         status: response.status,
       };
     }
-
 
     // NOTE: this may cause the following: "Can't resolve canvas"
     // https://github.com/kkomelin/isomorphic-dompurify/issues/54
@@ -66,7 +70,7 @@ export async function getSessionLogin(validatedFields: {
         headers: {
           "Content-type": "application/json; charset=UTF-8",
         },
-      }
+      },
     );
     const json = await res.json();
 
@@ -96,7 +100,7 @@ export async function postSignupUser(validatedFields: {
         headers: {
           "Content-type": "application/json; charset=UTF-8",
         },
-      }
+      },
     );
     const json = await res.json();
 
@@ -118,7 +122,7 @@ export async function verifyUser(): Promise<UserServiceResponse | StatusBody> {
       {
         method: "GET",
         headers: generateAuthHeaders(),
-      }
+      },
     );
     const json = await res.json();
 

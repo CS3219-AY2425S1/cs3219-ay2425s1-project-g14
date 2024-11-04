@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AceEditor from "react-ace";
 
@@ -14,6 +14,8 @@ import PeerprepDropdown from "@/components/shared/PeerprepDropdown";
 
 import { Question } from "@/api/structs";
 import PeerprepButton from "../shared/PeerprepButton";
+
+import { diff_match_patch } from "diff-match-patch";
 
 const languages = [
   "javascript",
@@ -46,25 +48,63 @@ themes.forEach((theme) => require(`ace-builds/src-noconflict/theme-${theme}`));
 
 interface Props {
   question: Question;
-  roomID?: String;
-  authToken?: String;
+  roomID?: string;
+  authToken?: string;
+  userId?: string | undefined;
 }
 
-export default function CollabEditor({ question, roomID, authToken }: Props) {
+interface Message {
+  type: "content_change" | "auth" | "close_session";
+  data?: string;
+  userId?: string | undefined;
+  token?: string;
+}
+
+const dmp = new diff_match_patch();
+const questionSeed = "def foo:\n  pass";
+
+export default function CollabEditor({
+  question,
+  roomID,
+  authToken,
+  userId,
+}: Props) {
   const [theme, setTheme] = useState("terminal");
   const [fontSize, setFontSize] = useState(18);
   const [language, setLanguage] = useState("python");
-  const [value, setValue] = useState("def foo:\n  pass");
+  const [value, setValue] = useState(questionSeed);
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [connected, setconnected] = useState(false);
   const router = useRouter();
 
+  const generatePatch = (oldContent: string, newContent: string): string => {
+    const diffs = dmp.diff_main(oldContent, newContent);
+    const patches = dmp.patch_make(oldContent, diffs);
+
+    // return patches;
+    return dmp.patch_toText(patches);
+  };
+
+  const applyPatches = (text: string, patchText: any): string => {
+    const patches = dmp.patch_fromText(patchText);
+    console.log(patches);
+    const [newText, _results] = dmp.patch_apply(patches, text);
+    return newText;
+  };
+
   const handleOnChange = (newValue: string) => {
+    const patches = generatePatch(value, newValue);
+
     setValue(newValue);
-    console.log("Content changed:", newValue);
+    console.log("Content changed:", userId, newValue);
 
     if (socket) {
-      socket.send(JSON.stringify({ type: "content_change", data: newValue }));
+      const msg: Message = {
+        type: "content_change",
+        data: patches,
+        userId: userId,
+      };
+      socket.send(JSON.stringify(msg));
     }
   };
 
@@ -83,7 +123,7 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
       console.log("WebSocket connection established");
       setconnected(true);
 
-      const authMessage = {
+      const authMessage: Message = {
         type: "auth",
         token: authToken,
       };
@@ -104,10 +144,20 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
         }
         router.push("/questions");
       } else {
-        const message = JSON.parse(event.data);
+        const message: Message = JSON.parse(event.data);
 
-        if (message.type === "content_change") {
-          setValue(message.data);
+        if (message.type === "content_change" && message.userId !== userId) {
+          console.log(
+            "Received message from user: ",
+            message.userId,
+            "I am",
+            userId,
+            "We are the same: ",
+            message.userId === userId,
+          );
+          setValue((currentValue) => {
+            return applyPatches(currentValue, message.data);
+          });
         }
       }
     };
@@ -132,12 +182,16 @@ export default function CollabEditor({ question, roomID, authToken }: Props) {
 
   const handleCloseConnection = () => {
     const confirmClose = confirm(
-      "Are you sure you are finished? This will close the room for all users."
+      "Are you sure you are finished? This will close the room for all users.",
     );
 
     if (confirmClose && socket) {
       console.log("Sent!");
-      socket.send(JSON.stringify({ type: "close_session" }));
+      const msg: Message = {
+        type: "close_session",
+        userId: userId,
+      };
+      socket.send(JSON.stringify(msg));
     }
   };
 
