@@ -14,15 +14,15 @@ export async function callFormatter(
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Formatter: ", errorData);
-      throw new Error(`${errorData.detail}`);
+      const errorData = (await response.json()) as StatusBody;
+      console.error("FormatterHelper: ", errorData);
+      throw new Error(`${errorData.error}`);
     }
 
     const formattedCode = (await response.json()) as FormatResponse;
     console.log(formattedCode);
     return formattedCode;
   } catch (err: any) {
-    throw new Error(`Failed to format code: ${err.message}`);
+    throw new Error(`${err.message}`);
   }
 }

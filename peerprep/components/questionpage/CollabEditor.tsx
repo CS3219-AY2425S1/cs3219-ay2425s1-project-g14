@@ -89,9 +89,6 @@ export default function CollabEditor({
   async function formatCode(value: string, language: Language) {
     try {
       const res = await callFormatter(value, language);
-      if ("detail" in res) {
-        console.log(res.detail);
-      }
       const formatResponse = res as FormatResponse;
       const formatted_code = formatResponse.formatted_code;
 
@@ -109,8 +106,8 @@ export default function CollabEditor({
         };
         socket.send(JSON.stringify(msg));
       }
-    } catch (e) {
-      alert("Failed to format code. Check console.");
+    } catch (e: any) {
+      alert(e.message);
     }
   }
 
