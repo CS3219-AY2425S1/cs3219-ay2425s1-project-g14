@@ -12,14 +12,11 @@ import "ace-builds/src-min-noconflict/ext-searchbox";
 import "ace-builds/src-min-noconflict/ext-language_tools";
 import PeerprepDropdown from "@/components/shared/PeerprepDropdown";
 
-import { Language, Question } from "@/api/structs";
+import { FormatResponse, Language, Question } from "@/api/structs";
 import PeerprepButton from "../shared/PeerprepButton";
 
 import { diff_match_patch } from "diff-match-patch";
-import {
-  callFormatter,
-  FormatResponse,
-} from "@/app/api/internal/formatter/helper";
+import { callFormatter } from "@/app/api/internal/formatter/helper";
 
 const languages: Language[] = ["javascript", "python", "c_cpp"];
 

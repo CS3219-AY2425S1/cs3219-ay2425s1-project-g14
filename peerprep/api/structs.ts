@@ -114,3 +114,7 @@ export function isError(obj: any | StatusBody): obj is StatusBody {
 }
 
 export type Language = "javascript" | "python" | "c_cpp";
+// maybe this shud be in structs
+export type FormatResponse = {
+  formatted_code: string;
+};
