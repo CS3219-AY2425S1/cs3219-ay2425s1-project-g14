@@ -45,6 +45,7 @@ function QuestionBlock({ question }: Props) {
       }
       console.log(`Successfully deleted the question.`);
       router.push("/questions");
+      router.refresh();
     } else {
       console.log("Deletion cancelled.");
     }

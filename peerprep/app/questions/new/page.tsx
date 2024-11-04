@@ -89,6 +89,7 @@ function NewQuestion({}: Props) {
       ...formData,
     };
     const status = await addQuestion(question);
+    router.refresh();
     if (status.error) {
       console.log("Failed to add question.");
       console.log(`Code ${status.status}:  ${status.error}`);
