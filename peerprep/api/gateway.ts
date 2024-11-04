@@ -2,8 +2,8 @@ import { cookies } from "next/headers";
 import {
   LoginResponse,
   Question,
-  UserServiceResponse,
   StatusBody,
+  UserServiceResponse,
 } from "./structs";
 import DOMPurify from "isomorphic-dompurify";
 
@@ -33,7 +33,8 @@ export async function fetchQuestion(
       {
         method: "GET",
         headers: generateAuthHeaders(),
-      }
+        next: { revalidate: 5 },
+      },
     );
     if (!response.ok) {
       return {
@@ -117,7 +118,7 @@ export async function verifyUser(): Promise<UserServiceResponse | StatusBody> {
       {
         method: "GET",
         headers: generateAuthHeaders(),
-      }
+      },
     );
     const json = await res.json();
 

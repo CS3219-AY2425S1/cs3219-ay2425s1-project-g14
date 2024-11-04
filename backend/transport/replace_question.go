@@ -33,21 +33,21 @@ func ReplaceQuestionWithLogger(db *database.QuestionDB, logger *common.Logger) g
 			return
 		}
 
-		if id_param >= db.FindNextQuestionId() {
-			logger.Log.Info(
-				"Attempting to update a question with an ID greater than next ID, creating a new question",
-			)
-			status, err := db.AddQuestion(logger, &new_question)
-
-			if err != nil {
-				ctx.JSON(status, err.Error())
-				return
-			}
-
-			ctx.JSON(status, "Question added successfully")
-			logger.Log.Info("Question added successfully")
-			return
-		}
+		//if id_param >= db.FindNextQuestionId() {
+		//	logger.Log.Info(
+		//		"Attempting to update a question with an ID greater than next ID, creating a new question",
+		//	)
+		//	status, err := db.AddQuestion(logger, &new_question)
+		//
+		//	if err != nil {
+		//		ctx.JSON(status, err.Error())
+		//		return
+		//	}
+		//
+		//	ctx.JSON(status, "Question added successfully")
+		//	logger.Log.Info("Question added successfully")
+		//	return
+		//}
 
 		logger.Log.Info("Replacing question with ID: ", id_param)
 		new_question.Id = id_param

@@ -64,8 +64,9 @@ export async function login(state: FormState, formData: FormData) {
 
 export async function hydrateUid(): Promise<undefined | string> {
   if (!cookies().has("session")) {
+    // TODO: this should not be required because of middleware
     console.log("No session found - triggering switch back to login page.");
-    redirect("/auth/login");
+    // redirect("/auth/login");
   }
   const json = await verifyUser();
   if (isError(json)) {
@@ -74,5 +75,7 @@ export async function hydrateUid(): Promise<undefined | string> {
     redirect("/api/internal/auth/expire");
   }
 
-  return json.data.id;
+  // TODO: handle error handling
+  const response = json as UserServiceResponse;
+  return response.data.id;
 }

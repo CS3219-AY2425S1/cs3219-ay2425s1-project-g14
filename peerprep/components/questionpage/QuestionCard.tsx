@@ -30,6 +30,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
       console.log("Deletion cancelled.");
     }
   };
+  const handleEdit = () => {
+    router.push(`questions/edit/${question.id}`);
+  };
 
   const getDifficultyColor = (difficulty: Difficulty) => {
     switch (difficulty) {
@@ -52,13 +55,13 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
 
   return (
     <div className={styles.container}>
-      <div className="flex-none w-full sm:w-1/3">
+      <div className="w-full flex-none sm:w-1/3">
         <h2 className={styles.title}>{question.title}</h2>
         <p className={styles.bodytext}>
           Difficulty:{" "}
           <span
-            className={`capitalize font-bold ${getDifficultyColor(
-              question.difficulty
+            className={`font-bold capitalize ${getDifficultyColor(
+              question.difficulty,
             )}`}
           >
             {Difficulty[question.difficulty]}
@@ -72,7 +75,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
         </p>
       </div>
 
-      <div className="flex-none w-full sm:w-1/2 max-h-16 overflow-hidden">
+      <div className="max-h-16 w-full flex-none overflow-hidden sm:w-1/2">
         {
           <div
             className={styles.bodytext}
@@ -87,6 +90,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
         >
           View
         </PeerprepButton>
+        <PeerprepButton onClick={handleEdit}>Edit</PeerprepButton>
         <PeerprepButton onClick={handleDelete}>Delete</PeerprepButton>
       </div>
     </div>

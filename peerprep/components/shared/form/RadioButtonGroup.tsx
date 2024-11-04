@@ -5,7 +5,7 @@ interface Props {
   label: string;
   group: string;
   options: {
-    [label: string]: number;
+    [label: string]: string;
   };
   required?: boolean;
   disabled?: boolean;
