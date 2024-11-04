@@ -14,7 +14,7 @@ export async function createSession(userDataAccessToken: UserDataAccessToken) {
     userDataAccessToken.accessToken,
     {
       httpOnly: true,
-      secure: true,
+      secure: false,
       expires: expiresAt,
       sameSite: "lax",
       path: "/",
