@@ -55,6 +55,10 @@ export interface MatchRequest {
   requestTime: string;
 }
 
+export interface MatchReqInitRes {
+  match_code: string;
+}
+
 export interface MatchData {
   roomId: string;
   user1: string;

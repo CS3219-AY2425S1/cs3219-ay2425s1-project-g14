@@ -6,20 +6,25 @@ import React from "react";
 import QuestionBlock from "./question";
 
 type Props = {
+  searchParams: {
+    match?: string
+  },
   params: {
     question: string;
     roomID: string;
   };
 };
 
-async function Question({ params }: Props) {
+async function Question({ params, searchParams }: Props) {
   const question = await fetchQuestion(params.question);
   const authToken = getSessionToken();
   const userData = getUserData();
   let userId;
   try {
     userId = JSON.parse(userData as string)?.id;
-  } catch (err) {}
+  } catch (err) {
+    console.log("Failed to parse userid")
+  }
 
   return (
     <div className={styles.wrapper}>
@@ -31,6 +36,7 @@ async function Question({ params }: Props) {
           roomID={params.roomID}
           authToken={authToken}
           userId={userId}
+          matchHash={searchParams.match}
         />
       )}
     </div>

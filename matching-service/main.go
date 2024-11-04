@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"matching-service/consumer"
@@ -108,9 +109,30 @@ func main() {
 	if REDIS_URI == "" {
 		REDIS_URI = "localhost://9190"
 	}
+
+	REDIS_CLIENT_MAPPING := 0
+	REDIS_ROOM_MAPPING   := 1
+
+	if os.Getenv("REDIS_CLIENT_MAPPING") != "" {
+		num, err := strconv.Atoi(os.Getenv("REDIS_CLIENT_MAPPING"))
+		if err != nil {
+			log.Fatal("DB no of client map is badly formatted" + err.Error())
+		} else {
+			REDIS_CLIENT_MAPPING = num
+		}
+	}
+
+	if os.Getenv("REDIS_ROOM_MAPPING") != "" {
+		num, err := strconv.Atoi(os.Getenv("REDIS_ROOM_MAPPING"))
+		if err != nil {
+			log.Fatal("DB no of room map is badly formatted" + err.Error())
+		} else {
+			REDIS_ROOM_MAPPING = num
+		}
+	}
 	
-	clientMappings := storage.InitialiseClientMappings(REDIS_URI, 0)
-	roomMappings := storage.InitialiseRoomMappings(REDIS_URI, 1)
+	clientMappings := storage.InitialiseClientMappings(REDIS_URI, REDIS_CLIENT_MAPPING)
+	roomMappings := storage.InitialiseRoomMappings(REDIS_URI, REDIS_ROOM_MAPPING)
 
 
 	logger.Log.Info("Beginning consumption from message queue")

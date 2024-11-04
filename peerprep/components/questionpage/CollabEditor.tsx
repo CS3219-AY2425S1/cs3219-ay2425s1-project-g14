@@ -14,6 +14,7 @@ import PeerprepDropdown from "@/components/shared/PeerprepDropdown";
 
 import { FormatResponse, Language, Question } from "@/api/structs";
 import PeerprepButton from "../shared/PeerprepButton";
+import CommsPanel from "./CommsPanel";
 
 import { diff_match_patch } from "diff-match-patch";
 import { callFormatter } from "@/app/api/internal/formatter/helper";
@@ -45,6 +46,7 @@ interface Props {
   roomID?: string;
   authToken?: string;
   userId?: string | undefined;
+  matchHash?: string;
 }
 
 interface Message {
@@ -62,6 +64,7 @@ export default function CollabEditor({
   roomID,
   authToken,
   userId,
+  matchHash,
 }: Props) {
   const [theme, setTheme] = useState("terminal");
   const [fontSize, setFontSize] = useState(18);
@@ -137,7 +140,7 @@ export default function CollabEditor({
   useEffect(() => {
     if (!roomID) return;
 
-    console.log("Yep");
+    console.log("Testing http");
 
     const newSocket = new WebSocket(`/api/proxy?roomID=${roomID}`);
 
@@ -148,6 +151,7 @@ export default function CollabEditor({
       const authMessage: Message = {
         type: "auth",
         token: authToken,
+        matchHash: matchHash, // omitted if undefined
       };
       newSocket.send(JSON.stringify(authMessage));
     };
@@ -219,6 +223,7 @@ export default function CollabEditor({
 
   return (
     <>
+      <CommsPanel className="flex flex-row justify-around" roomId={roomID} />
       <div className="flex space-x-4 items-center p-4 m-4">
         <div className="flex flex-col">
           <label className="font-semibold mb-1">Font Size</label>

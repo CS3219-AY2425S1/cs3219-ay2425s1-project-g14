@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"matching-service-api/models"
+	"matching-service-api/mappings"
 	"net/http"
 	"time"
 
@@ -28,6 +29,16 @@ func HandleRequest(channel *models.ProducerQueue, logger *models.Logger) gin.Han
 			ctx.JSON(http.StatusBadRequest, "error parsing time, ensure time is parsed in YYYY-MM-DD HH:mm:ss format")
 			return
 		}
+
+		// adding this matching hash to reserve user-id as a store for
+		// persistence.
+		matchHash, err := mappings.GenerateMatchingHash();
+		if err != nil {
+			logger.Log.Error("Error: " + err.Error())
+			ctx.JSON(http.StatusInternalServerError, "failed to generate query hash")
+			return
+		}
+		req.MatchHash = matchHash;
 
 		//current time is more than 30 seconds after request time, timeout
 		if time.Now().After(parsedTime.Add(30 * time.Second).Add(-8 * time.Hour)) {
@@ -59,6 +70,9 @@ func HandleRequest(channel *models.ProducerQueue, logger *models.Logger) gin.Han
 		}
 
 		logger.Log.Info(fmt.Sprintf("request from user %s successfully published", req.UserId))
-		ctx.JSON(http.StatusOK, "processing request")
+		ctx.JSON(http.StatusOK, gin.H{
+			"match_code": matchHash,
+			"message": "processing request",
+		})
 	}
 }

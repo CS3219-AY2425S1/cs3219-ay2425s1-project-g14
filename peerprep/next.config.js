@@ -2,6 +2,7 @@
 const nextConfig = {};
 
 module.exports = {
+  reactStrictMode: false,
   async rewrites() {
     return [
       {
@@ -9,7 +10,7 @@ module.exports = {
         // by default we expect NEXT_PUBLIC_COLLAB to be http://collab:4000.
         // double check this before using this.
         destination: `${process.env.NEXT_PUBLIC_NGINX}/${process.env.NEXT_PUBLIC_COLLAB}/ws`,
-      },
+      }
     ];
   },
 };

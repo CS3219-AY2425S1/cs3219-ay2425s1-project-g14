@@ -3,16 +3,20 @@ import {
   MatchRequest,
   MatchResponse,
   StatusBody,
+  MatchReqInitRes
 } from "@/api/structs";
 
 // helper to be called from client to check storage blob
 export async function checkMatchStatus(
-  userId: string
+  matchHash: string
 ): Promise<MatchResponse | StatusBody> {
-  console.debug("In matching helper, checking storage blob:", userId);
-  const res = await fetch(`/api/internal/matching?uid=${userId}`, {
-    method: "GET",
-  });
+  console.debug("In matching helper, checking storage blob:", matchHash);
+  const res = await fetch(
+    `/api/internal/matching?matchHash=${matchHash}`,
+    {
+      method: "GET",
+    }
+  );
   if (!res.ok) {
     return {
       error: await res.text(),
@@ -30,7 +34,7 @@ export async function checkMatchStatus(
 
 export async function findMatch(
   matchRequest: MatchRequest
-): Promise<StatusBody> {
+): Promise<StatusBody|MatchReqInitRes> {
   console.debug(
     "In matching helper, posting match request",
     JSON.stringify(matchRequest)
@@ -43,8 +47,8 @@ export async function findMatch(
     return {
       error: await res.text(),
       status: res.status,
-    };
+    } as StatusBody;
   }
   const json = await res.json();
-  return json as StatusBody;
+  return json as MatchReqInitRes;
 }

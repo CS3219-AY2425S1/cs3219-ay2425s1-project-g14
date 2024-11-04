@@ -33,7 +33,8 @@ func InitialiseClientMappings(addr string, db_num int) *ClientMappings {
 
 func (db *ClientMappings) HandleRequest(request models.IncomingRequests) (*models.Room, error){
 	ctx := context.Background()
-	user2, user2_difficulty, user2_topics, user2_requestTime := request.UserId, request.Difficulty, request.TopicTags, request.RequestTime
+	user2, user2_difficulty, user2_topics := request.UserId, request.Difficulty, request.TopicTags
+	user2_requestTime, user2_matchHash := request.RequestTime, request.MatchHash
 
 	currMappings, err := db.Conn.Keys(ctx, "*").Result()
 
@@ -67,7 +68,6 @@ func (db *ClientMappings) HandleRequest(request models.IncomingRequests) (*model
 		if len(overlappingTopics) == 0 {
 			continue
 		}	
-
 		
 		roomId, err := generateRoomId()
 		
@@ -75,9 +75,13 @@ func (db *ClientMappings) HandleRequest(request models.IncomingRequests) (*model
 			return nil, err
 		} 
 		
+		user1_matchHash := result["matchHash"]
+		
 		db.Conn.Del(ctx, user1)
 			
 		room := models.Room{
+			MatchHash1: user1_matchHash,
+			MatchHash2: user2_matchHash,
 			RoomId: roomId,
 			User1: user1,
 			User2: user2,
@@ -106,6 +110,7 @@ func (db *ClientMappings) HandleRequest(request models.IncomingRequests) (*model
 	}
 
 	err = db.Conn.HSet(ctx, user2, map[string]interface{}{
+		"matchHash": user2_matchHash,
 		"topicTags": user2_topics_json,
 		"difficulty": user2_difficulty,
 		"requestTime": user2_requestTime,

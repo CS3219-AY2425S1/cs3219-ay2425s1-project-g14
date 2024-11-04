@@ -1,7 +1,11 @@
 package models
 
 type Room struct {
+	// stores what key to ship the resulting blob to
+	MatchHash1 string `json:"matchHash1"`
+	MatchHash2 string `json:"matchHash2"`
 	
+	// user information
 	RoomId     string	`json:"roomId"`
 	User1      string	`json:"user1"`
 	User2      string	`json:"user2"`

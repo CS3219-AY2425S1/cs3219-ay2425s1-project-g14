@@ -1,6 +1,8 @@
 package models
 
 type Request struct {
+	MatchHash string
+
 	UserId string `json:"userId"` 
 
 	TopicTags []string `json:"topicTags"`

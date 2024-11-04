@@ -7,7 +7,7 @@ import styles from "@/style/question.module.css";
 import { useRouter } from "next/navigation";
 import { deleteQuestion } from "@/app/api/internal/questions/helper";
 import CollabEditor from "@/components/questionpage/CollabEditor";
-import DOMPurify from "dompurify";
+import DOMPurify from "isomorphic-dompurify";
 
 interface Props {
   question: Question;
