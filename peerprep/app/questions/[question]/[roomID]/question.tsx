@@ -11,9 +11,9 @@ import DOMPurify from "isomorphic-dompurify";
 
 interface Props {
   question: Question;
-  roomID?: String;
-  authToken?: String;
-  userId?: String;
+  roomID?: string;
+  authToken?: string;
+  userId?: string;
 }
 
 interface DifficultyChipProps {

@@ -12,19 +12,16 @@ import "ace-builds/src-min-noconflict/ext-searchbox";
 import "ace-builds/src-min-noconflict/ext-language_tools";
 import PeerprepDropdown from "@/components/shared/PeerprepDropdown";
 
-import { Question } from "@/api/structs";
+import { Language, Question } from "@/api/structs";
 import PeerprepButton from "../shared/PeerprepButton";
 
 import { diff_match_patch } from "diff-match-patch";
+import {
+  callFormatter,
+  FormatResponse,
+} from "@/app/api/internal/formatter/helper";
 
-const languages = [
-  "javascript",
-  "java",
-  "python",
-  "mysql",
-  "golang",
-  "typescript",
-];
+const languages: Language[] = ["javascript", "python", "c_cpp"];
 
 const themes = [
   "monokai",
@@ -71,10 +68,10 @@ export default function CollabEditor({
 }: Props) {
   const [theme, setTheme] = useState("terminal");
   const [fontSize, setFontSize] = useState(18);
-  const [language, setLanguage] = useState("python");
+  const [language, setLanguage] = useState<Language>("python");
   const [value, setValue] = useState(questionSeed);
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [connected, setconnected] = useState(false);
+  const [connected, setConnected] = useState(false);
   const router = useRouter();
 
   const generatePatch = (oldContent: string, newContent: string): string => {
@@ -91,6 +88,35 @@ export default function CollabEditor({
     const [newText, _results] = dmp.patch_apply(patches, text);
     return newText;
   };
+
+  async function formatCode(value: string, language: Language) {
+    try {
+      const res = await callFormatter(value, language);
+      if ("error" in res) {
+        throw new Error(res.error);
+      }
+      const formatResponse = res as FormatResponse;
+      const formatted_code = formatResponse.formatted_code;
+
+      setValue(formatted_code);
+      if (
+        socket &&
+        formatted_code !== value &&
+        socket?.readyState === WebSocket.OPEN
+      ) {
+        const patches = generatePatch(value, formatted_code);
+        const msg: Message = {
+          type: "content_change",
+          data: patches,
+          userId: userId,
+        };
+        socket.send(JSON.stringify(msg));
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Failed to format code");
+    }
+  }
 
   const handleOnChange = (newValue: string) => {
     const patches = generatePatch(value, newValue);
@@ -121,7 +147,7 @@ export default function CollabEditor({
 
     newSocket.onopen = () => {
       console.log("WebSocket connection established");
-      setconnected(true);
+      setConnected(true);
 
       const authMessage: Message = {
         type: "auth",
@@ -219,14 +245,18 @@ export default function CollabEditor({
         />
 
         <PeerprepDropdown
-          label={"Language"}
+          label={"Syntax Highlighting"}
           value={language}
-          onChange={(e) => setLanguage(e.target.value)}
+          onChange={(e) => setLanguage(e.target.value as Language)}
           options={languages}
           className={
             "border border-gray-600 bg-gray-800 text-white p-2 rounded"
           }
         />
+
+        <PeerprepButton onClick={() => formatCode(value, language)}>
+          Format code
+        </PeerprepButton>
 
         {roomID &&
           (connected ? (
