@@ -58,7 +58,7 @@ interface Message {
 }
 
 const dmp = new diff_match_patch();
-const questionSeed = "def foo:\n  pass";
+const questionSeed = "def foo():\n  pass";
 
 export default function CollabEditor({
   question,
