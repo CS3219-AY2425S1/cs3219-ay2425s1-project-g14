@@ -1,5 +1,5 @@
-import { fetchQuestion, getSessionToken } from "@/api/gateway";
-import { Question as QnType, StatusBody, isError } from "@/api/structs";
+import { fetchQuestion, getSessionToken, getUserData } from "@/api/gateway";
+import { isError, Question as QnType, StatusBody } from "@/api/structs";
 import styles from "@/style/question.module.css";
 import ErrorBlock from "@/components/shared/ErrorBlock";
 import React from "react";
@@ -14,6 +14,12 @@ type Props = {
 
 async function Question({ params }: Props) {
   const question = await fetchQuestion(params.question);
+  const authToken = getSessionToken();
+  const userData = getUserData();
+  let userId;
+  try {
+    userId = JSON.parse(userData as string)?.id;
+  } catch (err) {}
 
   return (
     <div className={styles.wrapper}>
@@ -23,7 +29,8 @@ async function Question({ params }: Props) {
         <QuestionBlock
           question={question as QnType}
           roomID={params.roomID}
-          authToken={getSessionToken()}
+          authToken={authToken}
+          userId={userId}
         />
       )}
     </div>

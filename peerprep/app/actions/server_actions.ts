@@ -2,13 +2,12 @@
 import { getSessionLogin, postSignupUser, verifyUser } from "@/api/gateway";
 // defines the server-sided login action.
 import {
-  SignupFormSchema,
-  LoginFormSchema,
   FormState,
   isError,
-  UserServiceResponse,
+  LoginFormSchema,
+  SignupFormSchema,
 } from "@/api/structs";
-import { createSession, expireSession } from "@/app/actions/session";
+import { createSession } from "@/app/actions/session";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 
@@ -55,7 +54,7 @@ export async function login(state: FormState, formData: FormData) {
 
   const json = await getSessionLogin(validatedFields.data);
   if (!isError(json)) {
-    await createSession(json.data.accessToken);
+    await createSession(json.data);
     redirect("/questions");
   } else {
     console.log("Get session login error: " + json.error + " : " + json.status);

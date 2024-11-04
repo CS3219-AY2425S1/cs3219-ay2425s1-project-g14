@@ -20,14 +20,14 @@ var upgrader = websocket.Upgrader{
 }
 
 type Client struct {
-	conn   *websocket.Conn
-	roomID string
+	conn          *websocket.Conn
+	roomID        string
 	authenticated bool
 }
 
 type Hub struct {
 	clients    map[*Client]bool
-	workspaces     map[string]string
+	workspaces map[string]string
 	broadcast  chan Message
 	register   chan *Client
 	unregister chan *Client
@@ -35,8 +35,10 @@ type Hub struct {
 }
 
 type Message struct {
-	roomID  string
-	content []byte
+	Type    string `json:"type"`
+	RoomID  string `json:"roomId"`
+	Content []byte `json:"data"`
+	UserID  string `json:"userId"`
 }
 
 func verifyToken(token string) (bool, string) {
@@ -70,7 +72,7 @@ func verifyToken(token string) (bool, string) {
 		} `json:"data"`
 	}
 
-    body, err := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("Error reading response body:", err)
 		return false, ""
@@ -96,7 +98,7 @@ func verifyToken(token string) (bool, string) {
 func NewHub() *Hub {
 	return &Hub{
 		clients:    make(map[*Client]bool),
-		workspaces:     make(map[string]string),
+		workspaces: make(map[string]string),
 		broadcast:  make(chan Message),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
@@ -122,11 +124,11 @@ func (h *Hub) Run() {
 
 		case message := <-h.broadcast:
 			h.mutex.Lock()
-			// Update the current workspace for this roomID
-			h.workspaces[message.roomID] = string(message.content)
+			// Update the current workspace for this RoomID
+			h.workspaces[message.RoomID] = string(message.Content)
 			for client := range h.clients {
-				if client.roomID == message.roomID {
-					err := client.conn.WriteMessage(websocket.TextMessage, message.content)
+				if client.roomID == message.RoomID {
+					err := client.conn.WriteMessage(websocket.TextMessage, message.Content)
 					if err != nil {
 						log.Printf("Error sending message: %v", err)
 						client.conn.Close()
@@ -189,27 +191,28 @@ func handleMessages(client *Client, hub *Hub, roomMappings *verify.RoomMappings)
 		}
 		// Handle authentication message
 		if msgData["type"] == "auth" {
-            token, ok := msgData["token"].(string)
-            if !ok || !authenticateClient(token, client, roomMappings) {
-                log.Println("Authentication failed")
-                client.conn.WriteMessage(websocket.TextMessage, []byte("Authentication failed"))
-                client.conn.Close()
-                break
-            }
-            client.authenticated = true
-            log.Println("Client authenticated successfully")
-        }
+			token, ok := msgData["token"].(string)
+			if !ok || !authenticateClient(token, client, roomMappings) {
+				log.Println("Authentication failed")
+				client.conn.WriteMessage(websocket.TextMessage, []byte("Authentication failed"))
+				client.conn.Close()
+				break
+			}
+			client.authenticated = true
+			log.Println("Client authenticated successfully")
+		}
 
 		if msgData["type"] == "close_session" {
 			closeMessage := Message{
-				roomID:  client.roomID,
-				content: []byte("The session has been closed by a user."),
+				RoomID:  client.roomID,
+				Content: []byte("The session has been closed by a user."),
 			}
 			hub.broadcast <- closeMessage
 		}
 
 		// Broadcast the message to other clients
-		hub.broadcast <- Message{roomID: client.roomID, content: message}
+		userID, _ := msgData["userId"].(string)
+		hub.broadcast <- Message{RoomID: client.roomID, Content: message, UserID: userID}
 	}
 }
 
@@ -223,17 +226,17 @@ func statusHandler(hub *Hub) gin.HandlerFunc {
 		for client := range hub.clients {
 			roomID := client.roomID
 			currentStatus, ok := status[roomID]
-			if (!ok) {
-				// Initialize status for a new roomID
+			if !ok {
+				// Initialize status for a new RoomID
 				status[roomID] = map[string]interface{}{
-					"clients": 1,
-					"workspace":   hub.workspaces[roomID],
+					"clients":   1,
+					"workspace": hub.workspaces[roomID],
 				}
 			} else {
-				// Update the client count for an existing roomID
+				// Update the client count for an existing RoomID
 				status[roomID] = map[string]interface{}{
-					"clients": currentStatus.(map[string]interface{})["clients"].(int) + 1,
-					"workspace":   hub.workspaces[roomID],
+					"clients":   currentStatus.(map[string]interface{})["clients"].(int) + 1,
+					"workspace": hub.workspaces[roomID],
 				}
 			}
 		}
@@ -241,7 +244,6 @@ func statusHandler(hub *Hub) gin.HandlerFunc {
 		c.JSON(http.StatusOK, status)
 	}
 }
-
 
 func main() {
 	r := gin.Default()
