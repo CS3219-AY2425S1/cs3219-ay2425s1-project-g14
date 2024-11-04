@@ -120,9 +120,10 @@ export default function CollabEditor({
       }
     };
 
-    newSocket.onerror = (e) => {
-      console.log("server down");
-      console.log(e);
+    newSocket.onerror = (event) => {
+      console.error("WebSocket error observed:", event);
+      console.error("WebSocket readyState:", newSocket.readyState);
+      console.error("WebSocket URL:", newSocket.url);
     };
 
     newSocket.onclose = () => {

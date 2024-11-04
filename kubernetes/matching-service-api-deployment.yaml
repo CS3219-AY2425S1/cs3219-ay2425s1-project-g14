@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: matching-service-api
+spec:
+  selector:
+    matchLabels:
+      app: matching-service-api
+  template:
+    metadata:
+      labels:
+        app: matching-service-api
+    spec:
+      containers:
+        - name: matching-service-api
+          image: distractedcat/matching-service-api:1.0.0
+          imagePullPolicy: Always
+          env:
+            - name: PORT
+              value: :9200
+            - name: RABBIT_URI
+              value: amqp://grp14:grp14@rabbitmq/ 
+            - name: CORS_ORIGIN
+              value: http://peerprep:3000
+          ports:
+            - containerPort: 9200
+              name: matching-api

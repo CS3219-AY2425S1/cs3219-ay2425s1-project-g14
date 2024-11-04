@@ -146,6 +146,7 @@ func serveWs(
 		roomMappings *verify.RoomMappings,
 		persistMappings *verify.PersistMappings,
 ) {
+	log.Println("handler called!")
 	roomID := c.Query("roomID")
 	if roomID == "" {
 		http.Error(c.Writer, "roomID required", http.StatusBadRequest)
@@ -272,7 +273,7 @@ func statusHandler(hub *Hub) gin.HandlerFunc {
 		for client := range hub.clients {
 			roomID := client.roomID
 			currentStatus, ok := status[roomID]
-			if !ok {
+			if (!ok) {
 				// Initialize status for a new roomID
 				status[roomID] = map[string]interface{}{
 					"clients": 1,

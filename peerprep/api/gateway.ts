@@ -29,7 +29,7 @@ export async function fetchQuestion(
 ): Promise<Question | StatusBody> {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_QUESTION_SERVICE}/questions/solve/${questionId}`,
+      `${process.env.NEXT_PUBLIC_NGINX}/${process.env.NEXT_PUBLIC_QUESTION_SERVICE}/questions/solve/${questionId}`,
       {
         method: "GET",
         headers: generateAuthHeaders(),
@@ -41,6 +41,7 @@ export async function fetchQuestion(
         status: response.status,
       };
     }
+
 
     // NOTE: this may cause the following: "Can't resolve canvas"
     // https://github.com/kkomelin/isomorphic-dompurify/issues/54
@@ -58,7 +59,7 @@ export async function getSessionLogin(validatedFields: {
 }): Promise<LoginResponse | StatusBody> {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_USER_SERVICE}/auth/login`,
+      `${process.env.NEXT_PUBLIC_NGINX}/${process.env.NEXT_PUBLIC_USER_SERVICE}/auth/login`,
       {
         method: "POST",
         body: JSON.stringify(validatedFields),
@@ -87,13 +88,16 @@ export async function postSignupUser(validatedFields: {
 }): Promise<UserServiceResponse | StatusBody> {
   try {
     console.log(JSON.stringify(validatedFields));
-    const res = await fetch(`${process.env.NEXT_PUBLIC_USER_SERVICE}/users`, {
-      method: "POST",
-      body: JSON.stringify(validatedFields),
-      headers: {
-        "Content-type": "application/json; charset=UTF-8",
-      },
-    });
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_NGINX}/${process.env.NEXT_PUBLIC_USER_SERVICE}/users`,
+      {
+        method: "POST",
+        body: JSON.stringify(validatedFields),
+        headers: {
+          "Content-type": "application/json; charset=UTF-8",
+        },
+      }
+    );
     const json = await res.json();
 
     if (!res.ok) {
@@ -110,7 +114,7 @@ export async function postSignupUser(validatedFields: {
 export async function verifyUser(): Promise<UserServiceResponse | StatusBody> {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_USER_SERVICE}/auth/verify-token`,
+      `${process.env.NEXT_PUBLIC_NGINX}/${process.env.NEXT_PUBLIC_USER_SERVICE}/auth/verify-token`,
       {
         method: "GET",
         headers: generateAuthHeaders(),

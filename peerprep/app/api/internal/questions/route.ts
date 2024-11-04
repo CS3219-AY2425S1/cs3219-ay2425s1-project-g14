@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET() {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_QUESTION_SERVICE}/questions`,
+      `${process.env.NEXT_PUBLIC_NGINX}/${process.env.NEXT_PUBLIC_QUESTION_SERVICE}/questions`,
       {
         method: "GET",
         headers: generateAuthHeaders(),
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_QUESTION_SERVICE}/questions`,
+      `${process.env.NEXT_PUBLIC_NGINX}/${process.env.NEXT_PUBLIC_QUESTION_SERVICE}/questions`,
       {
         method: "POST",
         body: JSON.stringify(body),
@@ -70,7 +70,7 @@ export async function DELETE(request: NextRequest) {
   }
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_QUESTION_SERVICE}/questions/delete/${body.qid}`,
+      `${process.env.NEXT_PUBLIC_NGINX}/${process.env.NEXT_PUBLIC_QUESTION_SERVICE}/questions/delete/${body.qid}`,
       {
         method: "DELETE",
         headers: generateAuthHeaders(),

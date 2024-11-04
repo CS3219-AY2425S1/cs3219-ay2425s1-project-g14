@@ -12,7 +12,7 @@ export async function checkMatchStatus(
 ): Promise<MatchResponse | StatusBody> {
   console.debug("In matching helper, checking storage blob:", matchHash);
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_NGINX}/api/internal/matching?matchHash=${matchHash}`,
+    `/api/internal/matching?matchHash=${matchHash}`,
     {
       method: "GET",
     }
@@ -39,13 +39,10 @@ export async function findMatch(
     "In matching helper, posting match request",
     JSON.stringify(matchRequest)
   );
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_NGINX}/api/internal/matching`,
-    {
-      method: "POST",
-      body: JSON.stringify(matchRequest),
-    }
-  );
+  const res = await fetch(`/api/internal/matching`, {
+    method: "POST",
+    body: JSON.stringify(matchRequest),
+  });
   if (!res.ok) {
     return {
       error: await res.text(),
