@@ -47,7 +47,9 @@ export async function callFormatter(
     );
 
     if (!response.ok) {
-      throw new Error(`Failed to format code: ${response.statusText}`);
+      const errorData = await response.json();
+      console.error("Formatter: ", errorData);
+      throw new Error(`${errorData.detail}`);
     }
 
     const formattedCode = (await response.json()) as FormatResponse;
