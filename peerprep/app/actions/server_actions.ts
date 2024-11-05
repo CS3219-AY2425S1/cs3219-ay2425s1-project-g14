@@ -57,7 +57,7 @@ export async function login(state: FormState, formData: FormData) {
     await createSession(json.data);
     redirect("/questions");
   } else {
-    console.log(json.error);
+    console.log("Get session login error: " + json.error + " : " + json.status);
   }
 }
 

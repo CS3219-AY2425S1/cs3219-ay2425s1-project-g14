@@ -39,15 +39,12 @@ export async function POST(req: NextRequest) {
     if (!response.ok) {
       const errorData = await response.json();
       console.log("Formatter: ", errorData);
-      throw new Error(`Failed to format code: ${response.statusText}`);
+      throw new Error(`Failed to format code: ${errorData.detail}`);
     }
 
     const formattedCode = (await response.json()) as FormatResponse;
     return NextResponse.json(formattedCode);
   } catch (error: any) {
-    return NextResponse.json(
-      { error: `Formatting failed: ${error.message}` },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: `${error.message}` }, { status: 500 });
   }
 }
