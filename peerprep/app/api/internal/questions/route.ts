@@ -9,27 +9,26 @@ export async function GET() {
       `${process.env.NEXT_PUBLIC_NGINX}/${process.env.NEXT_PUBLIC_QUESTION_SERVICE}/questions`,
       {
         method: "GET",
-        headers: generateAuthHeaders()
-      }
+        headers: generateAuthHeaders(),
+      },
     );
     if (!response.ok) {
       return NextResponse.json(
         {
           error: await response.text(),
-          status: response.status
+          status: response.status,
         },
-        { status: response.status }
+        { status: response.status },
       );
     }
     return response;
   } catch (err: any) {
     return NextResponse.json(
       { error: err.message, status: 400 },
-      { status: 400 }
+      { status: 400 },
     );
   }
 }
-
 
 export async function PUT(request: NextRequest) {
   const body = (await request.json()) as Question;
@@ -39,26 +38,29 @@ export async function PUT(request: NextRequest) {
       {
         method: "PUT",
         body: JSON.stringify(body),
-        headers: generateJSONHeaders()
-      }
+        headers: generateJSONHeaders(),
+      },
     );
     if (response.ok) {
+      revalidatePath("/questions");
+      revalidatePath(`/questions/${body.id}`);
+      revalidatePath(`/questions/edit/${body.title}`);
       return NextResponse.json(
         { status: response.status },
-        { status: response.status }
+        { status: response.status },
       );
     }
     return NextResponse.json(
       {
         error: (await response.json())["Error adding question: "],
-        status: response.status
+        status: response.status,
       },
-      { status: response.status }
+      { status: response.status },
     );
   } catch (err: any) {
     return NextResponse.json(
       { error: err.message, status: 400 },
-      { status: 400 }
+      { status: 400 },
     );
   }
 }
@@ -71,26 +73,27 @@ export async function POST(request: NextRequest) {
       {
         method: "POST",
         body: JSON.stringify(body),
-        headers: generateJSONHeaders()
-      }
+        headers: generateJSONHeaders(),
+      },
     );
     if (response.ok) {
+      revalidatePath("/questions");
       return NextResponse.json(
         { status: response.status },
-        { status: response.status }
+        { status: response.status },
       );
     }
     return NextResponse.json(
       {
         error: (await response.json())["Error adding question: "],
-        status: response.status
+        status: response.status,
       },
-      { status: response.status }
+      { status: response.status },
     );
   } catch (err: any) {
     return NextResponse.json(
       { error: err.message, status: 400 },
-      { status: 400 }
+      { status: 400 },
     );
   }
 }
@@ -100,7 +103,7 @@ export async function DELETE(request: NextRequest) {
   if (body.qid === undefined) {
     return NextResponse.json(
       { error: "No ID specified.", status: 400 },
-      { status: 400 }
+      { status: 400 },
     );
   }
   try {
@@ -108,8 +111,8 @@ export async function DELETE(request: NextRequest) {
       `${process.env.NEXT_PUBLIC_NGINX}/${process.env.NEXT_PUBLIC_QUESTION_SERVICE}/questions/delete/${body.qid}`,
       {
         method: "DELETE",
-        headers: generateAuthHeaders()
-      }
+        headers: generateAuthHeaders(),
+      },
     );
     if (response.ok) {
       // NextResponse doesn't support 204.
@@ -119,14 +122,14 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json(
       {
         error: (await response.json())["Error deleting question: "],
-        status: response.status
+        status: response.status,
       },
-      { status: response.status }
+      { status: response.status },
     );
   } catch (err: any) {
     return NextResponse.json(
       { error: `Bad request: ${err.message}`, status: 400 },
-      { status: 400 }
+      { status: 400 },
     );
   }
 }

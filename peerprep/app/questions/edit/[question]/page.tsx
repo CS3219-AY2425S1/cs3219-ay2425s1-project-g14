@@ -6,13 +6,15 @@ import { revalidatePath } from "next/cache";
 
 type Props = {
   params: {
-    question: string;
+    question: number;
   };
 };
 
 const EditQuestionPage = async ({ params }: Props) => {
   const question = (await fetchQuestion(params.question)) as Question;
   console.log("Fetching question");
+  revalidatePath("/questions");
+  revalidatePath(`/questions/${params.question}`);
   revalidatePath(`/questions/edit/${params.question}`);
 
   return <EditQuestion question={question} />;

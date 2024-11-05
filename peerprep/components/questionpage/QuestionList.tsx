@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import QuestionCard from "./QuestionCard";
 import { Difficulty, Question } from "@/api/structs";
 import PeerprepDropdown from "../shared/PeerprepDropdown";
@@ -13,16 +13,22 @@ type Props = {
 // TODO make multiple select for topics at least
 const QuestionList = ({ questions }: Props) => {
   const [searchFilter, setSearchFilter] = useState<string>("");
-  const [difficultyFilter, setDifficultyFilter] = useState<string>(
-    Difficulty.All,
-  );
-  const [topicFilter, setTopicFilter] = useState<string>("all");
-  const { topicList, setTopicList } = useQuestionFilter();
 
-  const uniqueTopics = Array.from(
-    new Set(questions.flatMap((question) => question.topicTags) ?? []),
-  );
-  setTopicList(["all", ...uniqueTopics]);
+  const {
+    topicList,
+    setTopicList,
+    difficultyFilter,
+    setDifficultyFilter,
+    topicFilter,
+    setTopicFilter,
+  } = useQuestionFilter();
+
+  useEffect(() => {
+    const uniqueTopics = Array.from(
+      new Set(questions.flatMap((question) => question.topicTags)),
+    );
+    setTopicList(["all", ...uniqueTopics]);
+  }, []);
 
   const filteredQuestions = questions.filter((question) => {
     const matchesDifficulty =
@@ -50,8 +56,8 @@ const QuestionList = ({ questions }: Props) => {
   };
 
   return (
-    <div className="flex-grow max-h-screen overflow-y-auto p-4">
-      <div className="flex space-x-4 mb-4 items-end">
+    <div className="sticky top-0">
+      <div className="mb-4 flex items-end space-x-4">
         <PeerprepSearchBar
           value={searchFilter}
           label="Search questions..."
@@ -71,7 +77,7 @@ const QuestionList = ({ questions }: Props) => {
         />
       </div>
 
-      <div>
+      <div className={""}>
         {sortedQuestions.map((question) => (
           <QuestionCard key={question.id} question={question} />
         ))}

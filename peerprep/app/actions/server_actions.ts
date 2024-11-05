@@ -6,10 +6,11 @@ import {
   isError,
   LoginFormSchema,
   SignupFormSchema,
+  UserServiceResponse,
 } from "@/api/structs";
 import { createSession } from "@/app/actions/session";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
+import { cookies } from "next/headers"; // credit - taken from Next.JS Auth tutorial
 
 // credit - taken from Next.JS Auth tutorial
 export async function signup(state: FormState, formData: FormData) {

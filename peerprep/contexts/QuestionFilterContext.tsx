@@ -1,11 +1,15 @@
 "use client";
 import { Difficulty } from "@/api/structs";
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, ReactNode, useContext, useState } from "react";
 
 interface QuestionFilterContextType {
-  difficulties: string[];
+  difficulties: Difficulty[];
+  difficultyFilter: string;
+  setDifficultyFilter: (difficulty: string) => void;
   topicList: string[];
   setTopicList: (topics: string[]) => void;
+  topicFilter: string;
+  setTopicFilter: (topic: string) => void;
 }
 
 const QuestionFilterContext = createContext<
@@ -15,16 +19,24 @@ const QuestionFilterContext = createContext<
 export const QuestionFilterProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const difficulties = [Difficulty.Easy, Difficulty.Medium, Difficulty.Hard];
+  const difficulties = Object.values(Difficulty);
+  const [difficultyFilter, setDifficultyFilter] = useState<string>(
+    Difficulty.All,
+  );
   const [topicList, setTopicList] = useState<string[]>([]);
-  // I guess default set this too the whole list of topics from questionlist
-  // can also consider moving all the uniqu topics here? -- yes, we are doing that now
-  // TODO: since QuestionFilterProvider now exists to wrap the QuestionList, 
-  //       we can move the question fetching 1 layer higher, theoretically, so look into this
+  const [topicFilter, setTopicFilter] = useState<string>("all");
 
   return (
     <QuestionFilterContext.Provider
-      value={{ difficulties, topicList, setTopicList }}
+      value={{
+        difficulties,
+        difficultyFilter,
+        setDifficultyFilter,
+        topicList,
+        setTopicList,
+        topicFilter,
+        setTopicFilter,
+      }}
     >
       {children}
     </QuestionFilterContext.Provider>
@@ -35,7 +47,7 @@ export const useQuestionFilter = (): QuestionFilterContextType => {
   const context = useContext(QuestionFilterContext);
   if (!context) {
     throw new Error(
-      "useQuestionFilter must be used within a QuestionFilterProvider"
+      "useQuestionFilter must be used within a QuestionFilterProvider,
     );
   }
   return context;

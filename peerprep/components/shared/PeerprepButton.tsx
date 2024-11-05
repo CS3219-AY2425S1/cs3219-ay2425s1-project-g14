@@ -6,7 +6,6 @@ type PeerprepButtonProps = {
   onClick?: () => void;
   children: React.ReactNode;
   className?: string;
-  disabled?: boolean
   disabled?: boolean;
   type?: "button" | "submit" | "reset";
 };

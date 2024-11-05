@@ -7,10 +7,10 @@ import QuestionBlock from "./question";
 
 type Props = {
   searchParams: {
-    match?: string
-  },
+    match?: string;
+  };
   params: {
-    question: string;
+    question: number;
     roomID: string;
   };
 };
@@ -23,7 +23,7 @@ async function Question({ params, searchParams }: Props) {
   try {
     userId = JSON.parse(userData as string)?.id;
   } catch (err) {
-    console.log("Failed to parse userid")
+    console.log("Failed to parse userid");
   }
 
   return (

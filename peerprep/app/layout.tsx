@@ -19,8 +19,8 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <Navbar />
+          <main className="flex-grow overflow-y-auto">{children}</main>
         </ThemeProvider>
-        <ThemeProvider>{children}</ThemeProvider>{" "}
       </body>
     </html>
   );

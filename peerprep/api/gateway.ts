@@ -1,10 +1,5 @@
 import { cookies } from "next/headers";
-import {
-  LoginResponse,
-  Question,
-  StatusBody,
-  UserServiceResponse
-} from "./structs";
+import { LoginResponse, Question, StatusBody, UserServiceResponse } from "./structs";
 import DOMPurify from "isomorphic-dompurify";
 import { CookieNames } from "@/app/actions/session";
 
@@ -25,20 +20,21 @@ export function getUserData() {
 export function generateJSONHeaders() {
   return {
     ...generateAuthHeaders(),
-    "Content-type": "application/json; charset=UTF-8"
+    "Content-type": "application/json; charset=UTF-8,
   };
 }
 
 export async function fetchQuestion(
-  questionId: string
+  questionId: number
 ): Promise<Question | StatusBody> {
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_NGINX}/${process.env.NEXT_PUBLIC_QUESTION_SERVICE}/questions/solve/${questionId}`,
       {
         method: "GET",
-        headers: generateAuthHeaders()
-      }
+        headers: generateAuthHeaders(),
+        cache: "no-store"
+      },
     );
     if (!response.ok) {
       return {
@@ -47,8 +43,6 @@ export async function fetchQuestion(
       };
     }
 
-    // NOTE: this may cause the following: "Can't resolve canvas"
-    // https://github.com/kkomelin/isomorphic-dompurify/issues/54
     const question = (await response.json()) as Question;
     question.content = DOMPurify.sanitize(question.content);
     return question;
@@ -69,8 +63,8 @@ export async function getSessionLogin(validatedFields: {
         body: JSON.stringify(validatedFields),
         headers: {
           "Content-type": "application/json; charset=UTF-8"
-        }
-      }
+        },
+      },
     );
     const json = await res.json();
 
@@ -99,8 +93,8 @@ export async function postSignupUser(validatedFields: {
         body: JSON.stringify(validatedFields),
         headers: {
           "Content-type": "application/json; charset=UTF-8"
-        }
-      }
+        },
+      },
     );
     const json = await res.json();
 
@@ -122,7 +116,7 @@ export async function verifyUser(): Promise<UserServiceResponse | StatusBody> {
       {
         method: "GET",
         headers: generateAuthHeaders()
-      }
+      },
     );
     const json = await res.json();
 

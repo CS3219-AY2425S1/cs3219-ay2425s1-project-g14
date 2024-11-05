@@ -2,10 +2,10 @@ import React from "react";
 import QuestionList from "@/components/questionpage/QuestionList";
 import Matchmaking from "@/components/questionpage/Matchmaking";
 import { QuestionFilterProvider } from "@/contexts/QuestionFilterContext";
-import { UserInfoProvider } from "@/contexts/UserInfoContext";
 import { hydrateUid } from "../actions/server_actions";
 import { Question } from "@/api/structs";
 import { generateAuthHeaders } from "@/api/gateway";
+import { UserInfoProvider } from "@/contexts/UserInfoContext";
 
 async function QuestionsPage() {
   const userId = await hydrateUid();
@@ -21,8 +21,14 @@ async function QuestionsPage() {
   return (
     <UserInfoProvider userid={userId}>
       <QuestionFilterProvider>
-        <Matchmaking></Matchmaking>
-        <QuestionList questions={questions}></QuestionList>
+        <div className="flex h-screen flex-col overflow-hidden">
+          <div className="sticky top-0">
+            <Matchmaking />
+          </div>
+          <div className="flex-grow overflow-y-auto">
+            <QuestionList questions={questions} />
+          </div>
+        </div>
       </QuestionFilterProvider>
     </UserInfoProvider>
   );

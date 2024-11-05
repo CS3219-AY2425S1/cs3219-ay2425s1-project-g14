@@ -6,7 +6,6 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
@@ -52,7 +51,6 @@ const QuestionForm = ({ form, onSubmit }: QuestionFormProps) => {
               <FormControl>
                 <Input placeholder="Two Sum" {...field} />
               </FormControl>
-              <FormMessage />
             </FormItem>
           )}
         />
@@ -74,7 +72,6 @@ const QuestionForm = ({ form, onSubmit }: QuestionFormProps) => {
                   <SelectItem value={Difficulty.Hard}>Hard</SelectItem>
                 </SelectContent>
               </Select>
-              <FormMessage />
             </FormItem>
           )}
         />
@@ -97,7 +94,6 @@ const QuestionForm = ({ form, onSubmit }: QuestionFormProps) => {
                   )}
                 />
               </FormControl>
-              <FormMessage />
             </FormItem>
           )}
         />
@@ -113,7 +109,6 @@ const QuestionForm = ({ form, onSubmit }: QuestionFormProps) => {
                   onChange={field.onChange}
                 />
               </FormControl>
-              <FormMessage />
             </FormItem>
           )}
         />
