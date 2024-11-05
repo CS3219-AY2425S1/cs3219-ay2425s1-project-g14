@@ -3,7 +3,7 @@ import {
   LoginResponse,
   Question,
   StatusBody,
-  UserServiceResponse,
+  UserServiceResponse
 } from "./structs";
 import DOMPurify from "isomorphic-dompurify";
 import { CookieNames } from "@/app/actions/session";
@@ -25,25 +25,25 @@ export function getUserData() {
 export function generateJSONHeaders() {
   return {
     ...generateAuthHeaders(),
-    "Content-type": "application/json; charset=UTF-8",
+    "Content-type": "application/json; charset=UTF-8"
   };
 }
 
 export async function fetchQuestion(
-  questionId: string,
+  questionId: string
 ): Promise<Question | StatusBody> {
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_NGINX}/${process.env.NEXT_PUBLIC_QUESTION_SERVICE}/questions/solve/${questionId}`,
       {
         method: "GET",
-        headers: generateAuthHeaders(),
-      },
+        headers: generateAuthHeaders()
+      }
     );
     if (!response.ok) {
       return {
         error: await response.text(),
-        status: response.status,
+        status: response.status
       };
     }
 
@@ -68,9 +68,9 @@ export async function getSessionLogin(validatedFields: {
         method: "POST",
         body: JSON.stringify(validatedFields),
         headers: {
-          "Content-type": "application/json; charset=UTF-8",
-        },
-      },
+          "Content-type": "application/json; charset=UTF-8"
+        }
+      }
     );
     const json = await res.json();
 
@@ -98,9 +98,9 @@ export async function postSignupUser(validatedFields: {
         method: "POST",
         body: JSON.stringify(validatedFields),
         headers: {
-          "Content-type": "application/json; charset=UTF-8",
-        },
-      },
+          "Content-type": "application/json; charset=UTF-8"
+        }
+      }
     );
     const json = await res.json();
 
@@ -121,8 +121,8 @@ export async function verifyUser(): Promise<UserServiceResponse | StatusBody> {
       `${process.env.NEXT_PUBLIC_NGINX}/${process.env.NEXT_PUBLIC_USER_SERVICE}/auth/verify-token`,
       {
         method: "GET",
-        headers: generateAuthHeaders(),
-      },
+        headers: generateAuthHeaders()
+      }
     );
     const json = await res.json();
 

@@ -1,4 +1,5 @@
 "use client";
+
 import React from "react";
 import { Difficulty, Question } from "@/api/structs";
 import Chip from "@/components/shared/Chip";
@@ -61,12 +62,6 @@ function QuestionBlock({ question }: Props) {
             </h1>
             <DifficultyChip diff={question.difficulty} />
           </div>
-          <PeerprepButton
-            className={` ${styles.button}`}
-            onClick={handleDelete}
-          >
-            Delete
-          </PeerprepButton>
         </div>
         <div className={styles.label_wrapper}>
           <p>Topics: </p>

@@ -3,20 +3,28 @@ import React from "react";
 import styles from "@/style/elements.module.css";
 
 type PeerprepButtonProps = {
-  onClick: () => void;
+  onClick?: () => void;
   children: React.ReactNode;
   className?: string;
   disabled?: boolean
+  disabled?: boolean;
+  type?: "button" | "submit" | "reset";
 };
 
 const PeerprepButton: React.FC<PeerprepButtonProps> = ({
   onClick,
   children,
   className,
-  disabled
+  disabled,
+  type,
 }) => {
   return (
-    <button onClick={onClick} className={`${styles.button} ${className}`} disabled={disabled}>
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      type={type}
+      className={`${styles.button} ${className}`}
+    >
       {children}
     </button>
   );
