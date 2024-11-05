@@ -5,7 +5,7 @@ import PeerprepButton from "../shared/PeerprepButton";
 import { useRouter } from "next/navigation";
 import styles from "@/style/questionCard.module.css";
 import { deleteQuestion } from "@/app/api/internal/questions/helper";
-import DOMPurify from "dompurify";
+import DOMPurify from "isomorphic-dompurify";
 
 type QuestionCardProps = {
   question: Question;
@@ -16,10 +16,11 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
   const handleDelete = async () => {
     if (
       confirm(
-        `Are you sure you want to delete ${question.title}? (ID: ${question.id}) `
+        `Are you sure you want to delete ${question.title}? (ID: ${question.id}) `,
       )
     ) {
       const status = await deleteQuestion(question.id);
+      router.refresh();
       if (status.error) {
         console.log("Failed to delete question.");
         console.log(`Code ${status.status}:  ${status.error}`);
@@ -58,7 +59,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
           Difficulty:{" "}
           <span
             className={`capitalize font-bold ${getDifficultyColor(
-              question.difficulty
+              question.difficulty,
             )}`}
           >
             {Difficulty[question.difficulty]}

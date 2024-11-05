@@ -1,5 +1,6 @@
 import { generateAuthHeaders, generateJSONHeaders } from "@/api/gateway";
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 
 export async function GET() {
   try {
@@ -8,7 +9,7 @@ export async function GET() {
       {
         method: "GET",
         headers: generateAuthHeaders(),
-      }
+      },
     );
     if (!response.ok) {
       return NextResponse.json(
@@ -16,14 +17,14 @@ export async function GET() {
           error: await response.text(),
           status: response.status,
         },
-        { status: response.status }
+        { status: response.status },
       );
     }
     return response;
   } catch (err: any) {
     return NextResponse.json(
       { error: err.message, status: 400 },
-      { status: 400 }
+      { status: 400 ,
     );
   }
 }
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
         method: "POST",
         body: JSON.stringify(body),
         headers: generateJSONHeaders(),
-      }
+      },
     );
     if (response.ok) {
       return NextResponse.json(
@@ -74,10 +75,11 @@ export async function DELETE(request: NextRequest) {
       {
         method: "DELETE",
         headers: generateAuthHeaders(),
-      }
+      },
     );
     if (response.ok) {
       // NextResponse doesn't support 204.
+      revalidatePath("/questions");
       return new Response(null, { status: response.status });
     }
     return NextResponse.json(
