@@ -3,10 +3,9 @@
 import React from "react";
 import { Difficulty, Question } from "@/api/structs";
 import Chip from "@/components/shared/Chip";
-import PeerprepButton from "@/components/shared/PeerprepButton";
 import styles from "@/style/question.module.css";
 import { useRouter } from "next/navigation";
-import { deleteQuestion } from "@/app/api/internal/questions/helper";
+import { deleteQuestion } from "@/app/questions/helper";
 import CollabEditor from "@/components/questionpage/CollabEditor";
 import DOMPurify from "isomorphic-dompurify";
 

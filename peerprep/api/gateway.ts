@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { LoginResponse, Question, StatusBody, UserServiceResponse } from "./structs";
 import DOMPurify from "isomorphic-dompurify";
 import { CookieNames } from "@/app/actions/session";
+import { revalidatePath } from "next/cache";
 
 export function generateAuthHeaders() {
   return {
@@ -20,12 +21,12 @@ export function getUserData() {
 export function generateJSONHeaders() {
   return {
     ...generateAuthHeaders(),
-    "Content-type": "application/json; charset=UTF-8,
+    "Content-type": "application/json; charset=UTF-8",
   };
 }
 
 export async function fetchQuestion(
-  questionId: number
+  questionId: numbe,
 ): Promise<Question | StatusBody> {
   try {
     const response = await fetch(
@@ -33,18 +34,19 @@ export async function fetchQuestion(
       {
         method: "GET",
         headers: generateAuthHeaders(),
-        cache: "no-store"
+        cache: "no-store",
       },
     );
     if (!response.ok) {
       return {
         error: await response.text(),
-        status: response.status
+        status: response.statu,
       };
     }
 
     const question = (await response.json()) as Question;
     question.content = DOMPurify.sanitize(question.content);
+    revalidatePath(`/questions/edit/${questionId}`);
     return question;
   } catch (err: any) {
     return { error: err.message, status: 400 };
@@ -62,7 +64,7 @@ export async function getSessionLogin(validatedFields: {
         method: "POST",
         body: JSON.stringify(validatedFields),
         headers: {
-          "Content-type": "application/json; charset=UTF-8"
+          "Content-type": "application/json; charset=UTF-8",
         },
       },
     );
@@ -92,7 +94,7 @@ export async function postSignupUser(validatedFields: {
         method: "POST",
         body: JSON.stringify(validatedFields),
         headers: {
-          "Content-type": "application/json; charset=UTF-8"
+          "Content-type": "application/json; charset=UTF-8,
         },
       },
     );

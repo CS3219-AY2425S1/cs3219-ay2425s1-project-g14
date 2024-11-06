@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { exampleQuestion } from "@/app/questions/new/ExampleQuestion";
 import { zodResolver } from "@hookform/resolvers/zod";
 import QuestionForm from "@/app/questions/QuestionForm";
-import { addQuestion } from "@/app/api/internal/questions/helper";
+import { addQuestion } from "@/app/questions/helper";
 
 const NewQuestion = () => {
   const router = useRouter();

@@ -4,7 +4,7 @@ import { Difficulty, Question } from "@/api/structs";
 import PeerprepButton from "../shared/PeerprepButton";
 import { useRouter } from "next/navigation";
 import styles from "@/style/questionCard.module.css";
-import { deleteQuestion } from "@/app/api/internal/questions/helper";
+import { deleteQuestion } from "@/app/questions/helper";
 import DOMPurify from "isomorphic-dompurify";
 
 type QuestionCardProps = {

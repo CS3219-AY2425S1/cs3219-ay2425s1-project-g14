@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Question, QuestionSchema } from "@/api/structs";
-import { editQuestion } from "@/app/api/internal/questions/helper";
+import { editQuestion } from "@/app/questions/helper";
 import QuestionForm from "@/app/questions/QuestionForm";
 import { useRouter } from "next/navigation";
 
@@ -23,7 +23,7 @@ const EditQuestion = ({ question }: { question: Question }) => {
 
   const onSubmit = async (values: z.infer<typeof QuestionSchema>) => {
     console.log(values);
-    const qn = {
+    const qn: Question = {
       id: question.id,
       ...values,
     };
