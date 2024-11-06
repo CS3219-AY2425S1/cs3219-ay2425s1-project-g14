@@ -1,5 +1,10 @@
 import { cookies } from "next/headers";
-import { LoginResponse, Question, StatusBody, UserServiceResponse } from "./structs";
+import {
+  LoginResponse,
+  Question,
+  StatusBody,
+  UserServiceResponse,
+} from "./structs";
 import DOMPurify from "isomorphic-dompurify";
 import { CookieNames } from "@/app/actions/session";
 import { revalidatePath } from "next/cache";
@@ -26,7 +31,7 @@ export function generateJSONHeaders() {
 }
 
 export async function fetchQuestion(
-  questionId: numbe,
+  questionId: number,
 ): Promise<Question | StatusBody> {
   try {
     const response = await fetch(
@@ -40,7 +45,7 @@ export async function fetchQuestion(
     if (!response.ok) {
       return {
         error: await response.text(),
-        status: response.statu,
+        status: response.status,
       };
     }
 
@@ -94,7 +99,7 @@ export async function postSignupUser(validatedFields: {
         method: "POST",
         body: JSON.stringify(validatedFields),
         headers: {
-          "Content-type": "application/json; charset=UTF-8,
+          "Content-type": "application/json; charset=UTF-8",
         },
       },
     );
@@ -117,7 +122,7 @@ export async function verifyUser(): Promise<UserServiceResponse | StatusBody> {
       `${process.env.NEXT_PUBLIC_NGINX}/${process.env.NEXT_PUBLIC_USER_SERVICE}/auth/verify-token`,
       {
         method: "GET",
-        headers: generateAuthHeaders()
+        headers: generateAuthHeaders(),
       },
     );
     const json = await res.json();
