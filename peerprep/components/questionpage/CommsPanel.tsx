@@ -7,7 +7,9 @@ interface Props {
   roomId?: String;
 }
 
-const socket = io(`${process.env.NEXT_PUBLIC_COMMS}`);
+const socket = io(`/`, {
+  path: '/comms'
+});
 
 function CommsPanel({ className, roomId }: Props) {
   const [stream, setStream] = useState<MediaStream>();
