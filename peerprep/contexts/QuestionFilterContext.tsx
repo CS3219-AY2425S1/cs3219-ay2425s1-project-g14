@@ -47,7 +47,7 @@ export const useQuestionFilter = (): QuestionFilterContextType => {
   const context = useContext(QuestionFilterContext);
   if (!context) {
     throw new Error(
-      "useQuestionFilter must be used within a QuestionFilterProvider,
+      "useQuestionFilter must be used within a QuestionFilterProvider",
     );
   }
   return context;

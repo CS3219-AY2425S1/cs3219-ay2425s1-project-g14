@@ -15,6 +15,7 @@ async function QuestionsPage() {
     {
       method: "GET",
       headers: generateAuthHeaders(),
+      cache: "no-store",
     },
   ).then((res) => res.json());
 
