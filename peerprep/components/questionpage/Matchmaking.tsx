@@ -100,6 +100,7 @@ const Matchmaking = () => {
         setMatchHash("");
         setIsMatching(false);
         console.log("Match request timed out after 30s");
+        alert("Failed to find match. Request timed out.");
       }, TIMEOUT_MILLISECONDS);
 
       // assemble the match request
