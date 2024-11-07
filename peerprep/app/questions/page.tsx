@@ -24,9 +24,7 @@ async function QuestionsPage() {
     <UserInfoProvider userData={userData}>
       <QuestionFilterProvider>
         <div className="flex h-screen flex-col overflow-hidden">
-          <div className="sticky top-0">
-            <Matchmaking />
-          </div>
+          <Matchmaking />
           <div className="flex-grow overflow-y-auto">
             <QuestionList questions={questions as unknown as Question[]} />
           </div>

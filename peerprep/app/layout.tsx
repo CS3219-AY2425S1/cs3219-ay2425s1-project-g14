@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/navbar/Navbar";
-
 import ThemeProvider from "./theme-provider";
 
 export const metadata: Metadata = {
@@ -19,7 +18,7 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <Navbar />
-          <main className="flex-grow overflow-y-auto">{children}</main>
+          <main className="flex-1 overflow-y-auto p-4">{children}</main>
         </ThemeProvider>
       </body>
     </html>

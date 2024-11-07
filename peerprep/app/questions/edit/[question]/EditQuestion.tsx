@@ -40,8 +40,8 @@ const EditQuestion = ({ question }: { question: Question }) => {
   };
 
   return (
-    <div className="flex h-screen items-center justify-center">
-      <div className="flex w-2/3 max-w-xl flex-col content-center">
+    <div className="flex h-screen justify-center">
+      <div className="w-2/3">
         <QuestionForm form={form} onSubmit={onSubmit} />
       </div>
     </div>

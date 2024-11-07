@@ -36,13 +36,15 @@ const Tiptap = ({ defaultContent, onChange }: TipTapProps) => {
   });
 
   return (
-    <div className="flex min-h-80 flex-col">
+    <div className="flex flex-col">
       <MenuBar editor={editor} />
 
-      <EditorContent
-        editor={editor}
-        className="flex h-full flex-1 resize-y flex-col overflow-y-auto overflow-x-hidden rounded-md border bg-[#121212] p-2"
-      />
+      <div className="h-80 resize-y">
+        <EditorContent
+          editor={editor}
+          className="h-full flex-1 overflow-y-auto rounded-md border bg-[#121212] p-2"
+        />
+      </div>
     </div>
   );
 };

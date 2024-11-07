@@ -124,7 +124,12 @@ const QuestionForm = ({ form, onSubmit }: QuestionFormProps) => {
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <Button
+          type="submit"
+          className={"border-blue-800 bg-blue-700 text-white hover:bg-blue-800"}
+        >
+          Submit
+        </Button>
       </form>
     </Form>
   );
