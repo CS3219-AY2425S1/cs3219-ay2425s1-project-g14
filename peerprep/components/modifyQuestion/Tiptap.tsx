@@ -23,29 +23,26 @@ const Tiptap = ({ defaultContent, onChange }: TipTapProps) => {
       Subscript,
       Superscript,
       Underline,
-
       Link,
       Placeholder.configure({
         placeholder: "Add your question here",
       }),
     ],
     content: defaultContent,
-    immediatelyRender: false, // needed if used in a server component
+    immediatelyRender: false,
     onUpdate({ editor }) {
       onChange(editor.getHTML());
     },
   });
 
   return (
-    <div className="h-96">
+    <div className="flex min-h-80 flex-col">
       <MenuBar editor={editor} />
 
-      <div
-        className="editor-content h-80 resize-y overflow-y-auto overflow-x-hidden rounded-md border bg-gray-1 p-2"
-        style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
-      >
-        <EditorContent editor={editor} />
-      </div>
+      <EditorContent
+        editor={editor}
+        className="flex h-full flex-1 resize-y flex-col overflow-y-auto overflow-x-hidden rounded-md border bg-[#121212] p-2"
+      />
     </div>
   );
 };

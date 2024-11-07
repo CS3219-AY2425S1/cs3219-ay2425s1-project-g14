@@ -129,12 +129,12 @@ export type FormatResponse = {
 export const QuestionSchema = z.object({
   difficulty: z.nativeEnum(Difficulty),
   title: z.string().min(2, {
-    message: "Please input a title.",
+    message: "Please input a title of at least length 2.",
   }),
   content: z.string().min(2, {
     message: "Please input content.",
   }),
   topicTags: z.array(z.string()).min(1, {
-    message: "Please input at least one topic tag.",
+    message: "Please input at least one topic tag. Press enter to add a tag.",
   }),
 }) satisfies ZodType<QuestionFullBody>;

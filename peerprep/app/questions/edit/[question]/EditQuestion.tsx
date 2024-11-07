@@ -28,9 +28,11 @@ const EditQuestion = ({ question }: { question: Question }) => {
       ...values,
     };
     const status = await editQuestion(qn);
+    console.log(status);
     if (status.error) {
       console.log("Failed to add question.");
       console.log(`Code ${status.status}:  ${status.error}`);
+      alert(`Failed to add question. Code ${status.status}:  ${status.error}`);
       return;
     }
     console.log(`Successfully modified the question.`);

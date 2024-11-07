@@ -1,9 +1,13 @@
+.ProseMirror {
+    flex: 1;
+}
+
 .tiptap {
     :first-child {
         margin-top: 0;
     }
+
     outline: none;
-    box-shadow: none;
 
 
     ul {

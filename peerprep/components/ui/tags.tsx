@@ -42,7 +42,7 @@ const InputTags = React.forwardRef<HTMLInputElement, InputTagsProps>(
       <div
         className={cn(
           // caveat: :has() variant requires tailwind v3.4 or above: https://tailwindcss.com/blog/tailwindcss-v3-4#new-has-variant
-          "flex min-h-10 w-full flex-wrap gap-2 rounded-md border border-neutral-200 px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50 has-[:focus-visible]:outline-none has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-neutral-950 has-[:focus-visible]:ring-offset-2",
+          "flex min-h-10 w-full flex-wrap gap-2 rounded-md border border-black px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50 has-[:focus-visible]:outline-none has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-neutral-950 has-[:focus-visible]:ring-offset-2",
           className,
         )}
       >
@@ -62,7 +62,7 @@ const InputTags = React.forwardRef<HTMLInputElement, InputTagsProps>(
           </Badge>
         ))}
         <input
-          className="flex-1 bg-black text-white outline-none placeholder:text-neutral-500"
+          className="flex-1 bg-[#121212] text-white outline-none placeholder:text-neutral-500"
           value={pendingDataPoint}
           onChange={(e) => setPendingDataPoint(e.target.value)}
           onKeyDown={(e) => {

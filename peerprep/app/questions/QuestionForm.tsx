@@ -3,9 +3,11 @@
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
@@ -41,7 +43,7 @@ type QuestionFormProps = {
 const QuestionForm = ({ form, onSubmit }: QuestionFormProps) => {
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
         <FormField
           control={form.control}
           name="title"
@@ -51,6 +53,8 @@ const QuestionForm = ({ form, onSubmit }: QuestionFormProps) => {
               <FormControl>
                 <Input placeholder="Two Sum" {...field} />
               </FormControl>
+              <FormDescription>Please input a title.</FormDescription>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -72,6 +76,8 @@ const QuestionForm = ({ form, onSubmit }: QuestionFormProps) => {
                   <SelectItem value={Difficulty.Hard}>Hard</SelectItem>
                 </SelectContent>
               </Select>
+              <FormDescription>Please select a difficulty.</FormDescription>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -79,9 +85,9 @@ const QuestionForm = ({ form, onSubmit }: QuestionFormProps) => {
           control={form.control}
           name="topicTags"
           render={({ field }) => (
-            <FormItem className="flex w-full flex-col items-start">
-              <FormLabel className="text-left">Topics</FormLabel>
-              <FormControl className="w-full">
+            <FormItem className="">
+              <FormLabel className="">Topics</FormLabel>
+              <FormControl className="">
                 <Controller
                   name="topicTags"
                   control={form.control}
@@ -89,11 +95,15 @@ const QuestionForm = ({ form, onSubmit }: QuestionFormProps) => {
                     <InputTags
                       value={field.value}
                       onChange={field.onChange}
-                      placeholder="Press 'Enter' to add topics. "
+                      placeholder="Press 'Enter' to add tags."
                     />
                   )}
                 />
               </FormControl>
+              <FormDescription>
+                Please input at least one topic tag.
+              </FormDescription>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -109,6 +119,8 @@ const QuestionForm = ({ form, onSubmit }: QuestionFormProps) => {
                   onChange={field.onChange}
                 />
               </FormControl>
+              <FormDescription>Please input content.</FormDescription>
+              <FormMessage />
             </FormItem>
           )}
         />

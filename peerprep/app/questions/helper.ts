@@ -59,7 +59,7 @@ export async function editQuestion(question: Question): Promise<StatusBody> {
     },
   );
   if (!res.ok) {
-    return { status: res.status };
+    return { status: res.status, error: await res.text() };
   }
   revalidatePath("/questions");
   revalidatePath("/questions/edit/" + question.id);
@@ -81,7 +81,7 @@ export async function addQuestion(
     headers: generateJSONHeaders(),
   });
   if (!res.ok) {
-    return { status: res.status };
+    return { status: res.status, error: await res.text() };
   }
   revalidatePath("/questions");
   const json = await res.json();
