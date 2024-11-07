@@ -3,31 +3,32 @@ import QuestionList from "@/components/questionpage/QuestionList";
 import Matchmaking from "@/components/questionpage/Matchmaking";
 import { QuestionFilterProvider } from "@/contexts/QuestionFilterContext";
 import { hydrateUid } from "../actions/server_actions";
-import { Question } from "@/api/structs";
-import { generateAuthHeaders } from "@/api/gateway";
+import { isError, Question, StatusBody, UserData } from "@/api/structs";
 import { UserInfoProvider } from "@/contexts/UserInfoContext";
+import { fetchAllQuestions } from "@/app/questions/helper";
 
 async function QuestionsPage() {
-  const userId = await hydrateUid();
+  const userData = (await hydrateUid()) as UserData;
 
-  const questions: Question[] = await fetch(
-    `${process.env.NEXT_PUBLIC_NGINX}/${process.env.NEXT_PUBLIC_QUESTION_SERVICE}/questions`,
-    {
-      method: "GET",
-      headers: generateAuthHeaders(),
-      cache: "no-store",
-    },
-  ).then((res) => res.json());
+  const questions: Question[] | StatusBody = await fetchAllQuestions();
+
+  if (isError(questions)) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-2xl">Error...</div>
+      </div>
+    );
+  }
 
   return (
-    <UserInfoProvider userid={userId}>
+    <UserInfoProvider userData={userData}>
       <QuestionFilterProvider>
         <div className="flex h-screen flex-col overflow-hidden">
           <div className="sticky top-0">
             <Matchmaking />
           </div>
           <div className="flex-grow overflow-y-auto">
-            <QuestionList questions={questions} />
+            <QuestionList questions={questions as unknown as Question[]} />
           </div>
         </div>
       </QuestionFilterProvider>

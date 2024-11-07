@@ -1,8 +1,9 @@
-import { fetchQuestion } from "@/api/gateway";
 import React from "react";
 import EditQuestion from "@/app/questions/edit/[question]/EditQuestion";
 import { Question } from "@/api/structs";
 import { revalidatePath } from "next/cache";
+
+import { fetchQuestion } from "@/app/questions/helper";
 
 type Props = {
   params: {

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import styles from "@/style/questionCard.module.css";
 import { deleteQuestion } from "@/app/questions/helper";
 import DOMPurify from "isomorphic-dompurify";
+import { useUserInfo } from "@/contexts/UserInfoContext";
 
 type QuestionCardProps = {
   question: Question;
@@ -13,6 +14,10 @@ type QuestionCardProps = {
 
 const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
   const router = useRouter();
+  // Note that this is purely UI, there are additional checks in the API call
+  const userData = useUserInfo();
+  const isAdmin = userData.isAdmin;
+
   const handleDelete = async () => {
     if (
       confirm(
@@ -91,8 +96,10 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
         >
           View
         </PeerprepButton>
-        <PeerprepButton onClick={handleEdit}>Edit</PeerprepButton>
-        <PeerprepButton onClick={handleDelete}>Delete</PeerprepButton>
+        {isAdmin && <PeerprepButton onClick={handleEdit}>Edit</PeerprepButton>}
+        {isAdmin && (
+          <PeerprepButton onClick={handleDelete}>Delete</PeerprepButton>
+        )}
       </div>
     </div>
   );

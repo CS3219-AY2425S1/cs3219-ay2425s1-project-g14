@@ -221,13 +221,15 @@ export default function CollabEditor({
 
   return (
     <>
-      <CommsPanel className="flex flex-row justify-around" roomId={roomID} />
-      <div className="flex space-x-4 items-center p-4 m-4">
+      {connected && (
+        <CommsPanel className="flex flex-row justify-around" roomId={roomID} />
+      )}
+      <div className="m-4 flex items-center space-x-4 p-4">
         <div className="flex flex-col">
-          <label className="font-semibold mb-1">Font Size</label>
+          <label className="mb-1 font-semibold">Font Size</label>
           <input
             type="number"
-            className="border border-gray-600 bg-gray-800 text-white p-2 rounded w-20"
+            className="w-20 rounded border border-gray-600 bg-gray-800 p-2 text-white"
             value={fontSize}
             onChange={(e) => setFontSize(Number(e.target.value))}
           />
@@ -239,7 +241,7 @@ export default function CollabEditor({
           onChange={(e) => setTheme(e.target.value)}
           options={themes}
           className={
-            "border border-gray-600 bg-gray-800 text-white p-2 rounded"
+            "rounded border border-gray-600 bg-gray-800 p-2 text-white"
           }
         />
 
@@ -249,7 +251,7 @@ export default function CollabEditor({
           onChange={(e) => setLanguage(e.target.value as Language)}
           options={languages}
           className={
-            "border border-gray-600 bg-gray-800 text-white p-2 rounded"
+            "rounded border border-gray-600 bg-gray-800 p-2 text-white"
           }
         />
 
@@ -298,6 +300,7 @@ export default function CollabEditor({
           tabSize: 4,
         }}
       />
+      ;
     </>
   );
 }

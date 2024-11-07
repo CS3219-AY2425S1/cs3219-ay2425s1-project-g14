@@ -1,7 +1,8 @@
 const LoadingPage = () => {
   return (
-    <div>
-      <h1>Loading...</h1>
+    <div className="flex h-screen items-center justify-center">
+      <div className="text-2xl">Loading...</div>
+      <div className="text-2xl">Please wait...</div>
     </div>
   );
 };

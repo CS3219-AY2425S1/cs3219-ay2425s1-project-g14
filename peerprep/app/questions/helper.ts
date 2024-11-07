@@ -1,17 +1,26 @@
 "use server";
 
-import { Question, QuestionFullBody, StatusBody } from "@/api/structs";
+import { isError, Question, QuestionFullBody, StatusBody } from "@/api/structs";
 import { revalidatePath } from "next/cache";
-import { generateAuthHeaders, generateJSONHeaders } from "@/api/gateway";
+import {
+  generateAuthHeaders,
+  generateJSONHeaders,
+  verifyUser,
+} from "@/api/gateway";
+import DOMPurify from "isomorphic-dompurify";
+
+const questionServiceUrl = `${process.env.NEXT_PUBLIC_NGINX}/${process.env.NEXT_PUBLIC_QUESTION_SERVICE}`;
 
 export async function deleteQuestion(id: number): Promise<StatusBody> {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_NGINX}/${process.env.NEXT_PUBLIC_QUESTION_SERVICE}/questions/delete/${id}`,
-    {
-      method: "DELETE",
-      headers: generateAuthHeaders(),
-    },
-  );
+  const verify = await verifyUser();
+  if (isError(verify) || verify?.data.isAdmin === false) {
+    return verify as StatusBody;
+  }
+
+  const res = await fetch(`${questionServiceUrl}/questions/delete/${id}`, {
+    method: "DELETE",
+    headers: generateAuthHeaders(),
+  });
   if (res.ok) {
     return { status: res.status };
   }
@@ -20,10 +29,29 @@ export async function deleteQuestion(id: number): Promise<StatusBody> {
   return json as StatusBody;
 }
 
+export async function fetchAllQuestions(): Promise<StatusBody | Question[]> {
+  console.log("Fetching all questions...");
+  const res = await fetch(`${questionServiceUrl}/questions`, {
+    method: "GET",
+    headers: generateAuthHeaders(),
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    return { status: res.status };
+  }
+  const json = await res.json();
+  return json as Question[];
+}
+
 export async function editQuestion(question: Question): Promise<StatusBody> {
+  const verify = await verifyUser();
+  if (isError(verify) || verify?.data.isAdmin === false) {
+    return verify as StatusBody;
+  }
+
   console.log("editing question", question.id);
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_NGINX}/${process.env.NEXT_PUBLIC_QUESTION_SERVICE}/questions/replace/${question.id}`,
+    `${questionServiceUrl}/questions/replace/${question.id}`,
     {
       method: "PUT",
       body: JSON.stringify(question),
@@ -42,10 +70,12 @@ export async function editQuestion(question: Question): Promise<StatusBody> {
 export async function addQuestion(
   question: QuestionFullBody,
 ): Promise<StatusBody> {
+  const verify = await verifyUser();
+  if (isError(verify) || verify?.data.isAdmin === false) {
+    return verify as StatusBody;
+  }
   console.log("Adding question", question.title);
-  const url = `${process.env.NEXT_PUBLIC_NGINX}/${process.env.NEXT_PUBLIC_QUESTION_SERVICE}/questions`;
-  console.log(url);
-  const res = await fetch(url, {
+  const res = await fetch(`${questionServiceUrl}/questions`, {
     method: "POST",
     body: JSON.stringify(question),
     headers: generateJSONHeaders(),
@@ -56,4 +86,32 @@ export async function addQuestion(
   revalidatePath("/questions");
   const json = await res.json();
   return json as StatusBody;
+}
+
+export async function fetchQuestion(
+  questionId: number,
+): Promise<Question | StatusBody> {
+  try {
+    const response = await fetch(
+      `${questionServiceUrl}/questions/solve/${questionId}`,
+      {
+        method: "GET",
+        headers: generateAuthHeaders(),
+        cache: "no-store",
+      },
+    );
+    if (!response.ok) {
+      return {
+        error: await response.text(),
+        status: response.status,
+      };
+    }
+
+    const question = (await response.json()) as Question;
+    question.content = DOMPurify.sanitize(question.content);
+    revalidatePath(`/questions/edit/${questionId}`);
+    return question;
+  } catch (err: any) {
+    return { error: err.message, status: 400 };
+  }
 }

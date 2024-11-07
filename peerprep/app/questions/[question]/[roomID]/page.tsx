@@ -1,9 +1,10 @@
-import { fetchQuestion, getSessionToken, getUserData } from "@/api/gateway";
+import { getSessionToken, getUserData } from "@/api/gateway";
 import { isError, Question as QnType, StatusBody } from "@/api/structs";
 import styles from "@/style/question.module.css";
 import ErrorBlock from "@/components/shared/ErrorBlock";
 import React from "react";
 import QuestionBlock from "./question";
+import { fetchQuestion } from "@/app/questions/helper";
 
 type Props = {
   searchParams: {

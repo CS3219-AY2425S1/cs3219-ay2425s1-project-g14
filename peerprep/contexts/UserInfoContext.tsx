@@ -1,32 +1,30 @@
 // maybe store  SAFE user info and wrap the relevant client components in it (like titlebar? matchmaking?)
-// username, userid?, userstate (matching, idle, inmenu)
-
 "use client";
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, ReactNode, useContext } from "react";
+import { UserData } from "@/api/structs";
 
 interface UserInfoProviderProps {
-  userid: string|undefined,
-  children: ReactNode
+  userData: UserData;
+  children: ReactNode;
 }
 
-interface UserInfoContextType {
-  userid: string;
-}
+const UserInfoContext = createContext<UserData | undefined>(undefined);
 
-const UserInfoContext = createContext<UserInfoContextType | undefined>(
-  undefined
-);
-
-export function UserInfoProvider({ userid, children }: UserInfoProviderProps) {
-  const val = userid ? userid : "";
+export function UserInfoProvider({
+  userData,
+  children,
+}: UserInfoProviderProps) {
   return (
-    <UserInfoContext.Provider value={{ userid: val }}>
+    <UserInfoContext.Provider value={userData}>
       {children}
     </UserInfoContext.Provider>
   );
-};
+}
 
-export const useUserInfo = (): UserInfoContextType => {
+/**
+ * This should not be used to validate data!
+ */
+export const useUserInfo = (): UserData => {
   const context = useContext(UserInfoContext);
   if (!context) {
     throw new Error("useUserInfo must be used within a UserInfoProvider");

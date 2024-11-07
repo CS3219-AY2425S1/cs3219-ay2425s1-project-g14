@@ -6,6 +6,7 @@ import {
   isError,
   LoginFormSchema,
   SignupFormSchema,
+  UserData,
   UserServiceResponse,
 } from "@/api/structs";
 import { createSession } from "@/app/actions/session";
@@ -62,7 +63,7 @@ export async function login(state: FormState, formData: FormData) {
   }
 }
 
-export async function hydrateUid(): Promise<undefined | string> {
+export async function hydrateUid(): Promise<null | UserData> {
   if (!cookies().has("session")) {
     // TODO: this should not be required because of middleware
     console.log("No session found - triggering switch back to login page.");
@@ -74,8 +75,7 @@ export async function hydrateUid(): Promise<undefined | string> {
     console.log(`Error ${json.status}: ${json.error}`);
     redirect("/api/internal/auth/expire");
   }
-
   // TODO: handle error handling
   const response = json as UserServiceResponse;
-  return response.data.id;
+  return response.data;
 }

@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 const protectedRoutes = ["/questions/*", "/user/*"];
 const publicRoutes = ["/", "/auth/login/", "/auth/register"];
@@ -26,6 +25,8 @@ export function middleware(request: NextRequest) {
   if (!isValidSession() && isProtectedRoute) {
     return NextResponse.redirect(new URL("/auth/login", request.url));
   }
+
+  return NextResponse.next();
 }
 
 // taken from Next.JS's Middleware tutorial
