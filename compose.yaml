@@ -153,6 +153,8 @@ services:
     image: distractedcat/nginx
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/internal.conf
+    ports:
+      - "70:70"
     depends_on:
       - peerprep
       - backend
@@ -164,7 +166,7 @@ services:
     build: inbound-gateway
     image: wzwren/inbound-gateway
     ports:
-      - "70:70"
+      - "80:80"
     volumes:
       - ./inbound-gateway/nginx.conf:/etc/nginx/external.conf
     depends_on:
