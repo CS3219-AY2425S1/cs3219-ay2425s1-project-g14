@@ -1,8 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, MotionConfig } from "framer-motion";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
-
-// code adapted from https://buildui.com/courses/framer-motion-recipes/carousel-part-1
 
 export type ImageProps = {
   url: string;
@@ -23,7 +21,7 @@ const Carousel = ({ images }: { images: ImageProps[] }) => {
     clearExistingInterval();
     intervalRef.current = setInterval(() => {
       setIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 3000);
+    }, 5000);
   };
 
   const prevSlide = () => {
@@ -42,30 +40,25 @@ const Carousel = ({ images }: { images: ImageProps[] }) => {
     startInterval();
 
     return () => clearExistingInterval();
-  });
-
-  // TODO: make it infinite scroll to not show white background
-  // TODO: use bigger pictures
+  }, [images.length]);
 
   return (
-    <div className="m-auto flex flex-auto items-center">
+    <div className="m-auto flex max-w-screen-md flex-auto items-center">
       <MotionConfig transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1] }}>
-        <div className="relative w-full max-w-7xl overflow-hidden">
+        <div className="relative w-full overflow-hidden">
           <div className="relative flex justify-center">
             <motion.div
-              animate={{ x: `-${index * 33}%` }}
-              className="flex"
-              initial={"center"}
-              // style={{ width: `${200 * images.length}%` }}
+              animate={{ x: `-${index * 100}%` }}
+              className="w-[100 * images.length]% flex"
             >
-              {images.map((image, i) => (
+              {[...images, ...images].map((image, i) => (
                 <motion.img
                   key={i}
                   src={image.url}
                   alt={image.alt}
                   width={800}
                   height={800}
-                  className="h-auto w-full rounded-md border-2 border-white object-cover"
+                  className="w-[100 / images.length]% h-auto rounded-md border-2 border-white object-cover"
                 />
               ))}
             </motion.div>
@@ -75,10 +68,10 @@ const Carousel = ({ images }: { images: ImageProps[] }) => {
                 animate={{ opacity: 0.7 }}
                 exit={{ opacity: 0, pointerEvents: "none" }}
                 whileHover={{ opacity: 1 }}
-                className="absolute left-4 top-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-white"
+                className="absolute left-4 top-1/2 flex h-8 w-8 items-center justify-center rounded-full border border-gray-3 bg-white"
                 onClick={prevSlide}
               >
-                <ChevronLeftIcon className="h-6 w-6" />
+                <ChevronLeftIcon className="h-6 w-6" color={"black"} />
               </motion.button>
             </AnimatePresence>
             <AnimatePresence initial={false}>
@@ -87,10 +80,10 @@ const Carousel = ({ images }: { images: ImageProps[] }) => {
                 animate={{ opacity: 0.7 }}
                 exit={{ opacity: 0, pointerEvents: "none" }}
                 whileHover={{ opacity: 1 }}
-                className="absolute right-4 top-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-white"
+                className="absolute right-4 top-1/2 flex h-8 w-8 items-center justify-center rounded-full border border-gray-3 bg-white hover:border-gray-2"
                 onClick={nextSlide}
               >
-                <ChevronRightIcon className="h-6 w-6" />
+                <ChevronRightIcon className="h-6 w-6" color={"black"} />
               </motion.button>
             </AnimatePresence>
           </div>

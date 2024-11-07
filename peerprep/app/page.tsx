@@ -27,15 +27,17 @@ export default function Home() {
               <p> Code with a friend 👥 instead! 😊</p>
               <p>PeerPrep is a platform for technical interview preparation</p>
 
-              <div className={"m-5 rounded-md border-black p-5"}>
-                <p>
-                  <strong>Features:</strong>
-                </p>
-                <ol>
-                  <li>- Online coding</li>
-                  <li>- A code editor</li>
-                </ol>
-              </div>
+              <p>
+                <strong>Features:</strong>
+              </p>
+              <ol>
+                <li>- Online coding</li>
+                <li>- A collaborative code editor</li>
+                <li>- Camera and audio support</li>
+                <li>
+                  - Syntax highlighting and formatting for three languages!
+                </li>
+              </ol>
             </div>
           </div>
         </div>
