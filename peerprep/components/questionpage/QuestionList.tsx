@@ -56,8 +56,8 @@ const QuestionList = ({ questions }: Props) => {
   };
 
   return (
-    <div className="sticky top-0">
-      <div className="mb-4 flex items-end space-x-4">
+    <div className="flex h-full flex-col">
+      <div className="sticky top-0 mb-4 flex items-end space-x-4">
         <PeerprepSearchBar
           value={searchFilter}
           label="Search questions..."
