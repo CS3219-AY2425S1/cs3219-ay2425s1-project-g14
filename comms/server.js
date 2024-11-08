@@ -1,11 +1,14 @@
 const express = require("express");
 const http = require("http");
 const app = express();
+
 const server = http.createServer(app);
 const io = require("socket.io")(server, {
+  path: '/comms',
   cors: {
     // temporarily use * to allow all origins
-    origin: `*`
+    origin: `*`,
+    methods: ["GET", "POST"]
   }
 });
 
