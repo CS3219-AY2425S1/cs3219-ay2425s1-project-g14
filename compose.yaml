@@ -15,6 +15,7 @@ services:
           path: peerprep
           target: /frontend
 
+
   user-service:
     build: user-service
     image: distractedcat/user-service
@@ -135,18 +136,31 @@ services:
           path: collab
           target: collab/app
 
+  formatter:
+    build: formatter
+    image: distractedcat/formatter
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "5000:5000"
+    develop:
+      watch:
+        - action: sync
+          path: formatter
+          target: formatter/app
+
   comms:
     build: comms
-    image: wzwren/comms
-    env_file:
-      - comms/.env
+    image: distractedcat/comms
+    #env_file:
+    #- comms/.env
     ports:
       - "4001:4001"
     develop:
       watch:
         - action: sync
           path: comms
-          target: /comms
+          target: comms/app
 
   nginx:
     build: nginx

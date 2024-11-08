@@ -2,15 +2,16 @@
 import { getSessionLogin, postSignupUser, verifyUser } from "@/api/gateway";
 // defines the server-sided login action.
 import {
-  SignupFormSchema,
-  LoginFormSchema,
   FormState,
   isError,
+  LoginFormSchema,
+  SignupFormSchema,
+  UserData,
   UserServiceResponse,
 } from "@/api/structs";
-import { createSession, expireSession } from "@/app/actions/session";
+import { createSession } from "@/app/actions/session";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
+import { cookies } from "next/headers"; // credit - taken from Next.JS Auth tutorial
 
 // credit - taken from Next.JS Auth tutorial
 export async function signup(state: FormState, formData: FormData) {
@@ -35,7 +36,13 @@ export async function signup(state: FormState, formData: FormData) {
     redirect("/auth/login");
   } else {
     // TODO: handle failure codes: 400, 409, 500.
-    console.log(`${json.status}: ${json.error}`);
+    console.log(`Error in signup: ${json.status}: ${json.error}`);
+    return {
+      errors: {
+        username: ["Username is already in use."],
+        email: ["Email is already in use."],
+      },
+    };
   }
 }
 
@@ -55,17 +62,34 @@ export async function login(state: FormState, formData: FormData) {
 
   const json = await getSessionLogin(validatedFields.data);
   if (!isError(json)) {
-    await createSession(json.data.accessToken);
+    await createSession(json.data);
     redirect("/questions");
   } else {
-    console.log(json.error);
+    if (json.status === 401) {
+      return {
+        errors: {
+          email: ["Invalid email or password."],
+        },
+      };
+    } else if (json.status === 500) {
+      console.log(
+        "Get session login error: " + json.error + " : " + json.status,
+      );
+
+      return {
+        errors: {
+          email: ["Please try again."],
+        },
+      };
+    }
   }
 }
 
-export async function hydrateUid(): Promise<undefined | string> {
+export async function hydrateUid(): Promise<null | UserData> {
   if (!cookies().has("session")) {
+    // TODO: this should not be required because of middleware
     console.log("No session found - triggering switch back to login page.");
-    redirect("/auth/login");
+    // redirect("/auth/login");
   }
   const json = await verifyUser();
   if (isError(json)) {
@@ -73,6 +97,7 @@ export async function hydrateUid(): Promise<undefined | string> {
     console.log(`Error ${json.status}: ${json.error}`);
     redirect("/api/internal/auth/expire");
   }
-
-  return json.data.id;
+  // TODO: handle error handling
+  const response = json as UserServiceResponse;
+  return response.data;
 }

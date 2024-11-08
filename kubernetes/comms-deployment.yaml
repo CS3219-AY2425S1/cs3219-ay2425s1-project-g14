@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: comms
+spec:
+  selector:
+    matchLabels:
+      app: comms
+  template:
+    metadata:
+      labels:
+        app: comms
+    spec:
+      containers:
+        - name: comms
+          image: distractedcat/comms:1.0.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 4001
+              name: comms

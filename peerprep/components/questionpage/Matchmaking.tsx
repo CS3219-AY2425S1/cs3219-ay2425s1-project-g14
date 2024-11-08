@@ -17,7 +17,7 @@ import {
 import ResettingStopwatch from "../shared/ResettingStopwatch";
 import PeerprepDropdown from "../shared/PeerprepDropdown";
 
-const QUERY_INTERVAL_MILLISECONDS = 1000;
+const QUERY_INTERVAL_MILLISECONDS = 5000;
 const TIMEOUT_MILLISECONDS = 30000;
 
 const getMatchRequestTime = (): string => {
@@ -41,7 +41,7 @@ const getMatchRequestTime = (): string => {
 const usePeriodicCallback = (
   callback: () => void,
   intervalTime: number,
-  isActive: boolean
+  isActive: boolean,
 ) => {
   useEffect(() => {
     if (!isActive) return;
@@ -58,10 +58,11 @@ const Matchmaking = () => {
   const [matchHash, setMatchHash] = useState<string>("");
   const { difficulties, topicList } = useQuestionFilter();
   const [difficultyFilter, setDifficultyFilter] = useState<string>(
-    Difficulty.Easy
+    Difficulty.Easy,
   );
   const [topicFilter, setTopicFilter] = useState<string[]>(topicList);
-  const { userid } = useUserInfo();
+  const userData = useUserInfo();
+  const userid = userData.id;
   const timeout = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
@@ -99,6 +100,7 @@ const Matchmaking = () => {
         setMatchHash("");
         setIsMatching(false);
         console.log("Match request timed out after 30s");
+        alert("Failed to find match. Request timed out.");
       }, TIMEOUT_MILLISECONDS);
 
       // assemble the match request
@@ -137,7 +139,7 @@ const Matchmaking = () => {
     const matchRes: MatchResponse = res as MatchResponse;
     console.log("Match found!");
     router.push(
-      `/questions/${matchRes.data.questionId}/${matchRes.data.roomId}?match=${matchHash}`
+      `/questions/${matchRes.data.questionId}/${matchRes.data.roomId}?match=${matchHash}`,
     );
   };
 
@@ -145,13 +147,20 @@ const Matchmaking = () => {
 
   return (
     // TODO: move this to some admin panel or something
-    <div className="p-4 flex flex-row items-center space-x-4">
+    <div className="flex flex-row items-center space-x-4 p-4">
       <PeerprepButton onClick={() => router.push(`questions/new`)}>
         Add Question
       </PeerprepButton>
       <div className="flex flex-row items-center space-x-4">
-        <PeerprepButton onClick={handleMatch} disabled={!isMatching && matchHash !== ""}>
-          {isMatching ? "Cancel Match" : matchHash === "" ? "Find Match" : "Redirecting..."}
+        <PeerprepButton
+          onClick={handleMatch}
+          disabled={!isMatching && matchHash !== ""}
+        >
+          {isMatching
+            ? "Cancel Match"
+            : matchHash === ""
+              ? "Find Match"
+              : "Redirecting..."}
         </PeerprepButton>
         {!isMatching && (
           <PeerprepDropdown
@@ -168,7 +177,7 @@ const Matchmaking = () => {
             value={topicFilter[0]}
             onChange={(e) =>
               setTopicFilter(
-                e.target.value === "all" ? topicList : [e.target.value]
+                e.target.value === "all" ? topicList : [e.target.value],
               )
             }
             options={topicList}

@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
         - name: matching-service
-          image: distractedcat/matching-service:1.0.0
+          image: distractedcat/matching-service:3.0.0
           imagePullPolicy: Always
           env:
             - name: RABBIT_URI

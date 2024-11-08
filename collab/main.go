@@ -7,8 +7,8 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"sync"
 	"strconv"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -21,14 +21,14 @@ var upgrader = websocket.Upgrader{
 }
 
 type Client struct {
-	conn   *websocket.Conn
-	roomID string
+	conn          *websocket.Conn
+	roomID        string
 	authenticated bool
 }
 
 type Hub struct {
 	clients    map[*Client]bool
-	workspaces     map[string]string
+	workspaces map[string]string
 	broadcast  chan Message
 	register   chan *Client
 	unregister chan *Client
@@ -36,8 +36,10 @@ type Hub struct {
 }
 
 type Message struct {
-	roomID  string
-	content []byte
+	Type    string `json:"type"`
+	RoomID  string `json:"roomId"`
+	Content []byte `json:"data"`
+	UserID  string `json:"userId"`
 }
 
 func verifyToken(token string) (bool, string) {
@@ -71,7 +73,7 @@ func verifyToken(token string) (bool, string) {
 		} `json:"data"`
 	}
 
-    body, err := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("Error reading response body:", err)
 		return false, ""
@@ -97,7 +99,7 @@ func verifyToken(token string) (bool, string) {
 func NewHub() *Hub {
 	return &Hub{
 		clients:    make(map[*Client]bool),
-		workspaces:     make(map[string]string),
+		workspaces: make(map[string]string),
 		broadcast:  make(chan Message),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
@@ -123,11 +125,11 @@ func (h *Hub) Run() {
 
 		case message := <-h.broadcast:
 			h.mutex.Lock()
-			// Update the current workspace for this roomID
-			h.workspaces[message.roomID] = string(message.content)
+			// Update the current workspace for this RoomID
+			h.workspaces[message.RoomID] = string(message.Content)
 			for client := range h.clients {
-				if client.roomID == message.roomID {
-					err := client.conn.WriteMessage(websocket.TextMessage, message.content)
+				if client.roomID == message.RoomID {
+					err := client.conn.WriteMessage(websocket.TextMessage, message.Content)
 					if err != nil {
 						log.Printf("Error sending message: %v", err)
 						client.conn.Close()
@@ -142,9 +144,9 @@ func (h *Hub) Run() {
 
 // ServeWs handles WebSocket requests
 func serveWs(
-		hub *Hub, c *gin.Context,
-		roomMappings *verify.RoomMappings,
-		persistMappings *verify.PersistMappings,
+	hub *Hub, c *gin.Context,
+	roomMappings *verify.RoomMappings,
+	persistMappings *verify.PersistMappings,
 ) {
 	log.Println("handler called!")
 	roomID := c.Query("roomID")
@@ -166,9 +168,9 @@ func serveWs(
 }
 
 func authenticateClient(
-		token string, match string, client *Client,
-		roomMappings *verify.RoomMappings,
-		persistMappings *verify.PersistMappings,
+	token string, match string, client *Client,
+	roomMappings *verify.RoomMappings,
+	persistMappings *verify.PersistMappings,
 ) bool {
 	ok, userID := verifyToken(token)
 	if !ok {
@@ -180,8 +182,8 @@ func authenticateClient(
 }
 
 func authenticateClientNoMatch(
-		token string, client *Client,
-		persistMappings *verify.PersistMappings,
+	token string, client *Client,
+	persistMappings *verify.PersistMappings,
 ) bool {
 	ok, userID := verifyToken(token)
 	if !ok {
@@ -192,9 +194,9 @@ func authenticateClientNoMatch(
 }
 
 func handleMessages(
-		client *Client, hub *Hub,
-		roomMappings *verify.RoomMappings,
-		persistMappings *verify.PersistMappings,
+	client *Client, hub *Hub,
+	roomMappings *verify.RoomMappings,
+	persistMappings *verify.PersistMappings,
 ) {
 	defer func() {
 		hub.unregister <- client
@@ -212,18 +214,17 @@ func handleMessages(
 			log.Printf("Failed to parse message: %v", err)
 			continue
 		}
-		// Handle authentication message
 		if msgData["type"] == "auth" {
-      token, tokenOk := msgData["token"].(string)
-      if !tokenOk {
-          log.Println("Authentication failed - no token attached")
-          client.conn.WriteMessage(
-						websocket.TextMessage,
-						[]byte("Authentication failed - no JWT token"),
-					)
-          client.conn.Close()
-          break
-      }
+			token, tokenOk := msgData["token"].(string)
+			if !tokenOk {
+				log.Println("Authentication failed - no token attached")
+				client.conn.WriteMessage(
+					websocket.TextMessage,
+					[]byte("Authentication failed - no JWT token"),
+				)
+				client.conn.Close()
+				break
+			}
 			isSuccess := false
 			match, matchOk := msgData["matchHash"].(string)
 			if matchOk && !authenticateClient(token, match, client, roomMappings, persistMappings) {
@@ -246,20 +247,21 @@ func handleMessages(
 				client.conn.Close()
 				break
 			}
-      client.authenticated = true
-      log.Println("Client authenticated successfully")
-    }
+			client.authenticated = true
+			log.Println("Client authenticated successfully")
+		}
 
 		if msgData["type"] == "close_session" {
 			closeMessage := Message{
-				roomID:  client.roomID,
-				content: []byte("The session has been closed by a user."),
+				RoomID:  client.roomID,
+				Content: []byte("The session has been closed by a user."),
 			}
 			hub.broadcast <- closeMessage
 		}
 
 		// Broadcast the message to other clients
-		hub.broadcast <- Message{roomID: client.roomID, content: message}
+		userID, _ := msgData["userId"].(string)
+		hub.broadcast <- Message{RoomID: client.roomID, Content: message, UserID: userID}
 	}
 }
 
@@ -273,17 +275,17 @@ func statusHandler(hub *Hub) gin.HandlerFunc {
 		for client := range hub.clients {
 			roomID := client.roomID
 			currentStatus, ok := status[roomID]
-			if (!ok) {
+			if !ok {
 				// Initialize status for a new roomID
 				status[roomID] = map[string]interface{}{
-					"clients": 1,
-					"workspace":   hub.workspaces[roomID],
+					"clients":   1,
+					"workspace": hub.workspaces[roomID],
 				}
 			} else {
 				// Update the client count for an existing roomID
 				status[roomID] = map[string]interface{}{
-					"clients": currentStatus.(map[string]interface{})["clients"].(int) + 1,
-					"workspace":   hub.workspaces[roomID],
+					"clients":   currentStatus.(map[string]interface{})["clients"].(int) + 1,
+					"workspace": hub.workspaces[roomID],
 				}
 			}
 		}
@@ -291,7 +293,6 @@ func statusHandler(hub *Hub) gin.HandlerFunc {
 		c.JSON(http.StatusOK, status)
 	}
 }
-
 
 func main() {
 	r := gin.Default()
@@ -324,8 +325,8 @@ func main() {
 		}
 	}
 
-	roomMappings    := verify.InitialiseRoomMappings(REDIS_URI, REDIS_ROOM_MAPPING)
-	persistMappings := verify.InitialisePersistMappings(REDIS_URI, REDIS_ROOM_PERSIST);
+	roomMappings := verify.InitialiseRoomMappings(REDIS_URI, REDIS_ROOM_MAPPING)
+	persistMappings := verify.InitialisePersistMappings(REDIS_URI, REDIS_ROOM_PERSIST)
 
 	// WebSocket connection endpoint
 	r.GET("/ws", func(c *gin.Context) {

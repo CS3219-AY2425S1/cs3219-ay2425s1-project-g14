@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AceEditor from "react-ace";
 
@@ -12,18 +12,14 @@ import "ace-builds/src-min-noconflict/ext-searchbox";
 import "ace-builds/src-min-noconflict/ext-language_tools";
 import PeerprepDropdown from "@/components/shared/PeerprepDropdown";
 
-import { Question } from "@/api/structs";
+import { FormatResponse, Language, Question } from "@/api/structs";
 import PeerprepButton from "../shared/PeerprepButton";
 import CommsPanel from "./CommsPanel";
 
-const languages = [
-  "javascript",
-  "java",
-  "python",
-  "mysql",
-  "golang",
-  "typescript",
-];
+import { diff_match_patch } from "diff-match-patch";
+import { callFormatter } from "@/app/api/internal/formatter/helper";
+
+const languages: Language[] = ["javascript", "python", "c_cpp"];
 
 const themes = [
   "monokai",
@@ -47,31 +43,91 @@ themes.forEach((theme) => require(`ace-builds/src-noconflict/theme-${theme}`));
 
 interface Props {
   question: Question;
-  roomID?: String;
-  authToken?: String;
-  matchHash?: String;
+  roomID?: string;
+  authToken?: string;
+  userId?: string | undefined;
+  matchHash?: string;
 }
+
+interface Message {
+  type: "content_change" | "auth" | "close_session";
+  data?: string;
+  userId?: string | undefined;
+  token?: string;
+  matchHash?: string;
+}
+
+const dmp = new diff_match_patch();
+const questionSeed = "def foo():\n  pass";
 
 export default function CollabEditor({
   question,
   roomID,
   authToken,
+  userId,
   matchHash,
 }: Props) {
   const [theme, setTheme] = useState("terminal");
   const [fontSize, setFontSize] = useState(18);
-  const [language, setLanguage] = useState("python");
-  const [value, setValue] = useState("def foo:\n  pass");
+  const [language, setLanguage] = useState<Language>("python");
+  const [value, setValue] = useState(questionSeed);
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [connected, setconnected] = useState(false);
+  const [connected, setConnected] = useState(false);
   const router = useRouter();
 
+  const generatePatch = (oldContent: string, newContent: string): string => {
+    const diffs = dmp.diff_main(oldContent, newContent);
+    const patches = dmp.patch_make(oldContent, diffs);
+
+    // return patches;
+    return dmp.patch_toText(patches);
+  };
+
+  const applyPatches = (text: string, patchText: any): string => {
+    const patches = dmp.patch_fromText(patchText);
+    console.log(patches);
+    const [newText, _results] = dmp.patch_apply(patches, text);
+    return newText;
+  };
+
+  async function formatCode(value: string, language: Language) {
+    try {
+      const res = await callFormatter(value, language);
+      const formatResponse = res as FormatResponse;
+      const formatted_code = formatResponse.formatted_code;
+
+      setValue(formatted_code);
+      if (
+        socket &&
+        formatted_code !== value &&
+        socket?.readyState === WebSocket.OPEN
+      ) {
+        const patches = generatePatch(value, formatted_code);
+        const msg: Message = {
+          type: "content_change",
+          data: patches,
+          userId: userId,
+        };
+        socket.send(JSON.stringify(msg));
+      }
+    } catch (e: any) {
+      alert(e.message);
+    }
+  }
+
   const handleOnChange = (newValue: string) => {
+    const patches = generatePatch(value, newValue);
+
     setValue(newValue);
-    console.log("Content changed:", newValue);
+    console.log("Content changed:", userId, newValue);
 
     if (socket) {
-      socket.send(JSON.stringify({ type: "content_change", data: newValue }));
+      const msg: Message = {
+        type: "content_change",
+        data: patches,
+        userId: userId,
+      };
+      socket.send(JSON.stringify(msg));
     }
   };
 
@@ -88,9 +144,9 @@ export default function CollabEditor({
 
     newSocket.onopen = () => {
       console.log("WebSocket connection established");
-      setconnected(true);
+      setConnected(true);
 
-      const authMessage = {
+      const authMessage: Message = {
         type: "auth",
         token: authToken,
         matchHash: matchHash, // omitted if undefined
@@ -112,10 +168,20 @@ export default function CollabEditor({
         }
         router.push("/questions");
       } else {
-        const message = JSON.parse(event.data);
+        const message: Message = JSON.parse(event.data);
 
-        if (message.type === "content_change") {
-          setValue(message.data);
+        if (message.type === "content_change" && message.userId !== userId) {
+          console.log(
+            "Received message from user: ",
+            message.userId,
+            "I am",
+            userId,
+            "We are the same: ",
+            message.userId === userId,
+          );
+          setValue((currentValue) => {
+            return applyPatches(currentValue, message.data);
+          });
         }
       }
     };
@@ -140,24 +206,30 @@ export default function CollabEditor({
 
   const handleCloseConnection = () => {
     const confirmClose = confirm(
-      "Are you sure you are finished? This will close the room for all users."
+      "Are you sure you are finished? This will close the room for all users.",
     );
 
     if (confirmClose && socket) {
       console.log("Sent!");
-      socket.send(JSON.stringify({ type: "close_session" }));
+      const msg: Message = {
+        type: "close_session",
+        userId: userId,
+      };
+      socket.send(JSON.stringify(msg));
     }
   };
 
   return (
     <>
-      <CommsPanel className="flex flex-row justify-around" roomId={roomID}/>
-      <div className="flex space-x-4 items-center p-4 m-4">
+      {connected && (
+        <CommsPanel className="flex flex-row justify-around" roomId={roomID} />
+      )}
+      <div className="m-4 flex items-center space-x-4 p-4">
         <div className="flex flex-col">
-          <label className="font-semibold mb-1">Font Size</label>
+          <label className="mb-1 font-semibold">Font Size</label>
           <input
             type="number"
-            className="border border-gray-600 bg-gray-800 text-white p-2 rounded w-20"
+            className="w-20 rounded border border-gray-600 bg-gray-800 p-2 text-white"
             value={fontSize}
             onChange={(e) => setFontSize(Number(e.target.value))}
           />
@@ -169,19 +241,23 @@ export default function CollabEditor({
           onChange={(e) => setTheme(e.target.value)}
           options={themes}
           className={
-            "border border-gray-600 bg-gray-800 text-white p-2 rounded"
+            "rounded border border-gray-600 bg-gray-800 p-2 text-white"
           }
         />
 
         <PeerprepDropdown
-          label={"Language"}
+          label={"Syntax Highlighting"}
           value={language}
-          onChange={(e) => setLanguage(e.target.value)}
+          onChange={(e) => setLanguage(e.target.value as Language)}
           options={languages}
           className={
-            "border border-gray-600 bg-gray-800 text-white p-2 rounded"
+            "rounded border border-gray-600 bg-gray-800 p-2 text-white"
           }
         />
+
+        <PeerprepButton onClick={() => formatCode(value, language)}>
+          Format code
+        </PeerprepButton>
 
         {roomID &&
           (connected ? (
@@ -224,6 +300,7 @@ export default function CollabEditor({
           tabSize: 4,
         }}
       />
+      ;
     </>
   );
 }

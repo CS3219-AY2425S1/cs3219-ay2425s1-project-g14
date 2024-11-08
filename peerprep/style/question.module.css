@@ -88,6 +88,29 @@
     overflow-y: auto;
 }
 
+.editorHTML ul {
+    padding: 0 1rem;
+    margin: 1.25rem 1rem 1.25rem 0.4rem;
+    list-style-type: disc;
+
+    .editorHTML li p {
+        margin-top: 0.25em;
+        margin-bottom: 0.25em;
+    }
+}
+
+.editorHTML ol {
+    padding: 0 1rem;
+    margin: 1.25rem 1rem 1.25rem 0.4rem;
+    list-style-type: decimal;
+
+    .editorHTML li p {
+        margin-top: 0.25em;
+        margin-bottom: 0.25em;
+    }
+}
+
+
 .editorHTML code {
     font-family: 'Courier New', Courier, monospace;
     /*background-color: lightgray;*/

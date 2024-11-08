@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: formatter
+spec:
+  selector:
+    matchLabels:
+      app: formatter
+  template:
+    metadata:
+      labels:
+        app: formatter
+    spec:
+      containers:
+        - name: formatter
+          image: distractedcat/formatter:1.0.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+              name: formatter

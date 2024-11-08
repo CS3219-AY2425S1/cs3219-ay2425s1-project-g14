@@ -1,11 +1,11 @@
 "use client";
+
 import React from "react";
 import { Difficulty, Question } from "@/api/structs";
 import Chip from "@/components/shared/Chip";
-import PeerprepButton from "@/components/shared/PeerprepButton";
 import styles from "@/style/question.module.css";
 import { useRouter } from "next/navigation";
-import { deleteQuestion } from "@/app/api/internal/questions/helper";
+import { deleteQuestion } from "@/app/questions/helper";
 import CollabEditor from "@/components/questionpage/CollabEditor";
 import DOMPurify from "isomorphic-dompurify";
 
@@ -45,6 +45,7 @@ function QuestionBlock({ question }: Props) {
       }
       console.log(`Successfully deleted the question.`);
       router.push("/questions");
+      router.refresh();
     } else {
       console.log("Deletion cancelled.");
     }
@@ -60,12 +61,6 @@ function QuestionBlock({ question }: Props) {
             </h1>
             <DifficultyChip diff={question.difficulty} />
           </div>
-          <PeerprepButton
-            className={` ${styles.button}`}
-            onClick={handleDelete}
-          >
-            Delete
-          </PeerprepButton>
         </div>
         <div className={styles.label_wrapper}>
           <p>Topics: </p>

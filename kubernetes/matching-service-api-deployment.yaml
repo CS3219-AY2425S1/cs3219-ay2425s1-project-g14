@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
         - name: matching-service-api
-          image: distractedcat/matching-service-api:1.0.0
+          image: distractedcat/matching-service-api:3.0.0
           imagePullPolicy: Always
           env:
             - name: PORT

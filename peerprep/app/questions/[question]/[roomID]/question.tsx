@@ -8,9 +8,11 @@ import DOMPurify from "isomorphic-dompurify";
 
 interface Props {
   question: Question;
-  roomID?: String;
-  authToken?: String;
-  matchHash?: String;
+  roomID?: string;
+  authToken?: string;
+  userId?: string;
+  matchHash?: string;
+
 }
 
 interface DifficultyChipProps {
@@ -27,7 +29,7 @@ function DifficultyChip({ diff }: DifficultyChipProps) {
   );
 }
 
-function QuestionBlock({ question, roomID, authToken, matchHash }: Props) {
+function QuestionBlock({ question, roomID, authToken, userId, matchHash }: Props) {
   return (
     <>
       <div className={styles.qn_container}>
@@ -66,6 +68,7 @@ function QuestionBlock({ question, roomID, authToken, matchHash }: Props) {
           roomID={roomID}
           authToken={authToken}
           matchHash={matchHash}
+          userId={userId}
         />
       </div>
     </>
