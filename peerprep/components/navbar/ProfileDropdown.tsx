@@ -45,7 +45,7 @@ export const ProfileDropdown = () => {
           </MenuItem>
           <MenuItem>
             <Link
-              href="/api/internal/auth/expire"
+              href="/auth/logout"
               className="block px-4 py-2 text-sm data-[focus]:bg-gray-2"
             >
               Sign out

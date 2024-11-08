@@ -46,7 +46,3 @@ export async function createSession(userDataAccessToken: UserDataAccessToken) {
     console.error("Error setting cookie:", error);
   }
 }
-
-export async function expireSession() {
-  Object.values(CookieNames).forEach((name) => cookies().delete(name));
-}
