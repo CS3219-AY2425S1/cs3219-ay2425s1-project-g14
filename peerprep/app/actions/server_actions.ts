@@ -65,7 +65,23 @@ export async function login(state: FormState, formData: FormData) {
     await createSession(json.data);
     redirect("/questions");
   } else {
-    console.log("Get session login error: " + json.error + " : " + json.status);
+    if (json.status === 401) {
+      return {
+        errors: {
+          email: ["Invalid email or password."],
+        },
+      };
+    } else if (json.status === 500) {
+      console.log(
+        "Get session login error: " + json.error + " : " + json.status,
+      );
+
+      return {
+        errors: {
+          email: ["Please try again."],
+        },
+      };
+    }
   }
 }
 

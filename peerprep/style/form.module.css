@@ -71,6 +71,7 @@
   margin: 2px;
   padding: 2px;
   position: relative;
+  color: black;
 }
 
 .error {
