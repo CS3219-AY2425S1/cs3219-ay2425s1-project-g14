@@ -36,7 +36,13 @@ export async function signup(state: FormState, formData: FormData) {
     redirect("/auth/login");
   } else {
     // TODO: handle failure codes: 400, 409, 500.
-    console.log(`${json.status}: ${json.error}`);
+    console.log(`Error in signup: ${json.status}: ${json.error}`);
+    return {
+      errors: {
+        username: ["Username is already in use."],
+        email: ["Email is already in use."],
+      },
+    };
   }
 }
 
