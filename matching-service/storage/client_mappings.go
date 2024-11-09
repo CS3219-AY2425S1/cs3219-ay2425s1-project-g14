@@ -43,6 +43,12 @@ func (db *ClientMappings) HandleRequest(request models.IncomingRequests) (*model
 	}
 
 	for _, user1 := range currMappings {
+		
+		if user1 == user2 {
+			//users cannot match with themselves
+			continue
+		}
+		
 		result, err := db.Conn.HGetAll(ctx, user1).Result()
 
 		if err == redis.Nil {
