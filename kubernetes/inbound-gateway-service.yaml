@@ -3,6 +3,7 @@ kind: BackendConfig
 metadata:
   name: inbound-gateway-backendconfig
 spec:
+  timeoutSec: 3600
   healthCheck:
     checkIntervalSec: 10 # Time between health checks
     timeoutSec: 5 # Timeout for each health check
