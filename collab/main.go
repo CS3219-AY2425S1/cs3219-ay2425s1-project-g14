@@ -141,7 +141,7 @@ func (h *Hub) Run() {
 		}
 
 
-		
+
 	}
 }
 
@@ -255,6 +255,20 @@ func handleMessages(
 			}
 			client.authenticated = true
 			log.Println("Client authenticated successfully")
+		}
+
+		if msgData["type"] == "ping" {
+			//receives ping from client1, need to send a ping to client2
+			//eventually, if present, client2 will send the ping back, which will be broadcasted back to client1.
+			
+			userID, _ := msgData["userId"].(string)
+			request := Message {
+				RoomID: client.roomID,
+				UserID: userID,
+				Content: []byte("ping request"),
+			}
+			
+			hub.broadcast <- request
 		}
 
 		if msgData["type"] == "close_session" {
