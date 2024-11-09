@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
         - name: comms
-          image: distractedcat/comms:1.0.0
+          image: modembcc/comms:6.0.0
           imagePullPolicy: Always
           ports:
             - containerPort: 4001

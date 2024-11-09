@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
         - name: formatter
-          image: distractedcat/formatter:1.0.0
+          image: modembcc/formatter:6.0.0
           imagePullPolicy: Always
           ports:
             - containerPort: 5000

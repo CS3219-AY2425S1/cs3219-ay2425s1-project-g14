@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx
+  name: inbound-gateway
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: nginx
+      app: inbound-gateway
   template:
     metadata:
       labels:
-        app: nginx
+        app: inbound-gateway
     spec:
       containers:
-        - name: nginx
-          image: modembcc/nginx:6.0.0
+        - name: inbound-gateway
+          image: modembcc/inbound-gateway:6.0.1
           imagePullPolicy: Always
           ports:
             - containerPort: 80

@@ -1,0 +1,53 @@
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: inbound-gateway-backendconfig
+spec:
+  healthCheck:
+    checkIntervalSec: 10 # Time between health checks
+    timeoutSec: 5 # Timeout for each health check
+    healthyThreshold: 1 # Number of successes for "healthy" status
+    unhealthyThreshold: 3 # Number of failures for "unhealthy" status
+    requestPath: /health # Path for the health check (set this to your health check path)
+    port: 80 # Port the health check uses
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inbound-gateway
+  annotations:
+    beta.cloud.google.com/backend-config: '{"default": "inbound-gateway-backendconfig"}'
+spec:
+  selector:
+    app: inbound-gateway
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: NodePort
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: inbound-gateway-ingress
+  annotations:
+    # Use this if you have an NGINX Ingress Controller
+    kubernetes.io/ingress.global-static-ip-name: "cert-service"
+    networking.gke.io/managed-certificates: "peerprep-grp14"
+    kubernetes.io/ingress.class: "gce"
+spec:
+  defaultBackend:
+    service:
+      name: inbound-gateway
+      port:
+        number: 80
+  # rules:
+  #   - host: peerprep-grp14.com # Replace with your domain
+  #     http:
+  #       paths:
+  #         - pathType: ImplementationSpecific
+  #           backend:
+  #             service:
+  #               name: inbound-gateway # Your service name
+  #               port:
+  #                 number: 80
