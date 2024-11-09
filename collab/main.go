@@ -139,6 +139,9 @@ func (h *Hub) Run() {
 			}
 			h.mutex.Unlock()
 		}
+
+
+		
 	}
 }
 
@@ -161,6 +164,7 @@ func serveWs(
 		return
 	}
 
+	
 	client := &Client{conn: conn, roomID: roomID}
 	hub.register <- client
 
@@ -214,6 +218,8 @@ func handleMessages(
 			log.Printf("Failed to parse message: %v", err)
 			continue
 		}
+
+
 		if msgData["type"] == "auth" {
 			token, tokenOk := msgData["token"].(string)
 			if !tokenOk {
