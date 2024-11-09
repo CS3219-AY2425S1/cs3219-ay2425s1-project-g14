@@ -12,12 +12,13 @@ import "ace-builds/src-min-noconflict/ext-searchbox";
 import "ace-builds/src-min-noconflict/ext-language_tools";
 import PeerprepDropdown from "@/components/shared/PeerprepDropdown";
 
-import { FormatResponse, Language, Question } from "@/api/structs";
+import { FormatResponse, Language } from "@/api/structs";
 import PeerprepButton from "../shared/PeerprepButton";
 import CommsPanel from "./CommsPanel";
 
-import { diff_match_patch } from "diff-match-patch";
+// import { diff_match_patch } from "diff-match-patch";
 import { callFormatter } from "@/app/api/internal/formatter/helper";
+import { Ace } from "ace-builds";
 
 const languages: Language[] = ["javascript", "python", "c_cpp"];
 
@@ -35,14 +36,16 @@ const themes = [
 ];
 
 languages.forEach((lang) => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   require(`ace-builds/src-noconflict/mode-${lang}`);
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   require(`ace-builds/src-noconflict/snippets/${lang}`);
 });
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 themes.forEach((theme) => require(`ace-builds/src-noconflict/theme-${theme}`));
 
 interface Props {
-  question: Question;
   roomID?: string;
   authToken?: string;
   userId?: string | undefined;
@@ -50,18 +53,26 @@ interface Props {
 }
 
 interface Message {
-  type: "content_change" | "auth" | "close_session";
+  type: string;
+  roomId?: string;
   data?: string;
   userId?: string | undefined;
   token?: string;
   matchHash?: string;
 }
 
-const dmp = new diff_match_patch();
-const questionSeed = "def foo():\n  pass";
+enum MessageTypes {
+  AUTH = "auth",
+  AUTH_SUCCESS = "auth_success",
+  AUTH_FAIL = "auth_fail",
+  CLOSE_SESSION = "close_session",
+  CONTENT_CHANGE = "content_change",
+}
+
+// const dmp = new diff_match_patch();
+// const questionSeed = "def foo():\n  pass";
 
 export default function CollabEditor({
-  question,
   roomID,
   authToken,
   userId,
@@ -70,26 +81,11 @@ export default function CollabEditor({
   const [theme, setTheme] = useState("terminal");
   const [fontSize, setFontSize] = useState(18);
   const [language, setLanguage] = useState<Language>("python");
-  const [value, setValue] = useState(questionSeed);
+  const [value, setValue] = useState("");
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [connected, setConnected] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   const router = useRouter();
-
-  const generatePatch = (oldContent: string, newContent: string): string => {
-    const diffs = dmp.diff_main(oldContent, newContent);
-    const patches = dmp.patch_make(oldContent, diffs);
-
-    // return patches;
-    return dmp.patch_toText(patches);
-  };
-
-  const applyPatches = (text: string, patchText: any): string => {
-    const patches = dmp.patch_fromText(patchText);
-    console.log(patches);
-    const [newText, _results] = dmp.patch_apply(patches, text);
-    return newText;
-  };
 
   async function formatCode(value: string, language: Language) {
     try {
@@ -103,36 +99,41 @@ export default function CollabEditor({
         formatted_code !== value &&
         socket?.readyState === WebSocket.OPEN
       ) {
-        const patches = generatePatch(value, formatted_code);
+        // const patches = generatePatch(value, formatted_code);
         const msg: Message = {
-          type: "content_change",
-          data: patches,
+          type: MessageTypes.CONTENT_CHANGE.valueOf(),
+          data: formatted_code,
           userId: userId,
         };
         socket.send(JSON.stringify(msg));
       }
-    } catch (e: any) {
-      alert(e.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        console.error(e.message);
+      } else {
+        console.error("An unknown error occurred");
+      }
     }
   }
 
   const handleOnChange = (newValue: string) => {
-    const patches = generatePatch(value, newValue);
+    // const patches = generatePatch(value, newValue);
 
     setValue(newValue);
     console.log("Content changed:", userId, newValue);
 
     if (socket) {
       const msg: Message = {
-        type: "content_change",
-        data: patches,
+        type: MessageTypes.CONTENT_CHANGE.valueOf(),
+        data: newValue,
         userId: userId,
       };
+      console.log("Sending message", msg);
       socket.send(JSON.stringify(msg));
     }
   };
 
-  const handleOnLoad = (editor: any) => {
+  const handleOnLoad = (editor: Ace.Editor) => {
     editor.container.style.resize = "both";
   };
 
@@ -148,7 +149,7 @@ export default function CollabEditor({
       setConnected(true);
 
       const authMessage: Message = {
-        type: "auth",
+        type: MessageTypes.AUTH.valueOf(),
         token: authToken,
         matchHash: matchHash, // omitted if undefined
       };
@@ -156,33 +157,55 @@ export default function CollabEditor({
     };
 
     newSocket.onmessage = (event) => {
-      if (event.data == "Auth Success") {
-        setAuthenticated(true);
-      } else if (event.data == "Authentication failed") {
-        window.alert("Authentication failed");
-        newSocket.close();
-        router.push("/questions");
-      } else if (event.data == "The session has been closed by a user.") {
-        window.alert("Session has ended. If you leave the room now, this data will be lost.");
-        newSocket.close();
-        setAuthenticated(false);
-        setConnected(false);
-      } else {
-        const message: Message = JSON.parse(event.data);
+      // console.log("Event is", event);
+      console.error(event.data);
 
-        if (message.type === "content_change" && message.userId !== userId) {
-          console.log(
-            "Received message from user: ",
-            message.userId,
-            "I am",
-            userId,
-            "We are the same: ",
-            message.userId === userId,
+      const message: Message = JSON.parse(event.data);
+
+      const msgType = message.type as MessageTypes;
+
+      console.log("Received a message of type", msgType);
+      console.log("Received a message", message.type);
+
+      switch (msgType) {
+        case MessageTypes.AUTH:
+          // This should only be sent, never received by the client
+          throw new Error("Received unexpected auth message");
+        case MessageTypes.AUTH_SUCCESS:
+          setAuthenticated(true);
+          console.log("Auth success", message.data);
+          setValue(message.data as string);
+          break;
+        case MessageTypes.AUTH_FAIL:
+          window.alert("Authentication failed");
+          newSocket.close();
+          router.push("/questions");
+          break;
+        case MessageTypes.CLOSE_SESSION:
+          window.alert(
+            "Session has ended. If you leave the room now, this data will be lost.",
           );
-          setValue((currentValue) => {
-            return applyPatches(currentValue, message.data);
-          });
-        }
+          newSocket.close();
+          setAuthenticated(false);
+          setConnected(false);
+          break;
+        case MessageTypes.CONTENT_CHANGE:
+          if (message.userId !== userId) {
+            console.log(
+              "Received message from user: ",
+              message.userId,
+              "I am",
+              userId,
+              "We are the same: ",
+              message.userId === userId,
+            );
+            setValue(message.data as string);
+          }
+          break;
+        default:
+          const exhaustiveCheck: never = msgType;
+          console.error("Unknown message type:", exhaustiveCheck);
+          console.log("Message data:", message);
       }
     };
 
@@ -194,6 +217,8 @@ export default function CollabEditor({
 
     newSocket.onclose = () => {
       console.log("WebSocket connection closed");
+      // TODO: should setConnected be false here?
+      // setConnected(false);
       //   router.push("/questions");
     };
 
@@ -202,7 +227,7 @@ export default function CollabEditor({
     return () => {
       newSocket.close();
     };
-  }, []);
+  }, [authToken, matchHash, roomID, router, userId]);
 
   const handleCloseConnection = () => {
     const confirmClose = confirm(
@@ -212,7 +237,7 @@ export default function CollabEditor({
     if (confirmClose && socket) {
       console.log("Sent!");
       const msg: Message = {
-        type: "close_session",
+        type: MessageTypes.CLOSE_SESSION.valueOf(),
         userId: userId,
       };
       socket.send(JSON.stringify(msg));
@@ -300,7 +325,6 @@ export default function CollabEditor({
           tabSize: 4,
         }}
       />
-      ;
     </>
   );
 }
