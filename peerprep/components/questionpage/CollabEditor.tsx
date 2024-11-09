@@ -73,6 +73,7 @@ export default function CollabEditor({
   const [value, setValue] = useState(questionSeed);
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [connected, setConnected] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
   const router = useRouter();
 
   const generatePatch = (oldContent: string, newContent: string): string => {
@@ -157,16 +158,13 @@ export default function CollabEditor({
     newSocket.onmessage = (event) => {
       if (event.data == "Authentication failed") {
         window.alert("Authentication failed");
-        if (socket) {
-          socket.close();
-        }
+        newSocket.close();
         router.push("/questions");
       } else if (event.data == "The session has been closed by a user.") {
-        window.alert("Session has ended");
-        if (socket) {
-          socket.close();
-        }
-        router.push("/questions");
+        window.alert("Session has ended. If you leave the room now, this data will be lost.");
+        newSocket.close();
+        setAuthenticated(false);
+        setConnected(false);
       } else {
         const message: Message = JSON.parse(event.data);
 
@@ -221,7 +219,7 @@ export default function CollabEditor({
 
   return (
     <>
-      {connected && (
+      {authenticated && (
         <CommsPanel className="flex flex-row justify-around" roomId={roomID} />
       )}
       <div className="m-4 flex items-center space-x-4 p-4">

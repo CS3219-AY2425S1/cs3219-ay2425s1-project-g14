@@ -226,7 +226,7 @@ func handleMessages(
 				log.Println("Authentication failed - no token attached")
 				client.conn.WriteMessage(
 					websocket.TextMessage,
-					[]byte("Authentication failed - no JWT token"),
+					[]byte("Authentication failed"),
 				)
 				client.conn.Close()
 				break
@@ -248,12 +248,16 @@ func handleMessages(
 			if !isSuccess {
 				client.conn.WriteMessage(
 					websocket.TextMessage,
-					[]byte("Authentication failed - failed to find a matching room"),
+					[]byte("Authentication failed"),
 				)
 				client.conn.Close()
 				break
 			}
 			client.authenticated = true
+			client.conn.WriteMessage(
+				websocket.TextMessage,
+				[]byte("Auth Success"),
+			)
 			log.Println("Client authenticated successfully")
 		}
 
