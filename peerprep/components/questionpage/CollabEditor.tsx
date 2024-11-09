@@ -156,7 +156,9 @@ export default function CollabEditor({
     };
 
     newSocket.onmessage = (event) => {
-      if (event.data == "Authentication failed") {
+      if (event.data == "Auth Success") {
+        setAuthenticated(true);
+      } else if (event.data == "Authentication failed") {
         window.alert("Authentication failed");
         newSocket.close();
         router.push("/questions");
