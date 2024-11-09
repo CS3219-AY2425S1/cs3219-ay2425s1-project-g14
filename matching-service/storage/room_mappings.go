@@ -86,7 +86,7 @@ func (db *RoomMappings) SendToStorageBlob(room *models.Room) error {
 		return fmt.Errorf("error parsing the time: %s", err.Error())
 	}
 
-	expiryTime := requestTime.Add(30 * time.Second).Add(-8 * time.Hour)
+	expiryTime := requestTime.Add(30 * time.Second)
 
 	diff := int(time.Until(expiryTime).Seconds())
 

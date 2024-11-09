@@ -131,7 +131,7 @@ func (db *ClientMappings) HandleRequest(request models.IncomingRequests) (*model
 		return nil, err
 	}
 
-	expiryTime := requestTime.Add(30 * time.Second).Add(-8 * time.Hour)
+	expiryTime := requestTime.Add(30 * time.Second)
 	diff := int(time.Until(expiryTime).Seconds())
 	err = db.Conn.Expire(ctx, user2, time.Duration(diff)*time.Second).Err()
 
