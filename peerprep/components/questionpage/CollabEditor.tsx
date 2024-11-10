@@ -18,7 +18,9 @@ import CommsPanel from "./CommsPanel";
 
 import { diff_match_patch } from "diff-match-patch";
 import { callFormatter } from "@/app/api/internal/formatter/helper";
+import { connect } from "http2";
 
+const PING_INTERVAL_MILLISECONDS = 3000;
 const languages: Language[] = ["javascript", "python", "c_cpp"];
 
 const themes = [
@@ -50,7 +52,7 @@ interface Props {
 }
 
 interface Message {
-  type: "content_change" | "auth" | "close_session";
+  type: "content_change" | "auth" | "close_session" | "ping";
   data?: string;
   userId?: string | undefined;
   token?: string;
@@ -73,6 +75,8 @@ export default function CollabEditor({
   const [value, setValue] = useState(questionSeed);
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [connected, setConnected] = useState(false);
+  const [otherUserConnected, setOtherUserConnected] = useState<boolean>(false);
+  const [lastPingReceived, setLastPingReceived] = useState<number | null>(null);
   const router = useRouter();
 
   const generatePatch = (oldContent: string, newContent: string): string => {
@@ -168,6 +172,8 @@ export default function CollabEditor({
         }
         router.push("/questions");
       } else {
+        // seem to be getting json error here. logs show messages of "ping" type with both user ids tho
+        console.log(event.data);
         const message: Message = JSON.parse(event.data);
 
         if (message.type === "content_change" && message.userId !== userId) {
@@ -182,6 +188,12 @@ export default function CollabEditor({
           setValue((currentValue) => {
             return applyPatches(currentValue, message.data);
           });
+        }
+
+        if (message.type === "ping" && message.userId !== userId) {
+          console.log("other user connected!");
+          setOtherUserConnected(true);
+          setLastPingReceived(Date.now());
         }
       }
     };
@@ -204,6 +216,42 @@ export default function CollabEditor({
     };
   }, []);
 
+  // ping ws
+  const notifyRoomOfConnection = async () => {
+    // send message over ws
+    if (socket) {
+      const msg: Message = {
+        type: "ping",
+        data: "pinging",
+        userId: userId,
+      };
+      socket.send(JSON.stringify(msg));
+    }
+  };
+
+  useEffect(() => {
+    if (!connected || !socket) return;
+
+    const interval = setInterval(
+      notifyRoomOfConnection,
+      PING_INTERVAL_MILLISECONDS,
+    );
+
+    const disconnectCheckInterval = setInterval(() => {
+      if (
+        lastPingReceived &&
+        Date.now() - lastPingReceived > 2 * PING_INTERVAL_MILLISECONDS
+      ) {
+        setOtherUserConnected(false);
+        clearInterval(disconnectCheckInterval);
+      }
+    }, PING_INTERVAL_MILLISECONDS);
+    return () => {
+      clearInterval(interval);
+      clearInterval(disconnectCheckInterval);
+    };
+  }, [notifyRoomOfConnection, PING_INTERVAL_MILLISECONDS, connected, socket]);
+
   const handleCloseConnection = () => {
     const confirmClose = confirm(
       "Are you sure you are finished? This will close the room for all users.",
@@ -224,7 +272,7 @@ export default function CollabEditor({
       {connected && (
         <CommsPanel className="flex flex-row justify-around" roomId={roomID} />
       )}
-      <div className="m-4 flex items-center space-x-4 p-4">
+      <div className="m-4 flex items-end space-x-4 p-4">
         <div className="flex flex-col">
           <label className="mb-1 font-semibold">Font Size</label>
           <input
@@ -261,13 +309,13 @@ export default function CollabEditor({
 
         {roomID &&
           (connected ? (
-            <div className="h-full align-middle">
+            <div className="align-middle">
               <PeerprepButton onClick={handleCloseConnection}>
                 Close Room
               </PeerprepButton>
             </div>
           ) : (
-            <div className="h-full align-middle">
+            <div className="align-middle">
               <PeerprepButton
                 onClick={handleCloseConnection}
                 className="disabled"
@@ -277,6 +325,23 @@ export default function CollabEditor({
             </div>
           ))}
       </div>
+      {roomID &&
+        (connected ? (
+          <div className="flex items-center space-x-2 p-2">
+            <span
+              className={`h-4 w-4 rounded-full ${
+                otherUserConnected ? "bg-difficulty-easy" : "bg-difficulty-hard"
+              }`}
+            ></span>
+            <span>
+              {otherUserConnected
+                ? "Other user connected"
+                : "Other user disconnected"}
+            </span>
+          </div>
+        ) : (
+          <div className="py-2">Disconnected. Check logs.</div>
+        ))}
       <AceEditor
         mode={language}
         className={"editor"}
