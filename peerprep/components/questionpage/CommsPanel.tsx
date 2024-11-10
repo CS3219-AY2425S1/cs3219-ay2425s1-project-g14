@@ -4,10 +4,12 @@ import io from "socket.io-client";
 
 interface Props {
   className?: string;
-  roomId?: String;
+  roomId?: string;
 }
 
-const socket = io(`${process.env.NEXT_PUBLIC_COMMS}`);
+const socket = io(`/`, {
+  path: '/comms'
+});
 
 function CommsPanel({ className, roomId }: Props) {
   const [stream, setStream] = useState<MediaStream>();
@@ -24,7 +26,7 @@ function CommsPanel({ className, roomId }: Props) {
       if (socket) {
         console.log("destroying socket");
         socket.close();
-      } 
+      }
       if (connectionRef.current) {
         connectionRef.current.destroy();
       }
@@ -40,24 +42,30 @@ function CommsPanel({ className, roomId }: Props) {
       .then((newStream) => {
         console.log("new stream's status is " + newStream.active);
         newStream.getTracks().forEach((track: MediaStreamTrack) => {
-          console.log("media track status (ready/enabled): " + track.readyState + "/" + track.enabled);
-        })
+          console.log(
+            "media track status (ready/enabled): " +
+              track.readyState +
+              "/" +
+              track.enabled,
+          );
+        });
         if (myVideo.current) {
-          console.log("can set myVideo.current")
+          console.log("can set myVideo.current");
           myVideo.current.srcObject = newStream;
         }
         setStream(newStream);
         videoElement = newStream;
-      }).catch((err) => console.log("failed to get stream"));
+      })
+      .catch((err) => console.log("failed to get stream", err));
 
-      return () => {
-        console.log("cleaning up media");
-        if (videoElement) {
-          console.log("destroying stream");
-          videoElement.getTracks().forEach((track) => track.stop());
-        }
+    return () => {
+      console.log("cleaning up media");
+      if (videoElement) {
+        console.log("destroying stream");
+        videoElement.getTracks().forEach((track) => track.stop());
       }
-  }, [])
+    };
+  }, []);
 
   useEffect(() => {
     if (!roomId || !stream || !socket.connected) {
@@ -81,8 +89,9 @@ function CommsPanel({ className, roomId }: Props) {
     socket.on("endCall", () => {
       if (userVideo.current) {
         (userVideo.current.srcObject as MediaStream)
-          .getTracks().forEach((tracks: MediaStreamTrack) => {
-            tracks.stop()
+          .getTracks()
+          .forEach((tracks: MediaStreamTrack) => {
+            tracks.stop();
           });
         userVideo.current.srcObject = null;
       }
@@ -118,9 +127,10 @@ function CommsPanel({ className, roomId }: Props) {
 }
 
 function attachSocketReceiver(
-    stream: MediaStream, roomId: String,
-    userVideo: React.RefObject<HTMLVideoElement>,
-    connectionRef: React.MutableRefObject<Peer.Instance|undefined>
+  stream: MediaStream,
+  roomId: string,
+  userVideo: React.RefObject<HTMLVideoElement>,
+  connectionRef: React.MutableRefObject<Peer.Instance | undefined>,
 ) {
   socket.on("startCall", (data) => {
     console.log("received start call signal");
@@ -150,9 +160,10 @@ function attachSocketReceiver(
 }
 
 function attachSocketInitiator(
-  stream: MediaStream, roomId: String,
+  stream: MediaStream,
+  roomId: string,
   userVideo: React.RefObject<HTMLVideoElement>,
-  connectionRef: React.MutableRefObject<Peer.Instance|undefined>
+  connectionRef: React.MutableRefObject<Peer.Instance | undefined>,
 ) {
   socket.on("peerConnected", () => {
     console.log("peer connected, starting call");
@@ -161,24 +172,24 @@ function attachSocketInitiator(
       trickle: false,
       stream: stream,
     });
-  
+
     peerInit.on("signal", (data) => {
       console.log("signal to start call received");
       socket.emit("startCall", { signalData: data, target: roomId });
     });
-    
+
     peerInit.on("stream", (stream) => {
       if (userVideo.current) {
         console.log("setting stream for handshake");
         userVideo.current.srcObject = stream;
       }
     });
-  
+
     connectionRef.current = peerInit;
-  
+
     socket.on("handshakeCall", (data) => {
       console.log("received handshake");
-      peerInit.signal(data.signal)
+      peerInit.signal(data.signal);
     });
   });
 }

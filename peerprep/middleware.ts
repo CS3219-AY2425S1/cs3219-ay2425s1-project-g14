@@ -8,7 +8,7 @@ const isValidSession = () => {
   return cookies().has("session");
 };
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const isProtectedRoute = protectedRoutes.includes(path);
   const isPublicRoute = publicRoutes.includes(path);
@@ -24,6 +24,12 @@ export function middleware(request: NextRequest) {
 
   if (!isValidSession() && isProtectedRoute) {
     return NextResponse.redirect(new URL("/auth/login", request.url));
+  }
+
+  if (path === "/auth/logout" || path === "/auth/logout/") {
+    let response = NextResponse.redirect(new URL("/auth/login", request.url));
+    response.cookies.delete("session");
+    return response;
   }
 
   return NextResponse.next();

@@ -20,7 +20,11 @@ function RegisterPage() {
         )}
         <FormTextInput required label="Email:" name="email" />
         {state?.errors?.email && (
-          <p className={style.error}>{state.errors.email}</p>
+          <p className={style.error}>
+            {state.errors.email.map((item) => (
+              <div key={item}>{item}</div>
+            ))}
+          </p>
         )}
         <FormTextInput
           required
