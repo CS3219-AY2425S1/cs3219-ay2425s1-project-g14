@@ -2,6 +2,7 @@ package main
 
 import (
 	verify "collab/verify"
+	"context"
 	"encoding/json"
 	"io"
 	"log"
@@ -226,7 +227,7 @@ func handleMessages(
 				log.Println("Authentication failed - no token attached")
 				client.conn.WriteMessage(
 					websocket.TextMessage,
-					[]byte("Authentication failed - no JWT token"),
+					[]byte("Authentication failed"),
 				)
 				client.conn.Close()
 				break
@@ -248,12 +249,16 @@ func handleMessages(
 			if !isSuccess {
 				client.conn.WriteMessage(
 					websocket.TextMessage,
-					[]byte("Authentication failed - failed to find a matching room"),
+					[]byte("Authentication failed"),
 				)
 				client.conn.Close()
 				break
 			}
 			client.authenticated = true
+			client.conn.WriteMessage(
+				websocket.TextMessage,
+				[]byte("Auth Success"),
+			)
 			log.Println("Client authenticated successfully")
 		}
 
@@ -261,6 +266,20 @@ func handleMessages(
 			closeMessage := Message{
 				RoomID:  client.roomID,
 				Content: []byte("The session has been closed by a user."),
+			}
+			targetId := msgData["userId"].(string)
+			data, err := persistMappings.Conn.HGetAll(context.Background(), targetId).Result()
+			if err != nil {
+				log.Printf("Error retrieving data for userID %s: %v", targetId, err)
+			} else {
+				_, err1 := persistMappings.Conn.Del(context.Background(), targetId).Result()
+				if err1 != nil {
+					log.Printf("Error deleting data for userID %s: %v", targetId, err1);
+				}
+				_, err2 := persistMappings.Conn.Del(context.Background(), data["otherUser"]).Result()
+				if err2 != nil {
+					log.Printf("Error deleting data for other user %s: %v", data["otherUser"], err2);
+				}
 			}
 			hub.broadcast <- closeMessage
 		}

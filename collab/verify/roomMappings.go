@@ -44,17 +44,9 @@ func VerifyRoomAndMoveToPersist(
 
 	roomMappings.Conn.Del(ctx, matchHash);
 	persistentRoom := map[string]interface{}{
-		"roomId":      roomID,
-		"otherUser":   data["otherUser"],
-		"requestTime": data["requestTime"],
-
-		"title":       data["title"],
-		"titleSlug":   data["titleSlug"],
-		"difficulty":  data["difficulty"],
-		"topicTags":   data["topicTags"],
-		"content":     data["content"],
-		"schemas":     data["schemas"],
-		"id":          data["id"],
+		"roomId":        roomID,
+		"otherUser":     data["otherUser"],
+		"requestTime":   data["requestTime"],
 	}
 
 	// this always overrides the persistent room
