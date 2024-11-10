@@ -25,7 +25,7 @@ spec:
             - name: NEXT_PUBLIC_STORAGE_BLOB
               value: blob
             - name: NEXT_PUBLIC_NGINX
-              value: http://nginx:80
+              value: http://nginx:70
             - name: NEXT_PUBLIC_COLLAB
               value: collab
             - name: DEV_ENV
@@ -35,3 +35,10 @@ spec:
           ports:
             - containerPort: 3000
               name: peerprep
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
