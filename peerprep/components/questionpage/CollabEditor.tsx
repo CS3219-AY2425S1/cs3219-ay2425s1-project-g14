@@ -213,6 +213,7 @@ export default function CollabEditor({
             setOtherUserConnected(true);
             setLastPingReceived(Date.now());
           }
+          break;
         default:
           const exhaustiveCheck: never = msgType;
           console.error("Unknown message type:", exhaustiveCheck);
@@ -246,7 +247,7 @@ export default function CollabEditor({
     if (socket) {
       console.log("PINGING WS FROM " + userId);
       const msg: Message = {
-        type: "ping",
+        type: MessageTypes.PING.valueOf(),
         data: "pinging",
         userId: userId,
       };
