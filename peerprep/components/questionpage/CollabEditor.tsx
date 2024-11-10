@@ -20,7 +20,7 @@ import { diff_match_patch } from "diff-match-patch";
 import { callFormatter } from "@/app/api/internal/formatter/helper";
 import { connect } from "http2";
 
-const PING_INTERVAL_MILLISECONDS = 3000;
+const PING_INTERVAL_MILLISECONDS = 15000;
 const languages: Language[] = ["javascript", "python", "c_cpp"];
 
 const themes = [
@@ -171,9 +171,10 @@ export default function CollabEditor({
           socket.close();
         }
         router.push("/questions");
+      } else if (event.data == "ping request") {
+        // unnecessary with current quick fix
+        console.log("got event.data == ping request");
       } else {
-        // seem to be getting json error here. logs show messages of "ping" type with both user ids tho
-        console.log(event.data);
         const message: Message = JSON.parse(event.data);
 
         if (message.type === "content_change" && message.userId !== userId) {
@@ -220,6 +221,7 @@ export default function CollabEditor({
   const notifyRoomOfConnection = async () => {
     // send message over ws
     if (socket) {
+      console.log("PINGING WS FROM " + userId);
       const msg: Message = {
         type: "ping",
         data: "pinging",

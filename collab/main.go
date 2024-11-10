@@ -256,20 +256,21 @@ func handleMessages(
 			client.authenticated = true
 			log.Println("Client authenticated successfully")
 		}
+		// i can comment out this whole block and it would work
 
-		if msgData["type"] == "ping" {
-			//receives ping from client1, need to send a ping to client2
-			//eventually, if present, client2 will send the ping back, which will be broadcasted back to client1.
+		// if msgData["type"] == "ping" {
+		// 	//receives ping from client1, need to send a ping to client2
+		// 	//eventually, if present, client2 will send the ping back, which will be broadcasted back to client1.
 			
-			userID, _ := msgData["userId"].(string)
-			request := Message {
-				RoomID: client.roomID,
-				UserID: userID,
-				Content: []byte("ping request"),
-			}
+		// 	userID, _ := msgData["userId"].(string)
+		// 	request := Message {
+		// 		RoomID: client.roomID,
+		// 		UserID: userID,
+		// 		Content: []byte("ping request"),
+		// 	}
 			
-			hub.broadcast <- request
-		}
+		// 	hub.broadcast <- request
+		// }
 
 		if msgData["type"] == "close_session" {
 			closeMessage := Message{
