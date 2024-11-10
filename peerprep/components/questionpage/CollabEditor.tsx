@@ -21,7 +21,7 @@ import { callFormatter } from "@/app/api/internal/formatter/helper";
 import { Ace } from "ace-builds";
 import { connect } from "http2";
 
-const PING_INTERVAL_MILLISECONDS = 15000;
+const PING_INTERVAL_MILLISECONDS = 5000;
 const languages: Language[] = ["javascript", "python", "c_cpp"];
 
 const themes = [
@@ -162,8 +162,8 @@ export default function CollabEditor({
     };
 
     newSocket.onmessage = (event) => {
-      // console.log("Event is", event);
-      console.error(event.data);
+      console.log("Event is", event);
+      // console.error(event.data);
 
       const message: Message = JSON.parse(event.data);
 
@@ -248,7 +248,6 @@ export default function CollabEditor({
       console.log("PINGING WS FROM " + userId);
       const msg: Message = {
         type: MessageTypes.PING.valueOf(),
-        data: "pinging",
         userId: userId,
       };
       socket.send(JSON.stringify(msg));
@@ -272,6 +271,7 @@ export default function CollabEditor({
         clearInterval(disconnectCheckInterval);
       }
     }, PING_INTERVAL_MILLISECONDS);
+
     return () => {
       clearInterval(interval);
       clearInterval(disconnectCheckInterval);

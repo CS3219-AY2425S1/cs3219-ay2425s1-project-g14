@@ -22,6 +22,7 @@ const (
 	AUTH_FAIL      = "auth_fail"
 	CLOSE_SESSION  = "close_session"
 	CONTENT_CHANGE = "content_change"
+	PING = "ping"
 )
 
 var upgrader = websocket.Upgrader{
@@ -299,8 +300,8 @@ func handleMessages(
 
 			log.Println("Client authenticated successfully")
 		}
-		// i can comment out this whole block and it would work
 
+		// old logic before type changes
 		// if msgData["type"] == "ping" {
 		// 	//receives ping from client1, need to send a ping to client2
 		// 	//eventually, if present, client2 will send the ping back, which will be broadcasted back to client1.
@@ -340,6 +341,13 @@ func handleMessages(
 			hub.broadcast <- Message{
 				RoomID:  client.roomID,
 				Content: msgData.Content,
+				Type:    msgData.Type,
+				UserID:  msgData.UserID,
+			}
+		} else if msgData.Type == PING {
+			// Broadcast the message to other clients
+			hub.broadcast <- Message{
+				RoomID:  client.roomID,
 				Type:    msgData.Type,
 				UserID:  msgData.UserID,
 			}
