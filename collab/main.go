@@ -1,7 +1,7 @@
 package main
 
 import (
-	verify "collab/verify"
+	"collab/verify"
 	"context"
 	"encoding/json"
 	"io"
@@ -13,6 +13,16 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+)
+
+// types
+const (
+	AUTH           = "auth"
+	AUTH_SUCCESS   = "auth_success"
+	AUTH_FAIL      = "auth_fail"
+	CLOSE_SESSION  = "close_session"
+	CONTENT_CHANGE = "content_change"
+	PING = "ping"
 )
 
 var upgrader = websocket.Upgrader{
@@ -37,10 +47,12 @@ type Hub struct {
 }
 
 type Message struct {
-	Type    string `json:"type"`
-	RoomID  string `json:"roomId"`
-	Content []byte `json:"data"`
-	UserID  string `json:"userId"`
+	Type      string `json:"type"`
+	RoomID    string `json:"roomId"`
+	Content   string `json:"data"`
+	UserID    string `json:"userId"`
+	Token     string `json:"token"`
+	MatchHash string `json:"matchHash"`
 }
 
 func verifyToken(token string) (bool, string) {
@@ -127,10 +139,19 @@ func (h *Hub) Run() {
 		case message := <-h.broadcast:
 			h.mutex.Lock()
 			// Update the current workspace for this RoomID
-			h.workspaces[message.RoomID] = string(message.Content)
+			h.workspaces[message.RoomID] = message.Content
 			for client := range h.clients {
 				if client.roomID == message.RoomID {
-					err := client.conn.WriteMessage(websocket.TextMessage, message.Content)
+
+					log.Println("Original message: ", message)
+
+					msgJson, _ := json.Marshal(message)
+
+					log.Printf("Sending message to client: %s", msgJson)
+
+					err := client.conn.WriteMessage(websocket.TextMessage,
+						msgJson,
+					)
 					if err != nil {
 						log.Printf("Error sending message: %v", err)
 						client.conn.Close()
@@ -142,7 +163,7 @@ func (h *Hub) Run() {
 		}
 
 
-		
+
 	}
 }
 
@@ -165,7 +186,6 @@ func serveWs(
 		return
 	}
 
-	
 	client := &Client{conn: conn, roomID: roomID}
 	hub.register <- client
 
@@ -214,27 +234,35 @@ func handleMessages(
 			break
 		}
 
-		var msgData map[string]interface{}
+		log.Printf("Raw message received: %s", string(message))
+
+		var msgData Message
 		if err := json.Unmarshal(message, &msgData); err != nil {
 			log.Printf("Failed to parse message: %v", err)
 			continue
 		}
 
+		log.Printf("Raw message parsed: %s", msgData)
 
-		if msgData["type"] == "auth" {
-			token, tokenOk := msgData["token"].(string)
-			if !tokenOk {
+		if msgData.Type == AUTH {
+			token := msgData.Token
+			if token == "" {
 				log.Println("Authentication failed - no token attached")
-				client.conn.WriteMessage(
-					websocket.TextMessage,
-					[]byte("Authentication failed"),
-				)
+
+				msg := Message{
+					Type:    AUTH_FAIL,
+					RoomID:  client.roomID,
+					Content: "Authentication failed - no token attached",
+				}
+				msgJson, _ := json.Marshal(msg)
+				client.conn.WriteMessage(websocket.TextMessage, msgJson)
 				client.conn.Close()
 				break
 			}
 			isSuccess := false
-			match, matchOk := msgData["matchHash"].(string)
-			if matchOk && !authenticateClient(token, match, client, roomMappings, persistMappings) {
+			match := msgData.MatchHash
+			if match != "" &&
+				!authenticateClient(token, match, client, roomMappings, persistMappings) {
 				log.Println(
 					"failed to find a matching room from match hash, proceeding with persistence check",
 				)
@@ -247,70 +275,115 @@ func handleMessages(
 				isSuccess = true
 			}
 			if !isSuccess {
-				client.conn.WriteMessage(
-					websocket.TextMessage,
-					[]byte("Authentication failed"),
-				)
+				msg := Message{
+					Type:    AUTH_FAIL,
+					RoomID:  client.roomID,
+					Content: "Authentication failed",
+				}
+				msgJson, _ := json.Marshal(msg)
+				client.conn.WriteMessage(websocket.TextMessage, msgJson)
+
 				client.conn.Close()
 				break
 			}
 			client.authenticated = true
-			client.conn.WriteMessage(
-				websocket.TextMessage,
-				[]byte("Auth Success"),
-			)
+
+			serverContent := hub.workspaces[client.roomID]
+
+			newMsg := Message{
+				Type:    AUTH_SUCCESS,
+				RoomID:  client.roomID,
+				Content: serverContent,
+			}
+			msgJson, _ := json.Marshal(newMsg)
+			client.conn.WriteMessage(websocket.TextMessage, msgJson)
+
 			log.Println("Client authenticated successfully")
 		}
 
-		if msgData["type"] == "close_session" {
+		// old logic before type changes
+		// if msgData["type"] == "ping" {
+		// 	//receives ping from client1, need to send a ping to client2
+		// 	//eventually, if present, client2 will send the ping back, which will be broadcasted back to client1.
+			
+		// 	userID, _ := msgData["userId"].(string)
+		// 	request := Message {
+		// 		RoomID: client.roomID,
+		// 		UserID: userID,
+		// 		Content: []byte("ping request"),
+		// 	}
+			
+		// 	hub.broadcast <- request
+		// }
+
+		if msgData.Type == CLOSE_SESSION {
 			closeMessage := Message{
 				RoomID:  client.roomID,
-				Content: []byte("The session has been closed by a user."),
+				Content: "The session has been closed by a user.",
 			}
-			targetId := msgData["userId"].(string)
+			targetId := msgData.UserID
 			data, err := persistMappings.Conn.HGetAll(context.Background(), targetId).Result()
 			if err != nil {
 				log.Printf("Error retrieving data for userID %s: %v", targetId, err)
 			} else {
 				_, err1 := persistMappings.Conn.Del(context.Background(), targetId).Result()
 				if err1 != nil {
-					log.Printf("Error deleting data for userID %s: %v", targetId, err1);
+					log.Printf("Error deleting data for userID %s: %v", targetId, err1)
 				}
 				_, err2 := persistMappings.Conn.Del(context.Background(), data["otherUser"]).Result()
 				if err2 != nil {
-					log.Printf("Error deleting data for other user %s: %v", data["otherUser"], err2);
+					log.Printf("Error deleting data for other user %s: %v", data["otherUser"], err2)
 				}
 			}
 			hub.broadcast <- closeMessage
+		} else if msgData.Type == CONTENT_CHANGE {
+			// Broadcast the message to other clients
+			hub.broadcast <- Message{
+				RoomID:  client.roomID,
+				Content: msgData.Content,
+				Type:    msgData.Type,
+				UserID:  msgData.UserID,
+			}
+		} else if msgData.Type == PING {
+			// Broadcast the message to other clients
+			hub.broadcast <- Message{
+				RoomID:  client.roomID,
+				Type:    msgData.Type,
+				UserID:  msgData.UserID,
+			}
+		} else {
+			log.Printf("Unknown message type: %s", msgData.Type)
 		}
-
-		// Broadcast the message to other clients
-		userID, _ := msgData["userId"].(string)
-		hub.broadcast <- Message{RoomID: client.roomID, Content: message, UserID: userID}
 	}
+}
+
+type ClientWorkspace struct {
+	Clients   int    `json:"clients"`
+	Workspace string `json:"workspace"`
 }
 
 // Status endpoint that shows the number of clients and the current color for each roomID
 func statusHandler(hub *Hub) gin.HandlerFunc {
+
 	return func(c *gin.Context) {
 		hub.mutex.Lock()
 		defer hub.mutex.Unlock()
 
-		status := make(map[string]interface{})
+		status := make(map[string]ClientWorkspace)
 		for client := range hub.clients {
 			roomID := client.roomID
 			currentStatus, ok := status[roomID]
 			if !ok {
 				// Initialize status for a new roomID
-				status[roomID] = map[string]interface{}{
-					"clients":   1,
-					"workspace": hub.workspaces[roomID],
+				status[roomID] = ClientWorkspace{
+					Clients:   1,
+					Workspace: hub.workspaces[roomID],
 				}
 			} else {
 				// Update the client count for an existing roomID
-				status[roomID] = map[string]interface{}{
-					"clients":   currentStatus.(map[string]interface{})["clients"].(int) + 1,
-					"workspace": hub.workspaces[roomID],
+				status[roomID] = ClientWorkspace{
+					Clients:   currentStatus.Clients + 1,
+					Workspace: hub.workspaces[roomID],
 				}
 			}
 		}

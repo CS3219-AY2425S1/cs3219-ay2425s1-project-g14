@@ -12,7 +12,6 @@ interface Props {
   authToken?: string;
   userId?: string;
   matchHash?: string;
-
 }
 
 interface DifficultyChipProps {
@@ -29,7 +28,13 @@ function DifficultyChip({ diff }: DifficultyChipProps) {
   );
 }
 
-function QuestionBlock({ question, roomID, authToken, userId, matchHash }: Props) {
+function QuestionBlock({
+  question,
+  roomID,
+  authToken,
+  userId,
+  matchHash,
+}: Props) {
   return (
     <>
       <div className={styles.qn_container}>
@@ -64,7 +69,6 @@ function QuestionBlock({ question, roomID, authToken, userId, matchHash }: Props
       </div>
       <div className={styles.editor_container}>
         <CollabEditor
-          question={question}
           roomID={roomID}
           authToken={authToken}
           matchHash={matchHash}
