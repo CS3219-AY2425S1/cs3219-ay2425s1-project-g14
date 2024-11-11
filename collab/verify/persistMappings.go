@@ -30,5 +30,7 @@ func VerifyPersist(persistMappings *PersistMappings, roomID string, userID strin
 		return false
 	}
 
+	log.Printf("current roomID: %s, expected roomID: %s", data["roomId"], roomID)
+
 	return data["roomId"] == roomID
 }

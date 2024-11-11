@@ -87,6 +87,8 @@ function CommsPanel({ className, roomId }: Props) {
     attachSocketReceiver(stream, roomId, userVideo, connectionRef);
 
     socket.on("endCall", () => {
+      // immediately destroy the socket listeners
+      destroyCallListeners(roomId);
       if (userVideo.current) {
         (userVideo.current.srcObject as MediaStream)
           .getTracks()
@@ -95,6 +97,16 @@ function CommsPanel({ className, roomId }: Props) {
           });
         userVideo.current.srcObject = null;
       }
+      if (connectionRef.current && !connectionRef.current.destroyed) {
+        connectionRef.current.destroy();
+      }
+      // reattach the sockets
+      attachSocketInitiator(stream, roomId, userVideo, connectionRef);
+      attachSocketReceiver(stream, roomId, userVideo, connectionRef);
+      // rejoin the room
+      socket.emit("joinRoom", {
+        target: roomId,
+      });
     });
 
     socket.emit("joinRoom", {
@@ -124,6 +136,15 @@ function CommsPanel({ className, roomId }: Props) {
       </div>
     </div>
   );
+}
+
+function destroyCallListeners(roomId: string) {
+  socket.emit("leaveRoom", {
+    target: roomId,
+  });
+  socket.removeAllListeners("startCall");
+  socket.removeAllListeners("peerConnected");
+  socket.removeAllListeners("handshakeCall");
 }
 
 function attachSocketReceiver(

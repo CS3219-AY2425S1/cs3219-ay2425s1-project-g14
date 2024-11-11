@@ -84,7 +84,7 @@ function QuestionBlock({ question }: Props) {
         }
       </div>
       <div className={styles.editor_container}>
-        <CollabEditor question={question} />
+        <CollabEditor />
       </div>
     </>
   );
