@@ -27,6 +27,11 @@ io.on("connection", (socket) => {
     socket.to(data.target).emit("peerConnected");
   });
 
+  // leave the room - this is performed as part of a cleanup function.
+  socket.on("leaveRoom", (data) => {
+    socket.leave(data.target);
+  });
+
   // propagate the socket events for starting and handshaking a call forward.
   socket.on("startCall", (data) => {
     console.log(socket.id + " is starting call in "+ data.target);
