@@ -3,6 +3,7 @@ package verify
 import (
 	"context"
 	"log"
+	//"time"
 
 	redis "github.com/go-redis/redis/v8"
 )
@@ -54,5 +55,13 @@ func VerifyRoomAndMoveToPersist(
 		log.Printf("error sending room to persistent storage: %s", err.Error())
 	}
 
+	/*	
+	if err := persistMappings.Conn.Expire(ctx, userId, 20 * time.Second).Err(); err != nil {
+		log.Printf("error setting expiration for persisting room storage: %s", err.Error())
+	} else {
+		log.Printf("expiration set for 10 minutes for user %s: ", userId)
+	
+	}
+	*/
 	return true
 }

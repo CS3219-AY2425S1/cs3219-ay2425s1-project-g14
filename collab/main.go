@@ -10,6 +10,7 @@ import (
 	"os"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -351,10 +352,25 @@ func handleMessages(
 				Type:    msgData.Type,
 				UserID:  msgData.UserID,
 			}
+
+			extendExpiryTime(msgData.UserID, persistMappings)
 		} else {
 			log.Printf("Unknown message type: %s", msgData.Type)
-		}
 	}
+	}
+}
+
+func extendExpiryTime(userId string, persistMappings *verify.PersistMappings) {
+		
+	ctx := context.Background()
+	if err := persistMappings.Conn.Expire(ctx, userId, time.Minute * 10).Err(); err != nil {
+		log.Println("Error extending room time on ping: ", err.Error())
+	} else {
+		
+		log.Printf("expiration reset for 10 minutes for user %s: ", userId)
+	}
+	
+	
 }
 
 type ClientWorkspace struct {

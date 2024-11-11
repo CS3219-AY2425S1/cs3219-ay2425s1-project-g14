@@ -276,7 +276,9 @@ export default function CollabEditor({
       clearInterval(interval);
       clearInterval(disconnectCheckInterval);
     };
-  }, [notifyRoomOfConnection, PING_INTERVAL_MILLISECONDS, connected, socket]);
+  }, [
+    notifyRoomOfConnection, PING_INTERVAL_MILLISECONDS, connected, socket
+    ]);
 
   const handleCloseConnection = () => {
     const confirmClose = confirm(
