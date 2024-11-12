@@ -23,7 +23,7 @@ const (
 	AUTH_FAIL      = "auth_fail"
 	CLOSE_SESSION  = "close_session"
 	CONTENT_CHANGE = "content_change"
-	PING = "ping"
+	PING           = "ping"
 )
 
 var upgrader = websocket.Upgrader{
@@ -140,7 +140,9 @@ func (h *Hub) Run() {
 		case message := <-h.broadcast:
 			h.mutex.Lock()
 			// Update the current workspace for this RoomID
-			h.workspaces[message.RoomID] = message.Content
+			if message.Content != "" {
+				h.workspaces[message.RoomID] = message.Content
+			}
 			for client := range h.clients {
 				if client.roomID == message.RoomID {
 
@@ -162,8 +164,6 @@ func (h *Hub) Run() {
 			}
 			h.mutex.Unlock()
 		}
-
-
 
 	}
 }
@@ -306,14 +306,14 @@ func handleMessages(
 		// if msgData["type"] == "ping" {
 		// 	//receives ping from client1, need to send a ping to client2
 		// 	//eventually, if present, client2 will send the ping back, which will be broadcasted back to client1.
-			
+
 		// 	userID, _ := msgData["userId"].(string)
 		// 	request := Message {
 		// 		RoomID: client.roomID,
 		// 		UserID: userID,
 		// 		Content: []byte("ping request"),
 		// 	}
-			
+
 		// 	hub.broadcast <- request
 		// }
 
@@ -348,29 +348,28 @@ func handleMessages(
 		} else if msgData.Type == PING {
 			// Broadcast the message to other clients
 			hub.broadcast <- Message{
-				RoomID:  client.roomID,
-				Type:    msgData.Type,
-				UserID:  msgData.UserID,
+				RoomID: client.roomID,
+				Type:   msgData.Type,
+				UserID: msgData.UserID,
 			}
 
 			extendExpiryTime(msgData.UserID, persistMappings)
 		} else {
 			log.Printf("Unknown message type: %s", msgData.Type)
-	}
+		}
 	}
 }
 
 func extendExpiryTime(userId string, persistMappings *verify.PersistMappings) {
-		
+
 	ctx := context.Background()
-	if err := persistMappings.Conn.Expire(ctx, userId, time.Minute * 10).Err(); err != nil {
+	if err := persistMappings.Conn.Expire(ctx, userId, time.Minute*10).Err(); err != nil {
 		log.Println("Error extending room time on ping: ", err.Error())
 	} else {
-		
+
 		log.Printf("expiration reset for 10 minutes for user %s: ", userId)
 	}
-	
-	
+
 }
 
 type ClientWorkspace struct {
