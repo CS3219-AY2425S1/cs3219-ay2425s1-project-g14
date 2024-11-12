@@ -139,9 +139,6 @@ function CommsPanel({ className, roomId }: Props) {
 }
 
 function destroyCallListeners(roomId: string) {
-  socket.emit("leaveRoom", {
-    target: roomId,
-  });
   socket.removeAllListeners("startCall");
   socket.removeAllListeners("peerConnected");
   socket.removeAllListeners("handshakeCall");
