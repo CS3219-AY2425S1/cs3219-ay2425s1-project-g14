@@ -19,7 +19,6 @@ import CommsPanel from "./CommsPanel";
 // import { diff_match_patch } from "diff-match-patch";
 import { callFormatter } from "@/app/api/internal/formatter/helper";
 import { Ace } from "ace-builds";
-import { connect } from "http2";
 
 const PING_INTERVAL_MILLISECONDS = 5000;
 const languages: Language[] = ["javascript", "python", "c_cpp"];
@@ -265,7 +264,7 @@ export default function CollabEditor({
     const disconnectCheckInterval = setInterval(() => {
       if (
         lastPingReceived &&
-        Date.now() - lastPingReceived > 2 * PING_INTERVAL_MILLISECONDS
+        Date.now() - lastPingReceived > 5 * PING_INTERVAL_MILLISECONDS
       ) {
         setOtherUserConnected(false);
         clearInterval(disconnectCheckInterval);
@@ -276,9 +275,7 @@ export default function CollabEditor({
       clearInterval(interval);
       clearInterval(disconnectCheckInterval);
     };
-  }, [
-    notifyRoomOfConnection, PING_INTERVAL_MILLISECONDS, connected, socket
-    ]);
+  }, [notifyRoomOfConnection, PING_INTERVAL_MILLISECONDS, connected, socket]);
 
   const handleCloseConnection = () => {
     const confirmClose = confirm(
