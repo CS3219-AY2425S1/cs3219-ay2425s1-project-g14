@@ -113,6 +113,7 @@ export default function CollabEditor({
       }
     } catch (e: unknown) {
       if (e instanceof Error) {
+        alert(e.message);
         console.error(e.message);
       } else {
         console.error("An unknown error occurred");
