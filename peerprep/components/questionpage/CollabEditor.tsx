@@ -265,7 +265,7 @@ export default function CollabEditor({
     const disconnectCheckInterval = setInterval(() => {
       if (
         lastPingReceived &&
-        Date.now() - lastPingReceived > 5 * PING_INTERVAL_MILLISECONDS
+        Date.now() - lastPingReceived > 3 * PING_INTERVAL_MILLISECONDS
       ) {
         setOtherUserConnected(false);
         clearInterval(disconnectCheckInterval);
@@ -276,7 +276,7 @@ export default function CollabEditor({
       clearInterval(interval);
       clearInterval(disconnectCheckInterval);
     };
-  }, [notifyRoomOfConnection, PING_INTERVAL_MILLISECONDS, connected, socket]);
+  }, [notifyRoomOfConnection, connected, socket]);
 
   const handleCloseConnection = () => {
     const confirmClose = confirm(
