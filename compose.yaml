@@ -1,7 +1,7 @@
 services:
   peerprep:
     build: peerprep
-    image: modembcc/peerprep:6.0.1
+    image: modembcc/peerprep:7.0.0
     env_file:
       - peerprep/.env
     ports:
@@ -124,7 +124,7 @@ services:
 
   collab:
     build: collab
-    image: modembcc/collab:6.0.1
+    image: modembcc/collab:7.0.1
     env_file:
       - collab/.env
     ports:
@@ -150,7 +150,7 @@ services:
 
   comms:
     build: comms
-    image: modembcc/comms:6.0.0
+    image: modembcc/comms:7.0.0
     #env_file:
     #- comms/.env
     ports:
