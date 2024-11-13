@@ -322,7 +322,6 @@ func handleMessages(
 				Type: CLOSE_SESSION,
 				RoomID:  client.roomID,
 				Content: "The session has been closed by a user.",
-				Type:    msgData.Type,
 			}
 			targetId := msgData.UserID
 			ownData, err := persistMappings.Conn.HGetAll(context.Background(), targetId).Result()
