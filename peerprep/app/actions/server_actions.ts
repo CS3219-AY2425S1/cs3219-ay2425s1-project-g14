@@ -95,7 +95,7 @@ export async function hydrateUid(): Promise<null | UserData> {
   if (isError(json)) {
     console.log("Failed to fetch user ID.");
     console.log(`Error ${json.status}: ${json.error}`);
-    redirect("/auth/logout");
+    // redirect("/auth/logout");
   }
   // TODO: handle error handling
   const response = json as UserServiceResponse;

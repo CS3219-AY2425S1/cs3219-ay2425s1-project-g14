@@ -319,6 +319,7 @@ func handleMessages(
 
 		if msgData.Type == CLOSE_SESSION {
 			closeMessage := Message{
+				Type: CLOSE_SESSION,
 				RoomID:  client.roomID,
 				Content: "The session has been closed by a user.",
 				Type:    msgData.Type,
