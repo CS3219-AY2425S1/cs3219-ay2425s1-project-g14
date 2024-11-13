@@ -13,6 +13,7 @@ const socket = io(`/`, {
 
 function CommsPanel({ className, roomId }: Props) {
   const [stream, setStream] = useState<MediaStream>();
+  const [callStarts, setCallStarts] = useState<boolean>(false);
 
   const myVideo = useRef<HTMLVideoElement>(null);
   const userVideo = useRef<HTMLVideoElement>(null);
@@ -81,10 +82,10 @@ function CommsPanel({ className, roomId }: Props) {
 
     // when we receive the first peer connection, we immediately send out
     // a peer connection request.
-    attachSocketInitiator(stream, roomId, userVideo, connectionRef);
+    attachSocketInitiator(stream, roomId, userVideo, setCallStarts, connectionRef);
 
     // as the receiver, I will propagate my data outwards now.
-    attachSocketReceiver(stream, roomId, userVideo, connectionRef);
+    attachSocketReceiver(stream, roomId, userVideo, setCallStarts, connectionRef);
 
     socket.on("endCall", () => {
       // immediately destroy the socket listeners
@@ -96,13 +97,14 @@ function CommsPanel({ className, roomId }: Props) {
             tracks.stop();
           });
         userVideo.current.srcObject = null;
+        setCallStarts(false);
       }
       if (connectionRef.current && !connectionRef.current.destroyed) {
         connectionRef.current.destroy();
       }
       // reattach the sockets
-      attachSocketInitiator(stream, roomId, userVideo, connectionRef);
-      attachSocketReceiver(stream, roomId, userVideo, connectionRef);
+      attachSocketInitiator(stream, roomId, userVideo, setCallStarts, connectionRef);
+      attachSocketReceiver(stream, roomId, userVideo, setCallStarts, connectionRef);
       // rejoin the room
       socket.emit("joinRoom", {
         target: roomId,
@@ -127,6 +129,11 @@ function CommsPanel({ className, roomId }: Props) {
         />
       </div>
       <div className="video">
+        {!callStarts &&
+        <p>
+          No signal from other user.
+          (Don't worry - the call doesn't start until we get a signal from both users!)
+        </p>}
         <video
           playsInline
           ref={userVideo}
@@ -148,6 +155,7 @@ function attachSocketReceiver(
   stream: MediaStream,
   roomId: string,
   userVideo: React.RefObject<HTMLVideoElement>,
+  setCallStarts: React.Dispatch<React.SetStateAction<boolean>>,
   connectionRef: React.MutableRefObject<Peer.Instance | undefined>,
 ) {
   socket.on("startCall", (data) => {
@@ -168,6 +176,7 @@ function attachSocketReceiver(
       if (userVideo.current) {
         console.log("user video exists");
         userVideo.current.srcObject = stream;
+        setCallStarts(true);
       }
     });
 
@@ -181,6 +190,7 @@ function attachSocketInitiator(
   stream: MediaStream,
   roomId: string,
   userVideo: React.RefObject<HTMLVideoElement>,
+  setCallStarts: React.Dispatch<React.SetStateAction<boolean>>,
   connectionRef: React.MutableRefObject<Peer.Instance | undefined>,
 ) {
   socket.on("peerConnected", () => {
@@ -200,6 +210,7 @@ function attachSocketInitiator(
       if (userVideo.current) {
         console.log("setting stream for handshake");
         userVideo.current.srcObject = stream;
+        setCallStarts(true);
       }
     });
 
