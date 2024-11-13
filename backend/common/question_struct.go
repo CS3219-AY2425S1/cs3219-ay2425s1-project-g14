@@ -1,4 +1,4 @@
-// defines the JSON format of quesitons.
+// defines the JSON format of questions.
 package common
 
 type Question struct {
@@ -16,4 +16,9 @@ type FrontendQuestion struct {
 	Difficulty string   `json:"difficulty"`
 	TopicTags  []string `json:"topicTags"`
 	Content    string   `json:"content"`
+}
+
+type MatchingQuestion struct {
+	TopicTags []string `json:"topicTags"`
+	Difficulty string `json:"difficulty"`
 }

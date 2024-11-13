@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: storage-blob-api
+spec:
+  selector:
+    matchLabels:
+      app: storage-blob-api
+  template:
+    metadata:
+      labels:
+        app: storage-blob-api
+    spec:
+      containers:
+        - name: storage-blob-api
+          image: distractedcat/storage-blob-api:3.0.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: PORT
+              value: :9300
+            - name: REDIS_URI
+              value: redis:6379
+          ports:
+            - containerPort: 9300
+              name: storage-api

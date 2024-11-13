@@ -12,28 +12,37 @@
 }
 
 .form_container {
-  background-color: rgb(36, 36, 36);
   color: white;
   font-family: Helvetica, Arial, sans-serif;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: left;
   gap: 10px;
-  padding: 15px 10px;
-  border-radius: 10px;
-  width: 90%;
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 800px;
+  width: 100%;
+  text-align: left;
 }
 
 .input_container {
+  padding-top: 5px;
+  /*margin: 5px;*/
   display: flex;
   flex-direction: row;
   align-items: center;
+  /*align-items: center;*/
   gap: 10px;
+  position: relative;
 }
 
 .label {
   text-wrap: nowrap;
+  width: 100px;
+  text-align: left;
+  margin-right: 10px;
+  font-weight: bold;
 }
 
 .deletableText {
@@ -55,10 +64,19 @@
 }
 
 .text_input {
-  background-color: rgb(30, 31, 31);
+  /*background-color: rgb(30, 31, 31);*/
   border: 1px solid white;
   width: 80%;
-  border-radius: 10%;
+  border-radius: 3%;
+  margin: 2px;
+  padding: 2px;
+  position: relative;
+  color: black;
+}
+
+.error {
+  color: red;
+  font-size: small;
 }
 
 .radio_container {

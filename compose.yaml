@@ -1,6 +1,7 @@
 services:
   peerprep:
     build: peerprep
+    image: distractedcat/peerprep
     env_file:
       - peerprep/.env
     ports:
@@ -14,8 +15,10 @@ services:
           path: peerprep
           target: /frontend
 
+
   user-service:
     build: user-service
+    image: distractedcat/user-service
     volumes:
       - /user-service/node_modules
     env_file:
@@ -30,9 +33,9 @@ services:
           path: user-service
           target: /user-service
 
-
   backend:
     build: backend
+    image: distractedcat/backend
     env_file:
       - backend/.env
     ports:
@@ -43,6 +46,146 @@ services:
           path: backend
           target: backend/app
 
+  # blob and mq
+  redis:
+    image: redis
+    container_name: redis-peerprep
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "9190:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: grp14
+      RABBITMQ_DEFAULT_PASS: grp14
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "9100:5672"
+      - "9101:15672"
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 30s
+      timeout: 30s
+      retries: 10
+
+  matching-service:
+    build: matching-service
+    image: distractedcat/matching-service
+    env_file:
+      - matching-service/.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    develop:
+      watch:
+        - action: rebuild
+          path: matching-service
+          target: matching-service/app
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  matching-service-api:
+    build: matching-service-api
+    image: distractedcat/matching-service-api
+    env_file:
+      - matching-service-api/.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "9200:9200"
+    develop:
+      watch:
+        - action: rebuild
+          path: matching-service
+          target: matching-service/app
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  storage-blob-api:
+    build: storage-blob-api
+    image: distractedcat/storage-blob-api
+    env_file:
+      - storage-blob-api/.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "9300:9300"
+    develop:
+      watch:
+        - action: rebuild
+          path: storage-blob-api
+          target: storage-blob-api/app
+    depends_on:
+      - redis
+
+  collab:
+    build: collab
+    image: distractedcat/collab
+    env_file:
+      - collab/.env
+    ports:
+      - "4000:4000"
+    develop:
+      watch:
+        - action: rebuild
+          path: collab
+          target: collab/app
+
+  formatter:
+    build: formatter
+    image: distractedcat/formatter
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "5000:5000"
+    develop:
+      watch:
+        - action: sync
+          path: formatter
+          target: formatter/app
+
+  comms:
+    build: comms
+    image: distractedcat/comms
+    #env_file:
+    #- comms/.env
+    ports:
+      - "4001:4001"
+    develop:
+      watch:
+        - action: sync
+          path: comms
+          target: comms/app
+
+  nginx:
+    build: nginx
+    image: distractedcat/nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/internal.conf
+    ports:
+      - "70:70"
+    depends_on:
+      - peerprep
+      - backend
+      - user-service
+      - storage-blob-api
+      - matching-service-api
+  
+  inbound-gateway:
+    build: inbound-gateway
+    image: wzwren/inbound-gateway
+    ports:
+      - "80:80"
+    volumes:
+      - ./inbound-gateway/nginx.conf:/etc/nginx/external.conf
+    depends_on:
+      - peerprep
+      - comms
 #  mongo:
 #    image: "mongo:latest"
 #    ports:

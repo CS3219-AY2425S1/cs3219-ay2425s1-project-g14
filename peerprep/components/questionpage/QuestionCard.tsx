@@ -4,8 +4,9 @@ import { Difficulty, Question } from "@/api/structs";
 import PeerprepButton from "../shared/PeerprepButton";
 import { useRouter } from "next/navigation";
 import styles from "@/style/questionCard.module.css";
-import { deleteQuestion } from "@/app/api/internal/questions/helper";
-import DOMPurify from "dompurify";
+import { deleteQuestion } from "@/app/questions/helper";
+import DOMPurify from "isomorphic-dompurify";
+import { useUserInfo } from "@/contexts/UserInfoContext";
 
 type QuestionCardProps = {
   question: Question;
@@ -13,6 +14,10 @@ type QuestionCardProps = {
 
 const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
   const router = useRouter();
+  // Note that this is purely UI, there are additional checks in the API call
+  const userData = useUserInfo();
+  const isAdmin = userData.isAdmin;
+
   const handleDelete = async () => {
     if (
       confirm(
@@ -20,6 +25,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
       )
     ) {
       const status = await deleteQuestion(question.id);
+      router.refresh();
       if (status.error) {
         console.log("Failed to delete question.");
         console.log(`Code ${status.status}:  ${status.error}`);
@@ -29,6 +35,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
     } else {
       console.log("Deletion cancelled.");
     }
+  };
+  const handleEdit = () => {
+    router.push(`questions/edit/${question.id}`);
   };
 
   const getDifficultyColor = (difficulty: Difficulty) => {
@@ -52,12 +61,12 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
 
   return (
     <div className={styles.container}>
-      <div className="flex-none w-full sm:w-1/3">
+      <div className="w-full flex-none sm:w-1/3">
         <h2 className={styles.title}>{question.title}</h2>
         <p className={styles.bodytext}>
           Difficulty:{" "}
           <span
-            className={`capitalize font-bold ${getDifficultyColor(
+            className={`font-bold capitalize ${getDifficultyColor(
               question.difficulty,
             )}`}
           >
@@ -72,7 +81,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
         </p>
       </div>
 
-      <div className="flex-none w-full sm:w-1/2 max-h-16 overflow-hidden">
+      <div className="max-h-16 w-full flex-none overflow-hidden sm:w-1/2">
         {
           <div
             className={styles.bodytext}
@@ -82,10 +91,15 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
       </div>
 
       <div className={styles.buttonContainer}>
-        <PeerprepButton onClick={() => router.push(`questions/${question.id}`)}>
+        <PeerprepButton
+          onClick={() => router.push(`/questions/${question.id}`)}
+        >
           View
         </PeerprepButton>
-        <PeerprepButton onClick={handleDelete}>Delete</PeerprepButton>
+        {isAdmin && <PeerprepButton onClick={handleEdit}>Edit</PeerprepButton>}
+        {isAdmin && (
+          <PeerprepButton onClick={handleDelete}>Delete</PeerprepButton>
+        )}
       </div>
     </div>
   );

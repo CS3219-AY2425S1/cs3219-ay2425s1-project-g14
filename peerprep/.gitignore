@@ -2,6 +2,9 @@
 
 # environment file
 .env
+.dockerignore
+
+.eslintcache
 
 # dependencies
 /node_modules

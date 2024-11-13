@@ -1,13 +1,14 @@
-import { fetchQuestion } from "@/api/gateway";
-import { Question as QnType, StatusBody, isError } from "@/api/structs";
+import { isError, Question as QnType, StatusBody } from "@/api/structs";
 import styles from "@/style/question.module.css";
 import ErrorBlock from "@/components/shared/ErrorBlock";
 import React from "react";
 import QuestionBlock from "./question";
 
+import { fetchQuestion } from "@/app/questions/helper";
+
 type Props = {
   params: {
-    question: string;
+    question: number;
   };
 };
 

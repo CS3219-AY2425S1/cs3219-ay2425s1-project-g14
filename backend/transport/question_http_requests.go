@@ -19,12 +19,13 @@ func SetAllEndpoints(router *gin.Engine, db *database.QuestionDB, logger *common
 	router.DELETE("/questions/delete/:id", DeleteQuestionWithLogger(db, logger))
 	router.PUT("/questions/replace/:id", ReplaceQuestionWithLogger(db, logger))
 	router.GET("/health", HealthCheck(logger))
+	router.POST("/match", GetRandomMatchingQuestion(db, logger))
 }
 
 // enable CORS for the frontend
 func SetCors(router *gin.Engine, origin string) {
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{origin},
+		AllowOrigins:     []string{"http://host.docker.internal", origin},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Content-Length", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},

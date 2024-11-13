@@ -1,43 +1,33 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import QuestionCard from "./QuestionCard";
-import { Question, StatusBody, Difficulty, isError } from "@/api/structs";
+import { Difficulty, Question } from "@/api/structs";
 import PeerprepDropdown from "../shared/PeerprepDropdown";
 import PeerprepSearchBar from "../shared/PeerprepSearchBar";
+import { useQuestionFilter } from "@/contexts/QuestionFilterContext";
 
-const QuestionList: React.FC = () => {
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [difficultyFilter, setDifficultyFilter] = useState<string>(
-    Difficulty.All
-  );
-  const [topicFilter, setTopicFilter] = useState<string>("all");
+type Props = {
+  questions: Question[];
+};
+
+// TODO make multiple select for topics at least
+const QuestionList = ({ questions }: Props) => {
   const [searchFilter, setSearchFilter] = useState<string>("");
-  const [topics, setTopics] = useState<string[]>(["all"]);
+
+  const {
+    topicList,
+    setTopicList,
+    difficultyFilter,
+    setDifficultyFilter,
+    topicFilter,
+    setTopicFilter,
+  } = useQuestionFilter();
 
   useEffect(() => {
-    const fetchQuestions = async () => {
-      const payload = await fetch(
-        `${process.env.NEXT_PUBLIC_NGINX}/api/internal/questions`
-      ).then((res) => res.json());
-      // uh
-      if (isError(payload)) {
-        // should also reflect the error
-        return;
-      }
-      const data: Question[] = payload;
-
-      setLoading(false);
-      setQuestions(data);
-
-      // get all present topics in all qns
-      const uniqueTopics = Array.from(
-        new Set(data.flatMap((question) => question.topicTags))
-      );
-      setTopics(["all", ...uniqueTopics]);
-    };
-
-    fetchQuestions();
+    const uniqueTopics = Array.from(
+      new Set(questions.flatMap((question) => question.topicTags)),
+    );
+    setTopicList(["all", ...uniqueTopics]);
   }, []);
 
   const filteredQuestions = questions.filter((question) => {
@@ -45,8 +35,7 @@ const QuestionList: React.FC = () => {
       difficultyFilter === Difficulty.All ||
       Difficulty[question.difficulty] === difficultyFilter;
     const matchesTopic =
-      topicFilter === topics[0] ||
-      (question.topicTags ?? []).includes(topicFilter);
+      topicFilter === "all" || (question.topicTags ?? []).includes(topicFilter);
     const matchesSearch =
       searchFilter === "" ||
       (question.title ?? "").toLowerCase().includes(searchFilter.toLowerCase());
@@ -56,9 +45,19 @@ const QuestionList: React.FC = () => {
 
   const sortedQuestions = filteredQuestions.sort((a, b) => a.id - b.id);
 
+  const handleSetDifficulty = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const diff = e.target.value;
+    setDifficultyFilter(diff);
+  };
+
+  const handleSetTopics = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const topic = e.target.value;
+    setTopicFilter(topic);
+  };
+
   return (
-    <div className="flex-grow max-h-screen overflow-y-auto p-4">
-      <div className="flex space-x-4 mb-4 items-end">
+    <div className="flex h-full flex-col">
+      <div className="sticky top-0 mb-4 flex items-end space-x-4">
         <PeerprepSearchBar
           value={searchFilter}
           label="Search questions..."
@@ -67,26 +66,22 @@ const QuestionList: React.FC = () => {
         <PeerprepDropdown
           label="Difficulty"
           value={difficultyFilter}
-          onChange={(e) => setDifficultyFilter(e.target.value)}
+          onChange={handleSetDifficulty}
           options={Object.keys(Difficulty).filter((key) => isNaN(Number(key)))}
         />
         <PeerprepDropdown
           label="Topics"
           value={topicFilter}
-          onChange={(e) => setTopicFilter(e.target.value)}
-          options={topics}
+          onChange={handleSetTopics}
+          options={topicList}
         />
       </div>
 
-      {loading ? (
-        <p>Loading questions...</p>
-      ) : (
-        <div>
-          {sortedQuestions.map((question) => (
-            <QuestionCard key={question.id} question={question} />
-          ))}
-        </div>
-      )}
+      <div className={""}>
+        {sortedQuestions.map((question) => (
+          <QuestionCard key={question.id} question={question} />
+        ))}
+      </div>
     </div>
   );
 };
