@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
         - name: collab
-          image: modembcc/collab:7.0.1
+          image: modembcc/collab:7.0.2
           imagePullPolicy: Always
           env:
             - name: PORT
