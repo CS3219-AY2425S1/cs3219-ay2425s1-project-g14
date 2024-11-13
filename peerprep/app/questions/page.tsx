@@ -6,9 +6,14 @@ import { hydrateUid } from "../actions/server_actions";
 import { isError, Question, StatusBody, UserData } from "@/api/structs";
 import { UserInfoProvider } from "@/contexts/UserInfoContext";
 import { fetchAllQuestions } from "@/app/questions/helper";
+import { redirect } from "next/navigation";
 
 async function QuestionsPage() {
   const userData = (await hydrateUid()) as UserData;
+
+  if (!userData) {
+    redirect("/auth/login");
+  }
 
   const questions: Question[] | StatusBody = await fetchAllQuestions();
 

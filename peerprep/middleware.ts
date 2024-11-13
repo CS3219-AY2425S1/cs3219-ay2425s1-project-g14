@@ -1,8 +1,8 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { CookieNames } from "@/app/actions/session";
 
-const protectedRoutes = ["/questions/*", "/user/*"];
-const publicRoutes = ["/", "/auth/login/", "/auth/register"];
+const protectedRoutes = ["/questions", "/user"];
 
 const isValidSession = () => {
   return cookies().has("session");
@@ -10,12 +10,7 @@ const isValidSession = () => {
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
-  const isProtectedRoute = protectedRoutes.includes(path);
-  const isPublicRoute = publicRoutes.includes(path);
-
-  if (isPublicRoute) {
-    return NextResponse.next();
-  }
+  const isProtectedRoute = protectedRoutes.some((route) => path.startsWith(route));
 
   // UNCOMMENT AND ADD TO ENV IF JUST TESTING FRONTEND STUFF
   if (process.env.NEXT_BYPASS_LOGIN === "yesplease") {
@@ -27,8 +22,13 @@ export async function middleware(request: NextRequest) {
   }
 
   if (path === "/auth/logout" || path === "/auth/logout/") {
-    let response = NextResponse.redirect(new URL("/auth/login", request.url));
-    response.cookies.delete("session");
+    const response = NextResponse.redirect(new URL("/auth/login", request.url));
+
+    for (const cookieName of Object.values(CookieNames)) {
+      response.cookies.delete(cookieName.valueOf());
+    }
+    // response.cookies.delete("session");
+
     return response;
   }
 
