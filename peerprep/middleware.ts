@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { CookieNames } from "@/app/actions/session";
 
 const protectedRoutes = ["/questions/*", "/user/*"];
 const publicRoutes = ["/", "/auth/login/", "/auth/register"];
@@ -27,8 +28,13 @@ export async function middleware(request: NextRequest) {
   }
 
   if (path === "/auth/logout" || path === "/auth/logout/") {
-    let response = NextResponse.redirect(new URL("/auth/login", request.url));
-    response.cookies.delete("session");
+    const response = NextResponse.redirect(new URL("/auth/login", request.url));
+
+    for (const cookieName of Object.values(CookieNames)) {
+      response.cookies.delete(cookieName.valueOf());
+    }
+    // response.cookies.delete("session");
+
     return response;
   }
 
