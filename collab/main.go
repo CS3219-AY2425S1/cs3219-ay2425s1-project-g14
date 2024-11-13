@@ -323,17 +323,30 @@ func handleMessages(
 				Content: "The session has been closed by a user.",
 			}
 			targetId := msgData.UserID
-			data, err := persistMappings.Conn.HGetAll(context.Background(), targetId).Result()
+			ownData, err := persistMappings.Conn.HGetAll(context.Background(), targetId).Result()
 			if err != nil {
 				log.Printf("Error retrieving data for userID %s: %v", targetId, err)
 			} else {
-				_, err1 := persistMappings.Conn.Del(context.Background(), targetId).Result()
-				if err1 != nil {
-					log.Printf("Error deleting data for userID %s: %v", targetId, err1)
+				// delete room under user id if it curr matches the room ID
+				ownRoomId := ownData["roomId"]
+				if ownRoomId == client.roomID {
+					_, err := persistMappings.Conn.Del(context.Background(), targetId).Result()
+					if err != nil {
+						log.Printf("Error deleting data for userID %s: %v", targetId, err)
+					}
 				}
-				_, err2 := persistMappings.Conn.Del(context.Background(), data["otherUser"]).Result()
-				if err2 != nil {
-					log.Printf("Error deleting data for other user %s: %v", data["otherUser"], err2)
+				// delete room under other user if it curr matches the room ID
+				otherUser := ownData["otherUser"]
+				othRoomId, err := persistMappings.Conn.HGet(context.Background(), otherUser, "roomId").Result()
+				if err != nil {
+					log.Printf("Error retrieving data for otherUser %s: %v", otherUser, err)
+				} else {
+					if othRoomId == client.roomID {
+						_, err := persistMappings.Conn.Del(context.Background(), otherUser).Result()
+						if err != nil {
+							log.Printf("Error deleting data for other user %s: %v", otherUser, err)
+						}
+					}
 				}
 			}
 			hub.broadcast <- closeMessage
