@@ -19,7 +19,6 @@ import CommsPanel from "./CommsPanel";
 // import { diff_match_patch } from "diff-match-patch";
 import { callFormatter } from "@/app/api/internal/formatter/helper";
 import { Ace } from "ace-builds";
-import { connect } from "http2";
 
 const PING_INTERVAL_MILLISECONDS = 5000;
 const languages: Language[] = ["javascript", "python", "c_cpp"];
@@ -114,6 +113,7 @@ export default function CollabEditor({
       }
     } catch (e: unknown) {
       if (e instanceof Error) {
+        alert(e.message);
         console.error(e.message);
       } else {
         console.error("An unknown error occurred");
@@ -265,7 +265,7 @@ export default function CollabEditor({
     const disconnectCheckInterval = setInterval(() => {
       if (
         lastPingReceived &&
-        Date.now() - lastPingReceived > 2 * PING_INTERVAL_MILLISECONDS
+        Date.now() - lastPingReceived > 3 * PING_INTERVAL_MILLISECONDS
       ) {
         setOtherUserConnected(false);
         clearInterval(disconnectCheckInterval);
@@ -276,7 +276,7 @@ export default function CollabEditor({
       clearInterval(interval);
       clearInterval(disconnectCheckInterval);
     };
-  }, [notifyRoomOfConnection, PING_INTERVAL_MILLISECONDS, connected, socket]);
+  }, [notifyRoomOfConnection, connected, socket]);
 
   const handleCloseConnection = () => {
     const confirmClose = confirm(
