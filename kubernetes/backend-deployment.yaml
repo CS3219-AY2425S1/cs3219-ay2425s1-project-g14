@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: distractedcat/backend:1.0.0
+          image: modembcc/backend:6.0.0
           imagePullPolicy: IfNotPresent
           env:
             - name: MONGODB_URI

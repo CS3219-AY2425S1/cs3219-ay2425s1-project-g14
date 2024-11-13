@@ -13,8 +13,15 @@ spec:
         app: nginx
     spec:
       containers:
-      - name: nginx
-        image: distractedcat/nginx:2.0.0 
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 80
+        - name: nginx
+          image: modembcc/nginx:6.0.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 70
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"

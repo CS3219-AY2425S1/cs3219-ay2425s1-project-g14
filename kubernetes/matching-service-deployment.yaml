@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
         - name: matching-service
-          image: distractedcat/matching-service:3.0.0
+          image: modembcc/matching-service:6.0.0
           imagePullPolicy: Always
           env:
             - name: RABBIT_URI
@@ -22,3 +22,10 @@ spec:
               value: redis:6379
             - name: BACKEND_MATCH_URI
               value: http://backend:9090/match
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"

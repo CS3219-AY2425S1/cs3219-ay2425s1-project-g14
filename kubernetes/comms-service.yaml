@@ -9,4 +9,4 @@ spec:
     - protocol: TCP
       port: 4001
       targetPort: 4001
-  type: LoadBalancer
+  type: ClusterIP

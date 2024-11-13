@@ -1,7 +1,7 @@
 services:
   peerprep:
     build: peerprep
-    image: distractedcat/peerprep
+    image: modembcc/peerprep:7.0.3
     env_file:
       - peerprep/.env
     ports:
@@ -15,10 +15,9 @@ services:
           path: peerprep
           target: /frontend
 
-
   user-service:
     build: user-service
-    image: distractedcat/user-service
+    image: modembcc/user-service:6.0.0
     volumes:
       - /user-service/node_modules
     env_file:
@@ -35,7 +34,7 @@ services:
 
   backend:
     build: backend
-    image: distractedcat/backend
+    image: modembcc/backend:6.0.0
     env_file:
       - backend/.env
     ports:
@@ -74,7 +73,7 @@ services:
 
   matching-service:
     build: matching-service
-    image: distractedcat/matching-service
+    image: modembcc/matching-service:6.0.0
     env_file:
       - matching-service/.env
     extra_hosts:
@@ -90,7 +89,7 @@ services:
 
   matching-service-api:
     build: matching-service-api
-    image: distractedcat/matching-service-api
+    image: modembcc/matching-service-api:6.0.0
     env_file:
       - matching-service-api/.env
     extra_hosts:
@@ -108,7 +107,7 @@ services:
 
   storage-blob-api:
     build: storage-blob-api
-    image: distractedcat/storage-blob-api
+    image: modembcc/storage-blob-api:6.0.0
     env_file:
       - storage-blob-api/.env
     extra_hosts:
@@ -125,7 +124,7 @@ services:
 
   collab:
     build: collab
-    image: distractedcat/collab
+    image: modembcc/collab:7.0.3
     env_file:
       - collab/.env
     ports:
@@ -138,7 +137,7 @@ services:
 
   formatter:
     build: formatter
-    image: distractedcat/formatter
+    image: modembcc/formatter:6.0.0
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
@@ -151,7 +150,7 @@ services:
 
   comms:
     build: comms
-    image: distractedcat/comms
+    image: modembcc/comms:7.0.0
     #env_file:
     #- comms/.env
     ports:
@@ -164,7 +163,7 @@ services:
 
   nginx:
     build: nginx
-    image: distractedcat/nginx
+    image: modembcc/nginx:6.0.0
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/internal.conf
     ports:
@@ -175,10 +174,10 @@ services:
       - user-service
       - storage-blob-api
       - matching-service-api
-  
+
   inbound-gateway:
     build: inbound-gateway
-    image: wzwren/inbound-gateway
+    image: modembcc/inbound-gateway:6.0.1
     ports:
       - "80:80"
     volumes:

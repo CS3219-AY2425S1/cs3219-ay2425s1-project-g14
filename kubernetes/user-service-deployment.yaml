@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
         - name: user-service
-          image: distractedcat/user-service:1.0.0
+          image: modembcc/user-service:6.0.0
           imagePullPolicy: IfNotPresent
           env:
             - name: DB_CLOUD_URI
@@ -29,3 +29,10 @@ spec:
           ports:
             - containerPort: 3001
               name: user-service
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"

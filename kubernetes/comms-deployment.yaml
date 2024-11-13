@@ -13,8 +13,15 @@ spec:
     spec:
       containers:
         - name: comms
-          image: distractedcat/comms:1.0.0
+          image: modembcc/comms:7.0.0
           imagePullPolicy: Always
           ports:
             - containerPort: 4001
               name: comms
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"

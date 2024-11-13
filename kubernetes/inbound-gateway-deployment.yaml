@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: formatter
+  name: inbound-gateway
 spec:
+  replicas: 1
   selector:
     matchLabels:
-      app: formatter
+      app: inbound-gateway
   template:
     metadata:
       labels:
-        app: formatter
+        app: inbound-gateway
     spec:
       containers:
-        - name: formatter
-          image: modembcc/formatter:6.0.0
+        - name: inbound-gateway
+          image: modembcc/inbound-gateway:6.0.1
           imagePullPolicy: Always
           ports:
-            - containerPort: 5000
-              name: formatter
+            - containerPort: 80
           resources:
             requests:
               cpu: "100m"
