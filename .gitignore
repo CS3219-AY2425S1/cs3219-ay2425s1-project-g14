@@ -1,0 +1,5 @@
+**/.env
+.idea
+*.log
+main.exe
+kubernetes

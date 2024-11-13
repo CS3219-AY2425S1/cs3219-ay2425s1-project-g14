@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inbound-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inbound-gateway
+  template:
+    metadata:
+      labels:
+        app: inbound-gateway
+    spec:
+      containers:
+        - name: inbound-gateway
+          image: modembcc/inbound-gateway:6.0.1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"

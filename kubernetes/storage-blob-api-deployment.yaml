@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: storage-blob-api
+spec:
+  selector:
+    matchLabels:
+      app: storage-blob-api
+  template:
+    metadata:
+      labels:
+        app: storage-blob-api
+    spec:
+      containers:
+        - name: storage-blob-api
+          image: modembcc/storage-blob-api:6.0.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: PORT
+              value: :9300
+            - name: REDIS_URI
+              value: redis:6379
+          ports:
+            - containerPort: 9300
+              name: storage-api
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"

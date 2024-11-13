@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: formatter
+spec:
+  selector:
+    matchLabels:
+      app: formatter
+  template:
+    metadata:
+      labels:
+        app: formatter
+    spec:
+      containers:
+        - name: formatter
+          image: modembcc/formatter:6.0.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+              name: formatter
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: storage-blob-api
+spec:
+  selector:
+    app: storage-blob-api
+  ports:
+    - protocol: TCP
+      port: 9300
+      targetPort: 9300
+  type: ClusterIP
