@@ -14,16 +14,15 @@ import (
 	redis "github.com/go-redis/redis/v8"
 )
 
-
 type ClientMappings struct {
 	Conn *redis.Client
 }
 
 func InitialiseClientMappings(addr string, db_num int) *ClientMappings {
 	conn := redis.NewClient(&redis.Options{
-			Addr:addr,
-			DB: db_num,
-		})
+		Addr: addr,
+		DB:   db_num,
+	})
 
 	return &ClientMappings{
 		Conn: conn,
@@ -31,7 +30,7 @@ func InitialiseClientMappings(addr string, db_num int) *ClientMappings {
 
 }
 
-func (db *ClientMappings) HandleRequest(request models.IncomingRequests) (*models.Room, error){
+func (db *ClientMappings) HandleRequest(request models.IncomingRequests) (*models.Room, error) {
 	ctx := context.Background()
 	user2, user2_difficulty, user2_topics := request.UserId, request.Difficulty, request.TopicTags
 	user2_requestTime, user2_matchHash := request.RequestTime, request.MatchHash
@@ -43,12 +42,12 @@ func (db *ClientMappings) HandleRequest(request models.IncomingRequests) (*model
 	}
 
 	for _, user1 := range currMappings {
-		
+
 		if user1 == user2 {
 			//users cannot match with themselves
 			continue
 		}
-		
+
 		result, err := db.Conn.HGetAll(ctx, user1).Result()
 
 		if err == redis.Nil {
@@ -64,33 +63,33 @@ func (db *ClientMappings) HandleRequest(request models.IncomingRequests) (*model
 
 		user1_difficulty := result["difficulty"]
 		user1_requestTime := result["requestTime"]
-		
+
 		if user1_difficulty != user2_difficulty {
 			continue
 		}
 
 		overlappingTopics := findOverlap(user1_topics, user2_topics)
-		
+
 		if len(overlappingTopics) == 0 {
 			continue
-		}	
-		
+		}
+
 		roomId, err := generateRoomId()
-		
+
 		if err != nil {
 			return nil, err
-		} 
-		
+		}
+
 		user1_matchHash := result["matchHash"]
-		
+
 		db.Conn.Del(ctx, user1)
-			
+
 		room := models.Room{
-			MatchHash1: user1_matchHash,
-			MatchHash2: user2_matchHash,
-			RoomId: roomId,
-			User1: user1,
-			User2: user2,
+			MatchHash1:  user1_matchHash,
+			MatchHash2:  user2_matchHash,
+			RoomId:      roomId,
+			User1:       user1,
+			User2:       user2,
 			RequestTime: user1_requestTime,
 		}
 
@@ -110,33 +109,33 @@ func (db *ClientMappings) HandleRequest(request models.IncomingRequests) (*model
 	//no match found
 
 	user2_topics_json, err := json.Marshal(user2_topics)
-	
+
 	if err != nil {
 		return nil, err
 	}
 
 	err = db.Conn.HSet(ctx, user2, map[string]interface{}{
-		"matchHash": user2_matchHash,
-		"topicTags": user2_topics_json,
-		"difficulty": user2_difficulty,
+		"matchHash":   user2_matchHash,
+		"topicTags":   user2_topics_json,
+		"difficulty":  user2_difficulty,
 		"requestTime": user2_requestTime,
-		}).Err()
+	}).Err()
 
 	if err != nil {
 		return nil, err
 	}
 
-	requestTime, err := time.Parse("2006-01-02 15-04-05", user2_requestTime)
+	requestTime, err := time.ParseInLocation("2006-01-02 15-04-05", user2_requestTime, time.UTC)
 
 	if err != nil {
 		return nil, err
 	}
 
-	expiryTime := requestTime.Add(30 * time.Second).Add(-8 * time.Hour)
+	expiryTime := requestTime.Add(30 * time.Second)
 	diff := int(time.Until(expiryTime).Seconds())
-	err = db.Conn.Expire(ctx, user2, time.Duration(diff) * time.Second).Err()
+	err = db.Conn.Expire(ctx, user2, time.Duration(diff)*time.Second).Err()
 
-	if err != nil  {
+	if err != nil {
 		return nil, err
 	}
 

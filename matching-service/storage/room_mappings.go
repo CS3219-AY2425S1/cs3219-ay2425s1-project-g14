@@ -80,13 +80,13 @@ func (db *RoomMappings) SendToStorageBlob(room *models.Room) error {
 		return fmt.Errorf("error setting user2's room to storage: %s", err2.Error())
 	}
 
-	requestTime, err := time.Parse("2006-01-02 15-04-05", room.RequestTime)
+	requestTime, err := time.ParseInLocation("2006-01-02 15-04-05", room.RequestTime, time.UTC)
 
 	if err != nil {
 		return fmt.Errorf("error parsing the time: %s", err.Error())
 	}
 
-	expiryTime := requestTime.Add(30 * time.Second).Add(-8 * time.Hour)
+	expiryTime := requestTime.Add(30 * time.Second)
 
 	diff := int(time.Until(expiryTime).Seconds())
 

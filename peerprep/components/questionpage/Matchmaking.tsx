@@ -30,6 +30,7 @@ const getMatchRequestTime = (): string => {
     minute: "2-digit",
     second: "2-digit",
     hour12: false,
+    timeZone: "UTC",
   };
 
   const formattedDate = now.toLocaleString("en-CA", options); // gives YYYY-MM-DD, HH:mm:ss
