@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: modembcc/backend:6.0.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MONGODB_URI
+              value: mongodb+srv://nxtms3:np0aUdwlMkISiUia@questions.bh9su.mongodb.net/?retryWrites=true&w=majority&appName=questions
+            - name: PORT
+              value: :9090
+            - name: CORS_ORIGIN
+              value: http://peerprep:3000
+          ports:
+            - containerPort: 9090
+              name: backend
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"

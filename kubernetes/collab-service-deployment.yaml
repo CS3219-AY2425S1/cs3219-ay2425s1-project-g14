@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: collab
+spec:
+  selector:
+    matchLabels:
+      app: collab
+  template:
+    metadata:
+      labels:
+        app: collab
+    spec:
+      containers:
+        - name: collab
+          image: modembcc/collab:7.0.3
+          imagePullPolicy: Always
+          env:
+            - name: PORT
+              value: :4000
+            - name: REDIS_URI
+              value: redis:6379
+            - name: USER_SERVICE_URI
+              value: http://user-service:3001
+          ports:
+            - containerPort: 4000
+              name: collab
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"

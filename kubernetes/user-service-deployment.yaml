@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+spec:
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      containers:
+        - name: user-service
+          image: modembcc/user-service:6.0.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DB_CLOUD_URI
+              value: mongodb+srv://modemhappy:dvVbAqwq5lEOr6WN@cluster0.1oehu.mongodb.net/peerprep?retryWrites=true&w=majority&appName=Cluster0
+            - name: DB_LOCAL_URI
+              value: mongodb://127.0.0.1:27017/peerprepUserServiceDB
+            - name: PORT
+              value: "3001"
+            - name: ENV
+              value: PROD
+            - name: JWT_SECRET
+              value: you-can-replace-this-with-your-own-secret
+          ports:
+            - containerPort: 3001
+              name: user-service
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
